@@ -27,16 +27,26 @@ run: install
 	@# Always launch via 'open', never run the binary directly
 	open $(INSTALL_PATH)
 
-dev: install
-	@# After rebuilding, macOS revokes Accessibility permission because the binary hash changes.
+uninstall:
+	-killall $(APP_NAME) 2>/dev/null
+	rm -rf $(INSTALL_PATH)
+	@echo "Removed $(INSTALL_PATH)"
+
+dev1: uninstall
+	@echo ""
+	@echo "IMPORTANT: macOS will revok Accessibility permission because the binary will change."
+	@echo "Go to System Settings → Privacy & Security → Accessibility"
+	@echo "Remove spacemap (− button), you will be prompted to re-add it when we re-install it."
+
+dev2: install
 	@# This target kills the app, reinstalls, and relaunches so you just need to re-grant in System Settings.
 	-killall $(APP_NAME) 2>/dev/null
 	@sleep 0.5
 	open $(INSTALL_PATH)
 	@echo ""
-	@echo "IMPORTANT: macOS revoked Accessibility permission because the binary changed."
+	@echo "IMPORTANT: you have to give macOS Accessibility permission because the binary changed."
 	@echo "Go to System Settings → Privacy & Security → Accessibility"
-	@echo "Remove spacemap (− button), then re-add it by granting the prompt that appears."
+	@echo "and grant it permissions the prompt that appears."
 
 permissions:
 	@echo "If Ctrl+Space stopped working after a reinstall:"
@@ -47,11 +57,6 @@ permissions:
 	@echo ""
 	@echo "NEVER run the binary directly — always use 'make run' or 'open $(INSTALL_PATH)'"
 	@echo "Running the binary directly causes AXIsProcessTrusted() to return false."
-
-uninstall:
-	-killall $(APP_NAME) 2>/dev/null
-	rm -rf $(INSTALL_PATH)
-	@echo "Removed $(INSTALL_PATH)"
 
 clean:
 	rm -rf .build $(APP_BUNDLE)

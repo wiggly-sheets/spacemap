@@ -4,19 +4,19 @@ import SwiftUI
 class HUDWindowController {
     private var panel: NSPanel?
     private var isVisible = false
-    private var refreshTimer: Timer?
     private var config = ConfigReader.load()
 
-    func toggle(focusedIndex: Int?) {
+    func toggle() {
         if isVisible {
             hide()
         } else {
-            show(focusedIndex: focusedIndex)
+            show()
         }
     }
 
-    private func show(focusedIndex: Int?) {
+    private func show() {
         config = ConfigReader.load()
+        let focusedIndex = YabaiClient.queryFocusedSpaceIndex()
 
         if panel == nil {
             panel = makePanel()
@@ -25,14 +25,13 @@ class HUDWindowController {
         guard let panel else { return }
 
         render(focusedIndex: focusedIndex, panel: panel)
-        panel.orderFrontRegardless()
         isVisible = true
+    }
 
-        refreshTimer = Timer.scheduledTimer(withTimeInterval: 0.2, repeats: true) { [weak self] _ in
-            guard let self, let panel = self.panel else { return }
-            let focused = YabaiClient.queryFocusedSpaceIndex()
-            self.render(focusedIndex: focused, panel: panel)
-        }
+    func refresh() {
+        guard isVisible, let panel else { return }
+        let focused = YabaiClient.queryFocusedSpaceIndex()
+        render(focusedIndex: focused, panel: panel)
     }
 
     private func render(focusedIndex: Int?, panel: NSPanel) {
@@ -45,16 +44,16 @@ class HUDWindowController {
         panel.contentView = hostingView
         panel.setContentSize(size)
 
-        if panel.frame.origin == .zero, let screen = NSScreen.main {
+        if let screen = NSScreen.main {
             let x = screen.frame.midX - size.width / 2
             let y = screen.frame.midY - size.height / 2
             panel.setFrameOrigin(NSPoint(x: x, y: y))
         }
+
+        panel.orderFrontRegardless()
     }
 
     private func hide() {
-        refreshTimer?.invalidate()
-        refreshTimer = nil
         panel?.orderOut(nil)
         isVisible = false
     }
