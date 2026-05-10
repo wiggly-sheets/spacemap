@@ -1,7 +1,10 @@
 # spacemap
 
-A native macOS HUD that shows your yabai workspace grid on demand. Press Ctrl+Space to toggle a floating overlay showing all your desktops as a 2D grid with window positions highlighted inside each cell.
+A native macOS work`spacemap` that shows your yabai workspace grid on demand. Press Ctrl+Space to toggle a floating overlay showing all your desktops as a 2D grid with window positions highlighted inside each cell.
 
+You do not have to disable System Integrity Protection to get this setup.
+
+Example Configuration: 
 ```
 ┌────┬────┬────┬────┬────┬────┬────┬────┐
 │ 1  │ 2  │ 3  │ 4  │ 5  │ 6  │ 7  │ 8  │  ← top row
@@ -10,6 +13,10 @@ A native macOS HUD that shows your yabai workspace grid on demand. Press Ctrl+Sp
 └────┴────┴────┴────┴────┴────┴────┴────┘
          ↑ active desktop highlighted in blue
 ```
+## Visualization
+
+<img width="751" height="172" alt="Screenshot 2026-05-10 at 10 14 35 AM" src="https://github.com/user-attachments/assets/f7f2556a-9a1e-450e-bae4-2ad4268767cf" />
+
 
 Window positions are drawn as colored rectangles inside each cell (one color per app, derived from app name). The HUD refreshes every 200ms while open so the active cell updates as you switch desktops.
 
@@ -19,6 +26,8 @@ Window positions are drawn as colored rectangles inside each cell (one color per
 - [yabai](https://github.com/koekeishiya/yabai) installed at `/opt/homebrew/bin/yabai` and running
 - Xcode Command Line Tools (`xcode-select --install`)
 - Accessibility permission (prompted on first launch)
+<img width="722" height="844" alt="Screenshot 2026-05-10 at 10 58 32 AM" src="https://github.com/user-attachments/assets/b6d90393-2100-44bc-ac6f-00fe1de66a98" />
+
 
 ## Install
 
