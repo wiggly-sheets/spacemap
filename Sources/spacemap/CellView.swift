@@ -1,12 +1,10 @@
 import SwiftUI
-import AppKit
 
 struct CellView: View {
     let spaceIndex: Int
     let isFocused: Bool
     let windows: [YabaiWindow]
     let displayBounds: CGRect
-    let cellStyle: CellStyle
 
     private let cellSize = CGSize(width: 80, height: 50)
 
@@ -20,10 +18,7 @@ struct CellView: View {
                 )
 
             ForEach(windows, id: \.id) { window in
-                switch cellStyle {
-                case .rects: windowRect(window)
-                case .icons: windowIcon(window)
-                }
+                windowRect(window)
             }
 
             Text("\(spaceIndex)")
@@ -47,32 +42,6 @@ struct CellView: View {
             .fill(appColor(window.app).opacity(0.6))
             .frame(width: w, height: h)
             .offset(x: x, y: y)
-    }
-
-    @ViewBuilder
-    private func windowIcon(_ window: YabaiWindow) -> some View {
-        let scaleX = cellSize.width / displayBounds.width
-        let scaleY = cellSize.height / displayBounds.height
-        let x = (window.cgFrame.minX - displayBounds.minX) * scaleX
-        let y = (window.cgFrame.minY - displayBounds.minY) * scaleY
-        let w = max(window.cgFrame.width * scaleX, 14)
-        let h = max(window.cgFrame.height * scaleY, 14)
-        let iconSize = min(w, h)
-
-        if let icon = appIcon(for: window.app) {
-            Image(nsImage: icon)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: iconSize, height: iconSize)
-                .offset(x: x, y: y)
-        }
-    }
-
-    private func appIcon(for appName: String) -> NSImage? {
-        NSWorkspace.shared.runningApplications
-            .first { $0.localizedName == appName }
-            .flatMap { $0.bundleURL }
-            .map { NSWorkspace.shared.icon(forFile: $0.path) }
     }
 
     private func appColor(_ name: String) -> Color {

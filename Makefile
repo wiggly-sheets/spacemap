@@ -4,7 +4,7 @@ APP_BUNDLE = $(APP_NAME).app
 APP_CONTENTS = $(APP_BUNDLE)/Contents
 INSTALL_PATH = /Applications/$(APP_BUNDLE)
 
-.PHONY: build app install run dev uninstall clean config distconfig permissions
+.PHONY: build app install run dev uninstall clean config permissions
 
 build:
 	swift build -c release
@@ -66,19 +66,8 @@ config:
 	@if [ ! -f ~/.config/spacemap/config ]; then \
 		echo "GRID_COLS=8" > ~/.config/spacemap/config; \
 		echo "GRID_ROWS=2" >> ~/.config/spacemap/config; \
-		echo "#CELL_STYLE=rects" >> ~/.config/spacemap/config; \
-		echo "CELL_STYLE=icons" >> ~/.config/spacemap/config; \
-		echo "Created ~/.config/spacemap/config with defaults (8x2, icons)"; \
+		echo "Created ~/.config/spacemap/config with defaults (8x2)"; \
 	else \
 		echo "Config already exists at ~/.config/spacemap/config"; \
 		cat ~/.config/spacemap/config; \
 	fi
-
-distconfig:
-	mkdir -p ~/.config/spacemap
-	@echo "GRID_COLS=8" > ~/.config/spacemap/config
-	@echo "GRID_ROWS=2" >> ~/.config/spacemap/config
-	@echo "#CELL_STYLE=rects" >> ~/.config/spacemap/config
-	@echo "CELL_STYLE=icons" >> ~/.config/spacemap/config
-	@echo "Wrote ~/.config/spacemap/config"
-	@cat ~/.config/spacemap/config
