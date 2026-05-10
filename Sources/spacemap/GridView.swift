@@ -18,7 +18,8 @@ struct GridView: View {
                             spaceIndex: spaceIndex,
                             isFocused: spaceIndex == state.focusedIndex,
                             windows: state.windows(forSpace: spaceIndex),
-                            displayBounds: state.displayBounds
+                            displayBounds: state.displayBounds,
+                            cellStyle: state.config.cellStyle
                         )
                     }
                 }
