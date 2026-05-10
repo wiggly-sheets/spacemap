@@ -9,6 +9,7 @@ enum ConfigReader {
 
         var cols = GridConfig.default.cols
         var rows = GridConfig.default.rows
+        var cellStyle = GridConfig.default.cellStyle
 
         for line in contents.components(separatedBy: .newlines) {
             let parts = line.trimmingCharacters(in: .whitespaces)
@@ -19,10 +20,11 @@ enum ConfigReader {
             switch key {
             case "GRID_COLS": cols = Int(value) ?? cols
             case "GRID_ROWS": rows = Int(value) ?? rows
+            case "CELL_STYLE": cellStyle = value == "icons" ? .icons : .rects
             default: break
             }
         }
 
-        return GridConfig(cols: cols, rows: rows)
+        return GridConfig(cols: cols, rows: rows, cellStyle: cellStyle)
     }
 }

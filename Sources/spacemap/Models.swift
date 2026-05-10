@@ -1,11 +1,14 @@
 import Foundation
 import CoreGraphics
 
+enum CellStyle { case rects, icons }
+
 struct GridConfig {
     var cols: Int
     var rows: Int
+    var cellStyle: CellStyle
 
-    static let `default` = GridConfig(cols: 8, rows: 2)
+    static let `default` = GridConfig(cols: 8, rows: 2, cellStyle: .rects)
 }
 
 struct YabaiSpace: Decodable {
