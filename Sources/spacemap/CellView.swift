@@ -11,10 +11,10 @@ struct CellView: View {
     var body: some View {
         ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: 4)
-                .fill(isFocused ? Color(hex: 0x4a9eff).opacity(0.35) : Color.white.opacity(0.07))
+                .fill(isFocused ? Color(hex: 0x4a9eff).opacity(0.45) : Color.white.opacity(0.07))
                 .overlay(
                     RoundedRectangle(cornerRadius: 4)
-                        .strokeBorder(isFocused ? Color(hex: 0x4a9eff) : Color.white.opacity(0.15), lineWidth: isFocused ? 1.5 : 0.5)
+                        .strokeBorder(isFocused ? Color.white : Color.white.opacity(0.15), lineWidth: isFocused ? 2.5 : 0.5)
                 )
 
             ForEach(windows, id: \.id) { window in
