@@ -3,10 +3,10 @@ import Cocoa
 class HotkeyMonitor {
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
-    private let onTrigger: (Int?) -> Void
+    private let onTrigger: () -> Void
     private var isStarted = false
 
-    init(onTrigger: @escaping (Int?) -> Void) {
+    init(onTrigger: @escaping () -> Void) {
         self.onTrigger = onTrigger
     }
 
@@ -50,8 +50,7 @@ class HotkeyMonitor {
                     && !flags.contains(.maskShift)
 
                 if keyCode == 49 && isCtrlOnly {
-                    let focusedIndex = YabaiClient.queryFocusedSpaceIndex()
-                    DispatchQueue.main.async { monitor.onTrigger(focusedIndex) }
+                    DispatchQueue.main.async { monitor.onTrigger() }
                     return nil
                 }
 

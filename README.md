@@ -18,7 +18,7 @@ Example Configuration:
 <img width="751" height="172" alt="Screenshot 2026-05-10 at 10 14 35 AM" src="https://github.com/user-attachments/assets/f7f2556a-9a1e-450e-bae4-2ad4268767cf" />
 
 
-Window positions are drawn as colored rectangles inside each cell (one color per app, derived from app name). The HUD refreshes every 200ms while open so the active cell updates as you switch desktops.
+Window positions are drawn as colored rectangles inside each cell (one color per app, derived from app name). The active cell updates instantly as you switch desktops, driven by yabai's `space_changed` signal.
 
 ## Requirements
 
@@ -64,7 +64,8 @@ Change these to match your yabai space layout. A 4×4 grid would be `GRID_COLS=4
 | Target | Description |
 |--------|-------------|
 | `make run` | Build, install, and launch |
-| `make dev` | Rebuild and relaunch during development (see note below) |
+| `make dev1` | Uninstall; pause to remove Accessibility permission in System Settings |
+| `make dev2` | Reinstall and relaunch; grant Accessibility permission when prompted |
 | `make config` | Create default config file if missing |
 | `make permissions` | Print instructions for fixing a broken hotkey |
 | `make uninstall` | Kill app and remove from /Applications |
@@ -87,11 +88,10 @@ macOS grants Accessibility permission to the `.app` bundle as a whole, not the r
 
 ### Accessibility permission is revoked on every reinstall
 
-Every time you rebuild and reinstall, macOS revokes the Accessibility permission because the binary hash changes. After running `make dev`, you must re-grant permission:
+Every time you rebuild and reinstall, macOS revokes the Accessibility permission because the binary hash changes. The two-step dev workflow handles this:
 
-1. Go to **System Settings → Privacy & Security → Accessibility**
-2. Click **−** to remove `spacemap`
-3. The app will prompt for permission again — grant it
+1. `make dev1` — uninstalls the app; go to **System Settings → Privacy & Security → Accessibility** and click **−** to remove `spacemap`
+2. `make dev2` — reinstalls and relaunches; grant the permission prompt that appears
 
 `make permissions` prints this reminder.
 
@@ -106,13 +106,14 @@ spacemap/
 ├── Package.swift
 ├── Sources/spacemap/
 │   ├── App.swift                 # NSApplicationMain entry point
-│   ├── HUDWindowController.swift # NSPanel lifecycle + refresh timer
+│   ├── HUDWindowController.swift # NSPanel lifecycle + signal-driven refresh
 │   ├── GridView.swift            # SwiftUI 8×2 grid layout
 │   ├── CellView.swift            # Single desktop cell with window rects
 │   ├── YabaiClient.swift         # yabai JSON queries
 │   ├── ConfigReader.swift        # ~/.config/spacemap/config parser
 │   ├── Models.swift              # YabaiSpace, YabaiWindow, GridConfig
 │   ├── HotkeyMonitor.swift       # CGEventTap for Ctrl+Space
+│   ├── SocketListener.swift      # Unix socket listener for yabai signals
 │   └── Info.plist
 └── Makefile
 ```

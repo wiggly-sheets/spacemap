@@ -21,6 +21,18 @@ enum YabaiClient {
         return json.index
     }
 
+    static func registerSignals(socketPath: String) {
+        let action = "echo 1 | nc -U \(socketPath)"
+        _ = try? shell(yabaiPath, "-m", "signal", "--add",
+                       "label=spacemap_space_changed",
+                       "event=space_changed",
+                       "action=\(action)")
+    }
+
+    static func removeSignals() {
+        _ = try? shell(yabaiPath, "-m", "signal", "--remove", "spacemap_space_changed")
+    }
+
     static func buildGridState(config: GridConfig, focusedIndex: Int?) -> GridState {
         let spaces = (try? querySpaces()) ?? []
         let windows = (try? queryWindows()) ?? []
