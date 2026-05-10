@@ -52,6 +52,30 @@ GRID_ROWS=2
 
 Change these to match your yabai space layout. A 4×4 grid would be `GRID_COLS=4` / `GRID_ROWS=4`.
 
+### Cell styles
+
+`CELL_STYLE` controls how windows are drawn inside each cell:
+
+| Value | Description |
+|-------|-------------|
+| `rects` | Colored rectangles scaled from real window geometry (default) |
+| `icons` | App icons positioned at each window's scaled location |
+
+```bash
+CELL_STYLE=rects   # default
+CELL_STYLE=icons
+```
+
+**`CELL_STYLE=rects`**
+
+<img width="752" height="476" alt="rects style" src="https://github.com/user-attachments/assets/1ee3e85c-12e4-4f34-a265-cb9f9fd69b56" />
+
+**`CELL_STYLE=icons`**
+
+<img width="718" height="464" alt="icons style" src="https://github.com/user-attachments/assets/5d35aa23-d5ef-4da1-8a74-df7278b43112" />
+
+Run `make distconfig` to write a fresh config with `icons` active and `rects` commented out.
+
 ## Usage
 
 | Action | Result |
@@ -67,6 +91,7 @@ Change these to match your yabai space layout. A 4×4 grid would be `GRID_COLS=4
 | `make dev1` | Uninstall; pause to remove Accessibility permission in System Settings |
 | `make dev2` | Reinstall and relaunch; grant Accessibility permission when prompted |
 | `make config` | Create default config file if missing |
+| `make distconfig` | Overwrite config with defaults (`CELL_STYLE=icons`) |
 | `make permissions` | Print instructions for fixing a broken hotkey |
 | `make uninstall` | Kill app and remove from /Applications |
 | `make clean` | Remove build artifacts |
