@@ -33,6 +33,10 @@ enum YabaiClient {
         _ = try? shell(yabaiPath, "-m", "signal", "--remove", "spacemap_space_changed")
     }
 
+    static func focusSpace(_ index: Int) {
+        _ = try? shell(yabaiPath, "-m", "space", "--focus", "\(index)")
+    }
+
     static func buildGridState(config: GridConfig, focusedIndex: Int?) -> GridState {
         let spaces = (try? querySpaces()) ?? []
         let windows = (try? queryWindows()) ?? []

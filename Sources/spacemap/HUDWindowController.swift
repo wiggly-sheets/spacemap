@@ -36,7 +36,10 @@ class HUDWindowController {
 
     private func render(focusedIndex: Int?, panel: NSPanel) {
         let state = YabaiClient.buildGridState(config: config, focusedIndex: focusedIndex)
-        let gridView = GridView(state: state)
+        let gridView = GridView(state: state) { [weak self] index in
+            YabaiClient.focusSpace(index)
+            self?.hide()
+        }
         let size = gridView.idealSize
 
         let hostingView = NSHostingView(rootView: gridView)
@@ -53,7 +56,7 @@ class HUDWindowController {
         panel.orderFrontRegardless()
     }
 
-    private func hide() {
+    func hide() {
         panel?.orderOut(nil)
         isVisible = false
     }
