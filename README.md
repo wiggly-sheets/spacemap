@@ -4,16 +4,19 @@ A native macOS work`spacemap` that shows your yabai workspace grid on demand. Pr
 
 You do not have to disable System Integrity Protection to get this setup.
 
+## Visualization
+Here I have 4 window open and spacemap is open `ctrl spacebar`
+Tou can see that we are on desktop 6 and there are 4 apps open.
+<img width="1793" height="943" alt="Screenshot 2026-05-11 at 1 50 18 PM" src="https://github.com/user-attachments/assets/b9f2dafc-d309-4c80-98be-8d0e1f19cc17" />
+
+## Configuration Examples
+
 | spacemap screenshot | spacemap config | skhd config |
 |---------------------|-----------------|-------------|
 | <img width="711" height="136" alt="Screenshot 2026-05-11 at 1 20 00 PM" src="https://github.com/user-attachments/assets/bd9958db-07ee-466b-934c-e12d28ebd0a3" /> | <img width="195" height="75" alt="Screenshot 2026-05-11 at 1 42 02 PM" src="https://github.com/user-attachments/assets/4d493154-e1b2-4772-a408-639da7e3abe1" /> | - |
 | <img width="713" height="137" alt="Screenshot 2026-05-11 at 1 19 31 PM" src="https://github.com/user-attachments/assets/d298e386-6bc2-4ac3-8ba0-7184e2f072a5" /> | <img width="204" height="76" alt="Screenshot 2026-05-11 at 1 41 03 PM" src="https://github.com/user-attachments/assets/1a911ef2-5cb7-4746-87d1-92dddb9ec8b4" /> | - |
 | <img width="714" height="139" alt="Screenshot 2026-05-11 at 1 40 41 PM" src="https://github.com/user-attachments/assets/a4595e8b-2494-4d3b-b8cc-fcc41a4daf61" /> | <img width="199" height="76" alt="Screenshot 2026-05-11 at 1 42 45 PM" src="https://github.com/user-attachments/assets/522bc241-8d8a-4221-aad1-cc6e2e20a500" /> | - |
 | <img width="364" height="247" alt="Screenshot 2026-05-11 at 1 18 47 PM" src="https://github.com/user-attachments/assets/2eddfbc2-74a9-41dd-9d9a-cdba4f537232" /> | <img width="204" height="77" alt="Screenshot 2026-05-11 at 1 44 32 PM" src="https://github.com/user-attachments/assets/883414bb-b983-47e4-99bf-f46dd5484005" /> | - |
-
-## Visualization
-
-<img width="1793" height="943" alt="Screenshot 2026-05-11 at 1 50 18 PM" src="https://github.com/user-attachments/assets/b9f2dafc-d309-4c80-98be-8d0e1f19cc17" />
 
 
 Window positions are drawn as colored rectangles inside each cell (one color per app, derived from app name). The active cell updates instantly as you switch desktops, driven by yabai's `space_changed` signal.
@@ -22,8 +25,9 @@ Window positions are drawn as colored rectangles inside each cell (one color per
 
 - macOS 13+
 - [yabai](https://github.com/koekeishiya/yabai) installed at `/opt/homebrew/bin/yabai` and running
+- [skhd](https://github.com/asmvik/skhd) installed at `/opt/homebrew/bin/skhd` and running
 - Xcode Command Line Tools (`xcode-select --install`)
-- Accessibility permission (prompted on first launch)
+- Accessibility permission (prompted on first launch). This is not the same as disabling SIP protection, which is not required.
 <img width="722" height="844" alt="Screenshot 2026-05-10 at 10 58 32 AM" src="https://github.com/user-attachments/assets/b6d90393-2100-44bc-ac6f-00fe1de66a98" />
 
 
