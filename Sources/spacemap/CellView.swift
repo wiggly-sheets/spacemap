@@ -13,11 +13,7 @@ struct CellView: View {
     var body: some View {
         ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: 4)
-                .fill(isFocused ? Color(hex: 0x4a9eff).opacity(0.45) : Color.white.opacity(0.07))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 4)
-                        .strokeBorder(isFocused ? Color.white : Color.white.opacity(0.15), lineWidth: isFocused ? 2.5 : 0.5)
-                )
+                .fill(isFocused ? Color(hex: 0x4a9eff).opacity(0.55) : Color.black.opacity(0.25))
 
             ForEach(windows, id: \.id) { window in
                 switch cellStyle {
@@ -27,10 +23,14 @@ struct CellView: View {
             }
 
             Text("\(spaceIndex)")
-                .font(.system(size: 8, weight: .medium, design: .monospaced))
+                .font(.system(size: 10, weight: .medium, design: .monospaced))
                 .foregroundColor(isFocused ? Color(hex: 0x4a9eff) : .white.opacity(0.4))
                 .padding(3)
         }
+        .overlay(
+            RoundedRectangle(cornerRadius: 4)
+                .strokeBorder(isFocused ? Color(hex: 0x4a9eff) : Color.white.opacity(0.15), lineWidth: isFocused ? 2.5 : 0.5)
+        )
         .frame(width: cellSize.width, height: cellSize.height)
     }
 
