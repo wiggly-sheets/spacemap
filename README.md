@@ -4,15 +4,13 @@ A native macOS work`spacemap` that shows your yabai workspace grid on demand. Pr
 
 You do not have to disable System Integrity Protection to get this setup.
 
-Example Configuration: 
-```
-┌────┬────┬────┬────┬────┬────┬────┬────┐
-│ 1  │ 2  │ 3  │ 4  │ 5  │ 6  │ 7  │ 8  │  ← top row
-├────┼────┼────┼────┼────┼────┼────┼────┤
-│ 9  │ 10 │ 11 │ 12 │ 13 │ 14 │ 15 │ 16 │  ← bottom row
-└────┴────┴────┴────┴────┴────┴────┴────┘
-         ↑ active desktop highlighted in blue
-```
+| spacemap screenshot | spacemap config | skhd config |
+|---------------------|-----------------|-------------|
+| - | - | - |
+| - | - | - |
+| - | - | - |
+| - | - | - |
+| - | - | - |
 ## Visualization
 
 <img width="751" height="172" alt="Screenshot 2026-05-10 at 10 14 35 AM" src="https://github.com/user-attachments/assets/f7f2556a-9a1e-450e-bae4-2ad4268767cf" />
