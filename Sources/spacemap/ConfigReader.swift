@@ -20,7 +20,12 @@ enum ConfigReader {
             switch key {
             case "GRID_COLS": cols = Int(value) ?? cols
             case "GRID_ROWS": rows = Int(value) ?? rows
-            case "CELL_STYLE": cellStyle = value == "icons" ? .icons : .rects
+            case "CELL_STYLE":
+                switch value {
+                case "icons":  cellStyle = .icons
+                case "hybrid": cellStyle = .hybrid
+                default:       cellStyle = .rects
+                }
             default: break
             }
         }

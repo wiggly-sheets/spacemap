@@ -68,6 +68,7 @@ config:
 		echo "GRID_ROWS=2" >> ~/.config/spacemap/config; \
 		echo "#CELL_STYLE=rects" >> ~/.config/spacemap/config; \
 		echo "CELL_STYLE=icons" >> ~/.config/spacemap/config; \
+		echo "#CELL_STYLE=hybrid" >> ~/.config/spacemap/config; \
 		echo "Created ~/.config/spacemap/config with defaults (8x2, icons)"; \
 	else \
 		echo "Config already exists at ~/.config/spacemap/config"; \
@@ -80,5 +81,6 @@ distconfig:
 	@echo "GRID_ROWS=2" >> ~/.config/spacemap/config
 	@echo "#CELL_STYLE=rects" >> ~/.config/spacemap/config
 	@echo "CELL_STYLE=icons" >> ~/.config/spacemap/config
+	@echo "#CELL_STYLE=hybrid" >> ~/.config/spacemap/config
 	@echo "Wrote ~/.config/spacemap/config"
 	@cat ~/.config/spacemap/config
