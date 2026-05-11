@@ -6,11 +6,11 @@ You do not have to disable System Integrity Protection to get this setup.
 
 | spacemap screenshot | spacemap config | skhd config |
 |---------------------|-----------------|-------------|
-| - | - | - |
-| - | - | - |
-| - | - | - |
-| - | - | - |
-| - | - | - |
+| <img width="711" height="136" alt="Screenshot 2026-05-11 at 1 20 00 PM" src="https://github.com/user-attachments/assets/bd9958db-07ee-466b-934c-e12d28ebd0a3" /> | <img width="195" height="75" alt="Screenshot 2026-05-11 at 1 42 02 PM" src="https://github.com/user-attachments/assets/4d493154-e1b2-4772-a408-639da7e3abe1" /> | - |
+| <img width="713" height="137" alt="Screenshot 2026-05-11 at 1 19 31 PM" src="https://github.com/user-attachments/assets/d298e386-6bc2-4ac3-8ba0-7184e2f072a5" /> | <img width="204" height="76" alt="Screenshot 2026-05-11 at 1 41 03 PM" src="https://github.com/user-attachments/assets/1a911ef2-5cb7-4746-87d1-92dddb9ec8b4" /> | - |
+| <img width="714" height="139" alt="Screenshot 2026-05-11 at 1 40 41 PM" src="https://github.com/user-attachments/assets/a4595e8b-2494-4d3b-b8cc-fcc41a4daf61" /> | <img width="199" height="76" alt="Screenshot 2026-05-11 at 1 42 45 PM" src="https://github.com/user-attachments/assets/522bc241-8d8a-4221-aad1-cc6e2e20a500" /> | - |
+| <img width="364" height="247" alt="Screenshot 2026-05-11 at 1 18 47 PM" src="https://github.com/user-attachments/assets/2eddfbc2-74a9-41dd-9d9a-cdba4f537232" /> | <img width="204" height="77" alt="Screenshot 2026-05-11 at 1 44 32 PM" src="https://github.com/user-attachments/assets/883414bb-b983-47e4-99bf-f46dd5484005" /> | - |
+
 ## Visualization
 
 <img width="751" height="172" alt="Screenshot 2026-05-10 at 10 14 35 AM" src="https://github.com/user-attachments/assets/f7f2556a-9a1e-450e-bae4-2ad4268767cf" />
@@ -65,14 +65,6 @@ CELL_STYLE=rects   # default
 CELL_STYLE=icons
 CELL_STYLE=hybrid
 ```
-
-**`CELL_STYLE=rects`**
-
-<img width="752" height="476" alt="rects style" src="https://github.com/user-attachments/assets/1ee3e85c-12e4-4f34-a265-cb9f9fd69b56" />
-
-**`CELL_STYLE=icons`**
-
-<img width="718" height="464" alt="icons style" src="https://github.com/user-attachments/assets/5d35aa23-d5ef-4da1-8a74-df7278b43112" />
 
 Run `make distconfig` to write a fresh config with `icons` active and `rects` commented out.
 
