@@ -13,7 +13,7 @@ You do not have to disable System Integrity Protection to get this setup.
 
 ## Visualization
 
-<img width="751" height="172" alt="Screenshot 2026-05-10 at 10 14 35 AM" src="https://github.com/user-attachments/assets/f7f2556a-9a1e-450e-bae4-2ad4268767cf" />
+<img width="1793" height="943" alt="Screenshot 2026-05-11 at 1 50 18 PM" src="https://github.com/user-attachments/assets/b9f2dafc-d309-4c80-98be-8d0e1f19cc17" />
 
 
 Window positions are drawn as colored rectangles inside each cell (one color per app, derived from app name). The active cell updates instantly as you switch desktops, driven by yabai's `space_changed` signal.
