@@ -18,9 +18,14 @@ struct CellView: View {
 
             ForEach(windows, id: \.id) { window in
                 switch cellStyle {
-                case .rects: windowRect(window)
-                case .icons: windowIcon(window)
+                case .rects:  windowRect(window)
+                case .icons:  windowIcon(window)
+                case .hybrid: windowRect(window)
                 }
+            }
+
+            if cellStyle == .icons || cellStyle == .hybrid {
+                iconStrip()
             }
 
             Text("\(spaceIndex)")
@@ -53,21 +58,47 @@ struct CellView: View {
 
     @ViewBuilder
     private func windowIcon(_ window: YabaiWindow) -> some View {
-        let scaleX = cellSize.width / displayBounds.width
-        let scaleY = cellSize.height / displayBounds.height
-        let x = (window.cgFrame.minX - displayBounds.minX) * scaleX
-        let y = (window.cgFrame.minY - displayBounds.minY) * scaleY
-        let w = max(window.cgFrame.width * scaleX, 14)
-        let h = max(window.cgFrame.height * scaleY, 14)
-        let iconSize = min(w, h)
+        if !window.isHidden && !window.isMinimized {
+            let scaleX = cellSize.width / displayBounds.width
+            let scaleY = cellSize.height / displayBounds.height
+            let x = (window.cgFrame.minX - displayBounds.minX) * scaleX
+            let y = (window.cgFrame.minY - displayBounds.minY) * scaleY
+            let w = max(window.cgFrame.width * scaleX, 14)
+            let h = max(window.cgFrame.height * scaleY, 14)
+            let iconSize = min(w, h)
 
-        if let icon = appIcon(for: window.app) {
-            Image(nsImage: icon)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: iconSize, height: iconSize)
-                .offset(x: x, y: y)
+            if let icon = appIcon(for: window.app) {
+                Image(nsImage: icon)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: iconSize, height: iconSize)
+                    .offset(x: x, y: y)
+            }
         }
+    }
+
+    @ViewBuilder
+    private func iconStrip() -> some View {
+        let icons = uniqueIconWindows()
+        HStack(spacing: 2) {
+            ForEach(icons, id: \.id) { window in
+                if let icon = appIcon(for: window.app) {
+                    Image(nsImage: icon)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 12, height: 12)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 3)
+        .frame(maxHeight: .infinity, alignment: .bottom)
+        .padding(.bottom, 3)
+    }
+
+    private func uniqueIconWindows() -> [YabaiWindow] {
+        var seen = Set<String>()
+        return windows.filter { seen.insert($0.app).inserted }
     }
 
     private func appIcon(for appName: String) -> NSImage? {

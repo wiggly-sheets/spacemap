@@ -1,7 +1,7 @@
 import Foundation
 import CoreGraphics
 
-enum CellStyle { case rects, icons }
+enum CellStyle { case rects, icons, hybrid }
 
 struct GridConfig {
     var cols: Int
@@ -28,12 +28,20 @@ struct YabaiWindow: Decodable {
     let app: String
     let space: Int
     let frame: WindowFrame
+    let isHidden: Bool
+    let isMinimized: Bool
 
     struct WindowFrame: Decodable {
         let x: CGFloat
         let y: CGFloat
         let w: CGFloat
         let h: CGFloat
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case id, app, space, frame
+        case isHidden = "is-hidden"
+        case isMinimized = "is-minimized"
     }
 
     var cgFrame: CGRect {
