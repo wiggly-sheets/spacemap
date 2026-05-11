@@ -7,6 +7,7 @@ struct CellView: View {
     let windows: [YabaiWindow]
     let displayBounds: CGRect
     let cellStyle: CellStyle
+    let onSelect: (Int) -> Void
 
     private let cellSize = CGSize(width: 80, height: 50)
 
@@ -32,6 +33,7 @@ struct CellView: View {
                 .strokeBorder(isFocused ? Color(hex: 0x4a9eff) : Color.white.opacity(0.15), lineWidth: isFocused ? 2.5 : 0.5)
         )
         .frame(width: cellSize.width, height: cellSize.height)
+        .onTapGesture { onSelect(spaceIndex) }
     }
 
     @ViewBuilder
