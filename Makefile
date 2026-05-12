@@ -5,7 +5,7 @@ APP_CONTENTS = $(APP_BUNDLE)/Contents
 INSTALL_PATH = /Applications/$(APP_BUNDLE)
 VERSION  := $(shell cat VERSION)
 ARCHIVE   = spacemap-$(VERSION).zip
-STAGE     = spacemap-stage-$(VERSION)
+STAGE     = spacemap-$(VERSION)
 
 .PHONY: build app install run dev uninstall clean config distconfig permissions archive
 
@@ -23,7 +23,7 @@ archive: app
 	mkdir -p $(STAGE)
 	cp -R $(APP_BUNDLE) $(STAGE)/
 	codesign --force --deep --sign - $(STAGE)/$(APP_BUNDLE)
-	cd $(STAGE) && zip -r --symlinks ../$(ARCHIVE) .
+	zip -r --symlinks $(ARCHIVE) $(STAGE)
 	rm -rf $(STAGE)
 	@echo ""
 	@echo "Artifact: $(ARCHIVE)"
