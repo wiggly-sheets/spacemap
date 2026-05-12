@@ -5,8 +5,8 @@ A native macOS work`spacemap` that shows your yabai workspace grid on demand. Pr
 You do not have to disable System Integrity Protection to get this setup.
 
 ## Visualization
-Here I have 4 window open and spacemap is open `ctrl spacebar`
-Tou can see that we are on desktop 6 and there are 4 apps open.
+Here I have 4 windows open and `spacemap` is opened via: `ctrl spacebar` key sequence.
+It is in the middle of the screen. You can see that we are on desktop 6 and there are 4 apps open.
 <img width="1793" height="943" alt="Screenshot 2026-05-11 at 1 50 18 PM" src="https://github.com/user-attachments/assets/b9f2dafc-d309-4c80-98be-8d0e1f19cc17" />
 
 ## Configuration Examples
