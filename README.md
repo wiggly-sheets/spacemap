@@ -1,10 +1,15 @@
 # spacemap
 
+> Inspired by [WindowMaker](https://www.windowmaker.org/) 
+
+With [yabai](https://github.com/koekeishiya/yabai) and [skhd](https://github.com/asmvik/skhd) you can set up your desktop switching behavior to be on a grid in the macOS. You just don't have any visual reference that your workspaces are layed out that way. 
+
+Enter spacemap
 A native macOS work`spacemap` that shows your yabai workspace grid on demand. Press Ctrl+Space to toggle a floating overlay showing all your desktops as a 2D grid with window positions highlighted inside each cell.
 
-You do not have to disable System Integrity Protection to get this setup.
+> You do not have to disable SIP System Integrity Protection to get this setup.
 
-## Visualization
+## Visualization of spacemap on a workspace
 Here I have 4 windows open and `spacemap` is opened via: `ctrl spacebar` key sequence.
 It is in the middle of the screen. You can see that we are on desktop 6 and there are 4 apps open.
 <img width="1793" height="943" alt="Screenshot 2026-05-11 at 1 50 18 PM" src="https://github.com/user-attachments/assets/b9f2dafc-d309-4c80-98be-8d0e1f19cc17" />
