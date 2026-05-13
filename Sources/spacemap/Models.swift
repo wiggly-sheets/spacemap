@@ -3,12 +3,21 @@ import CoreGraphics
 
 enum CellStyle { case rects, icons, hybrid }
 
+struct HotkeyConfig {
+    var keyCode: CGKeyCode
+    var modifiers: CGEventFlags
+
+    // Default: Ctrl+Page Down
+    static let `default` = HotkeyConfig(keyCode: 121, modifiers: .maskControl)
+}
+
 struct GridConfig {
     var cols: Int
     var rows: Int
     var cellStyle: CellStyle
+    var hotkey: HotkeyConfig
 
-    static let `default` = GridConfig(cols: 8, rows: 2, cellStyle: .rects)
+    static let `default` = GridConfig(cols: 8, rows: 2, cellStyle: .rects, hotkey: .default)
 }
 
 struct YabaiSpace: Decodable {

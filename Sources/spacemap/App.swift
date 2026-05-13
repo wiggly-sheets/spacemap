@@ -24,7 +24,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func startHotkey() {
-        let monitor = HotkeyMonitor { [weak self] in
+        let config = ConfigReader.load()
+        let monitor = HotkeyMonitor(config: config.hotkey) { [weak self] in
             self?.hud.toggle()
         }
         monitor.start()
