@@ -69,7 +69,7 @@ dev2: install
 	@echo "and grant it permissions the prompt that appears."
 
 permissions:
-	@echo "If Ctrl+Space stopped working after a reinstall:"
+	@echo "If your hotkey stopped working after a reinstall:"
 	@echo "  1. killall spacemap"
 	@echo "  2. System Settings → Privacy & Security → Accessibility"
 	@echo "  3. Click − to remove spacemap"
@@ -89,6 +89,7 @@ config:
 		echo "#CELL_STYLE=rects" >> ~/.config/spacemap/config; \
 		echo "CELL_STYLE=icons" >> ~/.config/spacemap/config; \
 		echo "#CELL_STYLE=hybrid" >> ~/.config/spacemap/config; \
+		echo "#HOTKEY=ctrl+pgdn" >> ~/.config/spacemap/config; \
 		echo "Created ~/.config/spacemap/config with defaults (8x2, icons)"; \
 	else \
 		echo "Config already exists at ~/.config/spacemap/config"; \
@@ -102,5 +103,6 @@ distconfig:
 	@echo "#CELL_STYLE=rects" >> ~/.config/spacemap/config
 	@echo "CELL_STYLE=icons" >> ~/.config/spacemap/config
 	@echo "#CELL_STYLE=hybrid" >> ~/.config/spacemap/config
+	@echo "#HOTKEY=ctrl+pgdn" >> ~/.config/spacemap/config
 	@echo "Wrote ~/.config/spacemap/config"
 	@cat ~/.config/spacemap/config

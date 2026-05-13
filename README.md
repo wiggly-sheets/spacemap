@@ -56,11 +56,25 @@ On first launch of spacemap macOS will prompt for Accessibility permission. Gran
 
 ## Configuration Details
 
-Config is read from `~/.config/spacemap/config` on every HUD open (no restart needed after editing):
+Config is read from `~/.config/spacemap/config` on every HUD open (no restart needed after editing, except `HOTKEY` which requires a restart):
 
 ```bash
 GRID_COLS=8
 GRID_ROWS=2
+```
+
+### Hotkey
+
+`HOTKEY` sets the keystroke that shows/hides spacemap. Format: `modifier+modifier+key`. Requires a restart to take effect.
+
+| Modifier tokens | Key tokens |
+|-----------------|-----------|
+| `ctrl`, `cmd`, `alt`, `shift` | `pgdn`, `pgup`, `space`, `tab`, `return`, `escape`, `home`, `end`, `left`, `right`, `up`, `down`, `f1`–`f12`, or any single letter/digit |
+
+```bash
+#HOTKEY=ctrl+pgdn     # default (Page Down)
+#HOTKEY=ctrl+space    # original default (conflicts with Cursor)
+#HOTKEY=ctrl+shift+s  # example with multiple modifiers
 ```
 
 ### Cell styles

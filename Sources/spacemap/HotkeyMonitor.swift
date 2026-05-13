@@ -4,9 +4,13 @@ class HotkeyMonitor {
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private let onTrigger: () -> Void
+    private let targetKeyCode: CGKeyCode
+    private let targetModifiers: CGEventFlags
     private var isStarted = false
 
-    init(onTrigger: @escaping () -> Void) {
+    init(config: HotkeyConfig, onTrigger: @escaping () -> Void) {
+        self.targetKeyCode = config.keyCode
+        self.targetModifiers = config.modifiers
         self.onTrigger = onTrigger
     }
 
@@ -42,14 +46,11 @@ class HotkeyMonitor {
                 let monitor = Unmanaged<HotkeyMonitor>.fromOpaque(refcon).takeUnretainedValue()
 
                 guard type == .keyDown else { return Unmanaged.passUnretained(event) }
-                let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
-                let flags = event.flags
-                let isCtrlOnly = flags.contains(.maskControl)
-                    && !flags.contains(.maskCommand)
-                    && !flags.contains(.maskAlternate)
-                    && !flags.contains(.maskShift)
+                let keyCode = CGKeyCode(event.getIntegerValueField(.keyboardEventKeycode))
+                let flags = event.flags.intersection([.maskControl, .maskCommand,
+                                                      .maskAlternate, .maskShift])
 
-                if keyCode == 49 && isCtrlOnly {
+                if keyCode == monitor.targetKeyCode && flags == monitor.targetModifiers {
                     DispatchQueue.main.async { monitor.onTrigger() }
                     return nil
                 }
