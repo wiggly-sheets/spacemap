@@ -4,6 +4,9 @@ A native macOS work`spacemap` that shows your yabai workspace grid on demand. Pr
 
 > Inspired by [WindowMaker](https://www.windowmaker.org/) 
 
+**Quick Demo of Spacemap**
+[![Quick Demo](https://img.youtube.com/vi/oYN-4LCuQnE/0.jpg)](https://www.youtube.com/watch?v=oYN-4LCuQnE)
+
 With [yabai](https://github.com/koekeishiya/yabai) and [skhd](https://github.com/asmvik/skhd) you can set up your desktop switching behavior to be on a grid in the macOS. 
 You just don't have any visual reference that your workspaces are layed out that way. It takes alot of mental gymnastics to keep everything streight in your head.
 Spacemap can help you find where you left your things.
