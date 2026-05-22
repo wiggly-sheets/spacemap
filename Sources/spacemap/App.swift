@@ -12,10 +12,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         setupMenubar()
         // Delay slightly so TCC/LaunchServices finishes registering the app
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            self.startHotkey()
-            self.socketListener = SocketListener(socketPath: self.socketPath) { [weak self] in
-                self?.hud.refresh()
-            }
+            let config = ConfigReader.load()
+            self.startHotkey(config: config)
+            self.socketListener = SocketListener(
+                socketPath: self.socketPath,
+                healthInterval: config.socketHealthInterval,
+                onEvent: { [weak self] in self?.hud.refresh() }
+            )
             YabaiClient.registerSignals(socketPath: self.socketPath)
         }
     }
@@ -47,8 +50,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSWorkspace.shared.open(url)
     }
 
-    private func startHotkey() {
-        let config = ConfigReader.load()
+    private func startHotkey(config: GridConfig) {
         let monitor = HotkeyMonitor(config: config.hotkey) { [weak self] in
             self?.hud.toggle()
         }

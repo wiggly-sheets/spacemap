@@ -12,6 +12,7 @@ enum ConfigReader {
         var rows = GridConfig.default.rows
         var cellStyle = GridConfig.default.cellStyle
         var hotkey = GridConfig.default.hotkey
+        var socketHealthInterval = GridConfig.default.socketHealthInterval
 
         for line in contents.components(separatedBy: .newlines) {
             let trimmed = line.trimmingCharacters(in: .whitespaces)
@@ -35,11 +36,17 @@ enum ConfigReader {
                 } else {
                     print("spacemap: unrecognized HOTKEY '\(value)', using default")
                 }
+            case "SOCKET_HEALTH_INTERVAL":
+                if let v = Int(value), v > 0 {
+                    socketHealthInterval = v
+                } else {
+                    print("spacemap: invalid SOCKET_HEALTH_INTERVAL '\(value)', using default")
+                }
             default: break
             }
         }
 
-        return GridConfig(cols: cols, rows: rows, cellStyle: cellStyle, hotkey: hotkey)
+        return GridConfig(cols: cols, rows: rows, cellStyle: cellStyle, hotkey: hotkey, socketHealthInterval: socketHealthInterval)
     }
 
     private static func parseHotkey(_ value: String) -> HotkeyConfig? {

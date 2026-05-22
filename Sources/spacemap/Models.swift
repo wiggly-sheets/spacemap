@@ -16,8 +16,9 @@ struct GridConfig {
     var rows: Int
     var cellStyle: CellStyle
     var hotkey: HotkeyConfig
+    var socketHealthInterval: Int
 
-    static let `default` = GridConfig(cols: 8, rows: 2, cellStyle: .rects, hotkey: .default)
+    static let `default` = GridConfig(cols: 8, rows: 2, cellStyle: .rects, hotkey: .default, socketHealthInterval: 60)
 }
 
 struct YabaiSpace: Decodable {
