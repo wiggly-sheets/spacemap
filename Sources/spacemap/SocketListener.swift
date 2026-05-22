@@ -8,12 +8,15 @@ final class SocketListener {
     private var source: DispatchSourceRead?
     private var healthTimer: DispatchSourceTimer?
     private var isStopped = false
+    private var restartScheduled = false
     private let listenerQueue = DispatchQueue(label: "com.spacemap.socketlistener")
+    private let queueKey = DispatchSpecificKey<Void>()
 
     init(socketPath: String, healthInterval: Int = 60, onEvent: @escaping () -> Void) {
         self.socketPath = socketPath
         self.healthInterval = healthInterval
         self.onEvent = onEvent
+        listenerQueue.setSpecific(key: queueKey, value: ())
         listenerQueue.async { self.start() }
     }
 
@@ -61,6 +64,7 @@ final class SocketListener {
         let clientFd = Darwin.accept(serverFd, nil, nil)
         guard clientFd >= 0 else {
             let err = errno
+            if err == EINTR || err == EAGAIN { return }
             fputs("spacemap/SocketListener: accept() failed: \(String(cString: strerror(err))) — restarting\n", stderr)
             scheduleRestart()
             return
@@ -72,10 +76,14 @@ final class SocketListener {
     }
 
     private func scheduleRestart() {
-        guard !isStopped else { return }
+        guard !isStopped, !restartScheduled else { return }
+        restartScheduled = true
         tearDownSocket()
         fputs("spacemap/SocketListener: restarting in 0.5s\n", stderr)
-        listenerQueue.asyncAfter(deadline: .now() + 0.5) { [weak self] in self?.start() }
+        listenerQueue.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.restartScheduled = false
+            self?.start()
+        }
     }
 
     private func tearDownSocket() {
@@ -104,9 +112,14 @@ final class SocketListener {
     }
 
     func stop() {
-        listenerQueue.sync {
+        if DispatchQueue.getSpecific(key: queueKey) != nil {
             isStopped = true
             tearDownSocket()
+        } else {
+            listenerQueue.sync {
+                self.isStopped = true
+                self.tearDownSocket()
+            }
         }
     }
 
