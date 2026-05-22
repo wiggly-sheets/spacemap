@@ -18,7 +18,8 @@ class HotkeyMonitor {
         guard !isStarted else { return }
 
         if !AXIsProcessTrusted() {
-            let opts = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
+            let isRestarting = CommandLine.arguments.contains("--restarting")
+            let opts = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: !isRestarting] as CFDictionary
             _ = AXIsProcessTrustedWithOptions(opts)
             Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
                 guard let self else { timer.invalidate(); return }

@@ -37,6 +37,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem(title: "Show/Hide Map", action: #selector(toggleHUD), keyEquivalent: ""))
         menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Open Accessibility Permissions", action: #selector(openAccessibility), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Restart spacemap", action: #selector(restartApp), keyEquivalent: ""))
         menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Quit spacemap", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
         item.menu = menu
@@ -48,6 +49,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func openAccessibility() {
         let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
         NSWorkspace.shared.open(url)
+    }
+
+    @objc private func restartApp() {
+        let bundlePath = Bundle.main.bundleURL.path
+        let task = Process()
+        task.launchPath = "/bin/sh"
+        task.arguments = ["-c", "sleep 1 && open \"\(bundlePath)\" --args --restarting"]
+        task.standardOutput = FileHandle.nullDevice
+        task.standardError = FileHandle.nullDevice
+        try? task.run()
+        NSApp.terminate(nil)
     }
 
     private func startHotkey(config: GridConfig) {
