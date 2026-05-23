@@ -98,17 +98,30 @@ class HUDWindowController {
         let cellHeight: CGFloat = 50
         let gap: CGFloat = 6
         let padding: CGFloat = 12
+        // Expand hit rects by half the gap on each side so there are no dead zones
+        // between cells — the cursor always lands in whichever cell it's closest to.
+        let slotWidth = cellWidth + gap
+        let slotHeight = cellHeight + gap
 
         var frames: [(spaceIndex: Int, frame: CGRect)] = []
         let origin = panel.frame.origin
         let totalHeight = CGFloat(state.config.rows) * (cellHeight + gap) - gap + padding * 2
 
+        // CGEvent.location uses top-left origin (Y increases downward).
+        // NSPanel.frame uses bottom-left origin (Y increases upward).
+        // Convert panel origin to CGEvent coords: cgY = screenHeight - appKitY - height
+        guard let screen = NSScreen.screens.first else { return }
+        let screenHeight = screen.frame.height
+
         for row in 0..<state.config.rows {
             for col in 0..<state.config.cols {
                 let spaceIndex = row * state.config.cols + col + 1
-                let x = origin.x + padding + CGFloat(col) * (cellWidth + gap)
-                let y = origin.y + totalHeight - padding - CGFloat(row + 1) * cellHeight - CGFloat(row) * gap
-                frames.append((spaceIndex: spaceIndex, frame: CGRect(x: x, y: y, width: cellWidth, height: cellHeight)))
+                let x = origin.x + padding + CGFloat(col) * (cellWidth + gap) - gap / 2
+                // AppKit top of this slot (highest AppKit Y):
+                let appKitSlotTop = origin.y + totalHeight - padding - CGFloat(row) * (cellHeight + gap) - gap / 2
+                // Convert to CGEvent Y (top-left origin): cgY = screenHeight - appKitTop
+                let cgY = screenHeight - appKitSlotTop
+                frames.append((spaceIndex: spaceIndex, frame: CGRect(x: x, y: cgY, width: slotWidth, height: slotHeight)))
             }
         }
 
