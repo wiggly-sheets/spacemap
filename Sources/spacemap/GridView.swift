@@ -2,6 +2,7 @@ import SwiftUI
 
 struct GridView: View {
     let state: GridState
+    let hoveredCell: Int?
     let onSelect: (Int) -> Void
 
     private let cellWidth: CGFloat = 80
@@ -18,6 +19,7 @@ struct GridView: View {
                         CellView(
                             spaceIndex: spaceIndex,
                             isFocused: spaceIndex == state.focusedIndex,
+                            isDropTarget: spaceIndex == hoveredCell,
                             windows: state.windows(forSpace: spaceIndex),
                             displayBounds: state.displayBounds,
                             cellStyle: state.config.cellStyle,

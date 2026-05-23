@@ -4,6 +4,7 @@ import AppKit
 struct CellView: View {
     let spaceIndex: Int
     let isFocused: Bool
+    let isDropTarget: Bool
     let windows: [YabaiWindow]
     let displayBounds: CGRect
     let cellStyle: CellStyle
@@ -14,7 +15,7 @@ struct CellView: View {
     var body: some View {
         ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: 4)
-                .fill(isFocused ? Color(hex: 0x4a9eff).opacity(0.55) : Color.black.opacity(0.25))
+                .fill(isDropTarget ? Color.green.opacity(0.35) : isFocused ? Color(hex: 0x4a9eff).opacity(0.55) : Color.black.opacity(0.25))
 
             ForEach(windows, id: \.id) { window in
                 switch cellStyle {
@@ -35,7 +36,10 @@ struct CellView: View {
         }
         .overlay(
             RoundedRectangle(cornerRadius: 4)
-                .strokeBorder(isFocused ? Color(hex: 0x4a9eff) : Color.white.opacity(0.15), lineWidth: isFocused ? 2.5 : 0.5)
+                .strokeBorder(
+                    isDropTarget ? Color.green : isFocused ? Color(hex: 0x4a9eff) : Color.white.opacity(0.15),
+                    lineWidth: isDropTarget ? 2.5 : isFocused ? 2.5 : 0.5
+                )
         )
         .frame(width: cellSize.width, height: cellSize.height)
         .onTapGesture { onSelect(spaceIndex) }
