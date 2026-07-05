@@ -41,6 +41,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem(title: "Open Accessibility Permissions", action: #selector(openAccessibility), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Restart spacemap", action: #selector(restartApp), keyEquivalent: ""))
         menu.addItem(.separator())
+        menu.addItem(NSMenuItem(title: "Settings...", action: #selector(showSettingsWindow), keyEquivalent: ","))
+        menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Quit spacemap", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
         item.menu = menu
         statusItem = item
@@ -72,8 +74,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         hotkey = monitor
     }
 
-    private func showSettingsWindow() {
-        // TODO: Implement settings window
+    @objc private func showSettingsWindow() {
+        let settingsWindowController = SettingsWindowController()
+        settingsWindowController.showWindow()
     }
 }
 
