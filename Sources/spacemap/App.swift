@@ -17,7 +17,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self.socketListener = SocketListener(
                 socketPath: self.socketPath,
                 healthInterval: config.socketHealthInterval,
-                onEvent: { [weak self] in self?.hud.refresh() }
+                onRefresh: { [weak self] in self?.hud.refresh() },
+                onShow: { [weak self] in self?.hud.show() },
+                onSettings: { [weak self] in self?.showSettingsWindow() }
             )
             YabaiClient.registerSignals(socketPath: self.socketPath)
         }
@@ -68,6 +70,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         monitor.start()
         hotkey = monitor
+    }
+
+    private func showSettingsWindow() {
+        // TODO: Implement settings window
     }
 }
 
