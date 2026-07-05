@@ -28,9 +28,9 @@ struct SettingsView: View {
     
 private var maxSpacesOptions: [Int] { Array(1...16) }
 
-    private var backgroundTransparencySteps: [Double] {
-        // 10 steps: fully transparent (index 0) to fully opaque (index 9)
-        [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.95]
+private var backgroundTransparencySteps: [Double] {
+        // 10 steps: 0.00 to 1.00, approximately equal increments
+        [0.00, 0.11, 0.22, 0.33, 0.44, 0.55, 0.66, 0.77, 0.88, 1.00]
     }
     
     private var uiScaleSteps: [Double] {

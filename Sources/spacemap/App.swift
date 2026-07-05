@@ -7,6 +7,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var socketListener: SocketListener?
     private let socketPath = "/tmp/spacemap_\(NSUserName()).socket"
     private var statusItem: NSStatusItem?
+    private var settingsObserver: NSObjectProtocol?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.prohibited)
@@ -27,12 +28,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 onSettings: { [weak self] in self?.showSettingsWindow() }
             )
             YabaiClient.registerSignals(socketPath: self.socketPath)
+            
+            // Observe settings changes to update hotkey
+            self.settingsObserver = NotificationCenter.default.addObserver(
+                forName: .settingsChanged,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                guard let self = self else { return }
+                let config = ConfigReader.load()
+                self.startHotkey(config: config)
+            }
         }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
         YabaiClient.removeSignals()
         socketListener?.stop()
+        if let observer = settingsObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
 
     private func setupMenubar() {
