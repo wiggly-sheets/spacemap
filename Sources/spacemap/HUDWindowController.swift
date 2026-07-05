@@ -27,6 +27,7 @@ class HUDWindowController {
             guard let self, isVisible, let state = currentState else { return }
             hoveredCell = cell
             if let p = panel { renderState(state, panel: p) }
+            self.resetAutoHideTimer()
         }
         dragHandler.onDropInCell = { [weak self] windowID, spaceIndex in
             guard let self else { return }
@@ -58,12 +59,12 @@ class HUDWindowController {
         dragHandler.focusedWindowIDAtOpen = (try? YabaiClient.queryFocusedWindow()) ?? nil
         renderState(state, panel: panel)
         updateCellFrames(state: state, panel: panel)
-        dragHandler.start()
-        startLiveRefreshTimer()
-        lastFocusedSpaceIndex = focusedIndex
-        isVisible = true
-        resetAutoHideTimer()
-    }
+dragHandler.start()
+    startLiveRefreshTimer()   // now does nothing
+    lastFocusedSpaceIndex = focusedIndex
+    isVisible = true
+    resetAutoHideTimer()
+}
     
     // Called by SocketListener on space_changed. Only updates if HUD is already visible.
     func refresh() {
@@ -200,5 +201,8 @@ private func updateCellFrames(state: GridState, panel: NSPanel) {
 
     private func startLiveRefreshTimer() {
         liveRefreshTimer?.invalidate()
+        liveRefreshTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+            self?.resetAutoHideTimer()
+        }
     }
 }
