@@ -30,12 +30,14 @@ struct SettingsView: View {
         (0...20).map { Double($0) / 20.0 } // 0.0, 0.05, 0.10, ..., 1.0
     }
     
-    private var iconScaleSteps: [Double] {
-        (10...40).map { Double($0) / 20.0 } // 0.5, 0.55, ..., 2.0
+    private var uiScaleSteps: [Double] {
+        // 10 steps from 0.1 to 1.0
+        [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
     }
     
-    private var uiScaleSteps: [Double] {
-        (2...60).map { Double($0) / 20.0 } // 0.1, 0.15, ..., 3.0
+    private var iconScaleSteps: [Double] {
+        // 10 steps from 0.5 to 2.0
+        [0.5, 0.67, 0.83, 1.0, 1.17, 1.33, 1.5, 1.67, 1.83, 2.0]
     }
     
     private func nearest<T: FixedWidthInteger>(to value: T, from sorted: [T]) -> T {
