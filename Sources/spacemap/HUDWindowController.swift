@@ -79,11 +79,8 @@ class HUDWindowController {
         dragHandler.cachedWindows = state.windows
         renderState(state, panel: panel)
         updateCellFrames(state: state, panel: panel)
-        
-        if focused != lastFocusedSpaceIndex {
-            lastFocusedSpaceIndex = focused
-            resetAutoHideTimer()
-        }
+        lastFocusedSpaceIndex = focused
+        resetAutoHideTimer()
     }
     
     private func renderState(_ state: GridState, panel: NSPanel) {
@@ -94,9 +91,15 @@ class HUDWindowController {
         }, uiScale: config.uiScale, theme: config.theme)
         let size = gridView.idealSize
         
-        let hostingView = NSHostingView(rootView: gridView)
-        hostingView.frame = NSRect(origin: .zero, size: size)
-        panel.contentView = hostingView
+        if let existingHostingView = panel.contentView as? NSHostingView<GridView> {
+            existingHostingView.rootView = gridView
+            existingHostingView.frame.size = size
+        } else {
+            let hostingView = NSHostingView(rootView: gridView)
+            hostingView.frame = NSRect(origin: .zero, size: size)
+            panel.contentView = hostingView
+        }
+        
         panel.setContentSize(size)
         
         if let screen = NSScreen.main {
@@ -197,9 +200,5 @@ private func updateCellFrames(state: GridState, panel: NSPanel) {
 
     private func startLiveRefreshTimer() {
         liveRefreshTimer?.invalidate()
-        liveRefreshTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            guard let self, isVisible, panel != nil else { return }
-            refreshState()
-        }
     }
 }
