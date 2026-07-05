@@ -6,8 +6,10 @@ INSTALL_PATH = /Applications/$(APP_BUNDLE)
 VERSION  := $(shell cat VERSION)
 ARCHIVE   = spacemap-$(VERSION).zip
 STAGE     = spacemap-$(VERSION)
+DMG       = spacemap-$(VERSION).dmg
+DMG_STAGE = dmgstage
 
-.PHONY: build app install run dev uninstall clean config distconfig permissions archive
+.PHONY: build app install run dev uninstall clean config distconfig archive dmg permissions install-cli uninstall-cli
 
 build:
 	swift build -c release
@@ -17,6 +19,9 @@ app: build
 	mkdir -p $(APP_CONTENTS)/Resources
 	cp $(BUILD_DIR)/$(APP_NAME) $(APP_CONTENTS)/MacOS/
 	cp Sources/spacemap/Info.plist $(APP_CONTENTS)/
+	cp Sources/spacemap/spacemap.icns $(APP_CONTENTS)/Resources/spacemap.icns
+	cp Sources/spacemap/AppIcon.icns $(APP_CONTENTS)/Resources/AppIcon.icns
+	cp -R Assets.xcassets $(APP_CONTENTS)/Resources/
 
 archive: app
 	rm -rf $(STAGE) $(ARCHIVE)
@@ -35,11 +40,24 @@ archive: app
 	@echo "  3. Attach $(ARCHIVE)"
 	@echo "  4. Copy the SHA-256 above into Formula/spacemap.rb in homebrew-tap"
 
+dmg: app
+	rm -rf $(DMG_STAGE) $(DMG)
+	mkdir -p $(DMG_STAGE)
+	cp -R $(APP_BUNDLE) $(DMG_STAGE)/
+	ln -s /Applications $(DMG_STAGE)/Applications
+	hdiutil create -volname "$(APP_NAME)" -srcfolder $(DMG_STAGE) -ov -format UDZO $(DMG)
+	rm -rf $(DMG_STAGE)
+	@echo "Created $(DMG)"
+	@echo "SHA-256:  $$(shasum -a 256 $(DMG) | awk '{print $$1}')"
+
 install: app
 	mkdir -p $(INSTALL_PATH)/Contents/MacOS
 	mkdir -p $(INSTALL_PATH)/Contents/Resources
 	cp $(APP_CONTENTS)/MacOS/$(APP_NAME) $(INSTALL_PATH)/Contents/MacOS/
 	cp $(APP_CONTENTS)/Info.plist $(INSTALL_PATH)/Contents/
+	cp Sources/spacemap/spacemap.icns $(INSTALL_PATH)/Contents/Resources/spacemap.icns
+	cp Sources/spacemap/AppIcon.icns $(INSTALL_PATH)/Contents/Resources/AppIcon.icns
+	cp -R Assets.xcassets $(INSTALL_PATH)/Contents/Resources/
 	codesign --force --deep --sign - $(INSTALL_PATH)
 	@echo "Installed to $(INSTALL_PATH)"
 
@@ -51,6 +69,17 @@ uninstall:
 	-killall $(APP_NAME) 2>/dev/null
 	rm -rf $(INSTALL_PATH)
 	@echo "Removed $(INSTALL_PATH)"
+
+install-cli: install
+	@echo "Installing CLI symlink to /usr/local/bin/spacemap..."
+	@mkdir -p /usr/local/bin
+	@ln -sf $(INSTALL_PATH)/Contents/MacOS/$(APP_NAME) /usr/local/bin/spacemap
+	@echo "CLI installed. Run 'spacemap --help' for usage."
+
+uninstall-cli:
+	@echo "Removing CLI symlink from /usr/local/bin/spacemap..."
+	@rm -f /usr/local/bin/spacemap
+	@echo "CLI uninstalled."
 
 dev1: uninstall
 	@echo ""
@@ -90,7 +119,12 @@ config:
 		echo "CELL_STYLE=icons" >> ~/.config/spacemap/config; \
 		echo "#CELL_STYLE=hybrid" >> ~/.config/spacemap/config; \
 		echo "#HOTKEY=ctrl+pgdn" >> ~/.config/spacemap/config; \
+		echo "#UI_SCALE=1.0" >> ~/.config/spacemap/config; \
+		echo "#AUTO_SHOW=false" >> ~/.config/spacemap/config; \
+		echo "#AUTO_HIDE_TIMEOUT=5" >> ~/.config/spacemap/config; \
+		echo "#THEME=default" >> ~/.config/spacemap/config; \
 		echo "#SOCKET_HEALTH_INTERVAL=60" >> ~/.config/spacemap/config; \
+		echo "SPACE_NAMES=1:Desktop,2:Dev" >> ~/.config/spacemap/config; \
 		echo "Created ~/.config/spacemap/config with defaults (8x2, icons)"; \
 	else \
 		echo "Config already exists at ~/.config/spacemap/config"; \
@@ -106,5 +140,6 @@ distconfig:
 	@echo "#CELL_STYLE=hybrid" >> ~/.config/spacemap/config
 	@echo "#HOTKEY=ctrl+pgdn" >> ~/.config/spacemap/config
 	@echo "#SOCKET_HEALTH_INTERVAL=60" >> ~/.config/spacemap/config
+	@echo "SPACE_NAMES=1:Desktop,2:Dev" >> ~/.config/spacemap/config
 	@echo "Wrote ~/.config/spacemap/config"
 	@cat ~/.config/spacemap/config

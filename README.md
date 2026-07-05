@@ -39,8 +39,11 @@ Window positions are drawn as colored rectangles inside each cell (one color per
 | Action | Result |
 |--------|--------|
 | `Ctrl+Space` | Toggle HUD open/closed |
-| Switch desktops with skhd keymaps while HUD is open | Active cell updates live |
-| Click on a workspace | switches to workspace and closes spacemap |
+| Switch desktops while HUD is open | Active cell updates live |
+| Click on a workspace | Switches to workspace and closes spacemap |
+| Drag a window onto a cell | Moves the window to that space |
+| Menubar icon → Launch at Login | Toggle auto-start on login |
+| Menubar icon → Show/Hide Map | Toggle HUD |
 
 ## Run Requirements
 
@@ -64,6 +67,49 @@ Config is read from `~/.config/spacemap/config` on every HUD open (no restart ne
 ```bash
 GRID_COLS=8
 GRID_ROWS=2
+CELL_STYLE=rects
+```
+
+### Display options
+
+| Option | Values | Default | Description |
+|--------|--------|---------|-------------|
+| `CELL_STYLE` | `rects`, `icons`, `hybrid` | `rects` | How windows are drawn in each cell |
+| `THEME` | `default`, `tokyonight`, `catppuccin`, `monokai-dark`, `monokai-light`, `dracula`, `ayu`, `github`, `vscode`, `xcode`, `nord`, `atom-one-dark` | `default` | Color theme. Controls HUD background and focused-space highlight color |
+| `UI_SCALE` | `0.1`–`1.0` | `1.0` | Scale multiplier for HUD size |
+| `BACKGROUND_ALPHA` | `0.0`–`1.0` | `0.3` | HUD background transparency (0=transparent, 1=opaque) |
+| `MODE` | `dark`, `light`, `auto` | `auto` | HUD background appearance. `auto` follows system setting |
+| `ICON_SCALE` | `0.5`–`2.0` | `1.0` | App icon size in icon strip relative to proportional default |
+
+```bash
+UI_SCALE=0.5
+THEME=catppuccin
+BACKGROUND_ALPHA=0.3
+MODE=auto
+ICON_SCALE=1.0
+```
+
+### Grid options
+
+| Option | Values | Default | Description |
+|--------|--------|---------|-------------|
+| `SHOW_MODE` | `all`, `active` | `all` | Show all spaces or only active displays |
+| `MAX_SPACES` | `1`–`16` | `16` | Limit grid to N spaces |
+
+```bash
+SHOW_MODE=active
+MAX_SPACES=8
+```
+
+### Auto-hide
+
+| Option | Values | Default | Description |
+|--------|--------|---------|-------------|
+| `AUTO_HIDE_TIMEOUT` | `0`–any | `5` | Seconds after last space change before HUD hides. `0` = never auto-hide |
+
+```bash
+# Hides 5 seconds after you stop switching spaces
+AUTO_HIDE_TIMEOUT=5
 ```
 
 ### Hotkey
@@ -79,21 +125,17 @@ GRID_ROWS=2
 #HOTKEY=ctrl+space    # original default (conflicts with Cursor)
 #HOTKEY=ctrl+shift+s  # example with multiple modifiers
 ```
+ 
+## Example configs
 
-### Cell styles
-
-`CELL_STYLE` controls how windows are drawn inside each cell:
-
-| Value | Description |
-|-------|-------------|
-| `rects` | Colored rectangles scaled from real window geometry (default) |
-| `icons` | App icons at each visible window's scaled position; all apps on the workspace shown as a small icon strip at the bottom |
-| `hybrid` | Colored rectangles (like `rects`) plus a small icon strip at the bottom showing all apps on the workspace |
+Get a copy of the example configs and place them in `~/.config/spacemap/config`:
 
 ```bash
-CELL_STYLE=rects   # default
-CELL_STYLE=icons
-CELL_STYLE=hybrid
+# 4x4 hybrid grid (compact)
+cp docs/config-examples/spacemap-config-4x4-hybrid ~/.config/spacemap/config
+
+# 8x2 rects grid (classic)
+cp docs/config-examples/spacemap-config-8x2-rects ~/.config/spacemap/config
 ```
 
 ## Install ( in 5 steps )
@@ -114,6 +156,8 @@ brew install asmvik/formulae/skhd
 brew tap jsheffie/tap
 brew install --cask jsheffie/tap/spacemap
 ```
+
+Or download the DMG from [releases](https://github.com/jsheffie/spacemap/releases), open it, and drag `spacemap.app` to the Applications symlink. On first launch, spacemap will ask if you want to move itself to /Applications.
 
 **Step 3: Grant Accessibility Permission**
 
@@ -159,6 +203,7 @@ Press `Ctrl+Space` to open spacemap.
 
 | Target | Description |
 |--------|-------------|
+| `make dmg` | Build and package app into `spacemap-<version>.dmg` with /Applications symlink |
 | `make run` | Build, install, and launch |
 | `make dev1` | Uninstall; pause to remove Accessibility permission in System Settings |
 | `make dev2` | Reinstall and relaunch; grant Accessibility permission when prompted |
@@ -167,6 +212,37 @@ Press `Ctrl+Space` to open spacemap.
 | `make permissions` | Print instructions for fixing a broken hotkey |
 | `make uninstall` | Kill app and remove from /Applications |
 | `make clean` | Remove build artifacts |
+| `make install-cli` | Install CLI symlink to `/usr/local/bin/spacemap` |
+| `make uninstall-cli` | Remove CLI symlink from `/usr/local/bin/spacemap` |
+
+## CLI Usage
+
+Once installed via `make install-cli`, you can use spacemap as a command-line tool:
+
+```bash
+spacemap --version    # Print version and exit
+spacemap --trigger    # Toggle HUD visibility and exit
+spacemap --show-menu  # Show menu bar dropdown (app continues running)
+spacemap --settings   # Open settings window directly (app continues running)
+spacemap --config     # Open config file in default editor and exit
+spacemap --help       # Print help and exit
+```
+
+Without any options, spacemap launches and waits for the hotkey (Ctrl+Space) to toggle the HUD.
+
+Without installing the CLI, you can still run the commands directly:
+```bash
+/Applications/spacemap.app/Contents/MacOS/spacemap --version
+```
+
+## Documentation
+
+| File | Purpose |
+|------|---------|
+| [AGENTS.md](./AGENTS.md) | Project overview, architecture, development workflow |
+| [DEVELOPER.md](./DEVELOPER.md) | Technical deep-dive, debugging, configuration details |
+| [TASKS.md](./TASKS.md) | Roadmap, planned features, bug fixes, known issues |
+| [CONTRIBUTING.md](./CONTRIBUTING.md) | Guidelines for external contributors |
 
 ## Developer notes
 

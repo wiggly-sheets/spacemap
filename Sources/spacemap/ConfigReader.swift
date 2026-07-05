@@ -2,9 +2,16 @@ import Foundation
 import CoreGraphics
 
 enum ConfigReader {
+    static var silentMode = false
+
     static func load() -> GridConfig {
         let path = NSString(string: "~/.config/spacemap/config").expandingTildeInPath
-        guard let contents = try? String(contentsOfFile: path, encoding: .utf8) else {
+        let contents: String
+        do {
+            contents = try String(contentsOfFile: path, encoding: .utf8)
+            if !silentMode { NSLog("spacemap/ConfigReader: successfully read config from \(path)") }
+        } catch {
+            if !silentMode { NSLog("spacemap/ConfigReader: failed to read config at \(path) — error: \(error)") }
             return .default
         }
 
@@ -13,6 +20,16 @@ enum ConfigReader {
         var cellStyle = GridConfig.default.cellStyle
         var hotkey = GridConfig.default.hotkey
         var socketHealthInterval = GridConfig.default.socketHealthInterval
+        var uiScale = GridConfig.default.uiScale
+        var autoHideTimeout = GridConfig.default.autoHideTimeout
+        var theme = GridConfig.default.theme
+        var showMode = GridConfig.default.showMode
+        var maxSpaces = GridConfig.default.maxSpaces
+        var backgroundAlpha = GridConfig.default.backgroundAlpha
+        var mode = GridConfig.default.mode
+        var iconScale = GridConfig.default.iconScale
+        var showNames = GridConfig.default.showNames
+        var spaceNames: [Int: String] = [:]
 
         for line in contents.components(separatedBy: .newlines) {
             let trimmed = line.trimmingCharacters(in: .whitespaces)
@@ -20,7 +37,11 @@ enum ConfigReader {
             let parts = trimmed.components(separatedBy: "=")
             guard parts.count == 2 else { continue }
             let key = parts[0].trimmingCharacters(in: .whitespaces)
-            let value = parts[1].trimmingCharacters(in: .whitespaces)
+            var value = parts[1].trimmingCharacters(in: .whitespaces)
+            // Strip inline comment (anything after a # that follows whitespace)
+            if let commentIdx = value.firstIndex(of: "#") {
+                value = String(value[..<commentIdx]).trimmingCharacters(in: .whitespaces)
+            }
             switch key {
             case "GRID_COLS": cols = Int(value) ?? cols
             case "GRID_ROWS": rows = Int(value) ?? rows
@@ -42,11 +63,68 @@ enum ConfigReader {
                 } else {
                     print("spacemap: invalid SOCKET_HEALTH_INTERVAL '\(value)', using default")
                 }
-            default: break
-            }
+            case "UI_SCALE":
+                if let v = Double(value), v >= 0.1 && v <= 1.0 {
+                    uiScale = v
+                } else {
+                    print("spacemap: invalid UI_SCALE '\(value)', using default")
+                }
+            case "AUTO_HIDE_TIMEOUT":
+                if let v = Int(value), v >= 0 {
+                    autoHideTimeout = v
+                } else {
+                    print("spacemap: invalid AUTO_HIDE_TIMEOUT '\(value)', using default")
+                }
+            case "THEME":
+                theme = value
+            case "SHOW_MODE":
+                switch value {
+                case "active": showMode = .active
+                default:        showMode = .all
+                }
+            case "MAX_SPACES":
+                if let v = Int(value), v >= 1 && v <= 16 {
+                    maxSpaces = v
+                } else {
+                    print("spacemap: invalid MAX_SPACES '\(value)', using default")
+                }
+            case "BACKGROUND_ALPHA":
+                if let v = Double(value), v >= 0.0 && v <= 1.0 {
+                    backgroundAlpha = v
+                } else {
+                    print("spacemap: invalid BACKGROUND_ALPHA '\(value)', using default")
+                }
+case "MODE":
+                 switch value.lowercased() {
+                 case "light": mode = .light
+                 case "dark":  mode = .dark
+                 case "auto": mode = .automatic
+                 default:     mode = .automatic
+                 }
+             case "ICON_SCALE":
+                 if let v = Double(value), v >= 0.5 && v <= 2.0 {
+                     iconScale = v
+                 } else {
+                     print("spacemap: invalid ICON_SCALE '\(value)', using default")
+                 }
+             case "SHOW_NAMES":
+                  showNames = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
+             case "SPACE_NAMES":
+                 // Parse format: "1:Name,2:Name,3:Name"
+                 let pairs = value.components(separatedBy: ",")
+                 for pair in pairs {
+                     let parts = pair.components(separatedBy: ":")
+                     if parts.count == 2, let id = Int(parts[0].trimmingCharacters(in: .whitespaces)) {
+                         spaceNames[id] = parts[1].trimmingCharacters(in: .whitespaces)
+                     }
+                 }
+             default: break
+             }
         }
 
-        return GridConfig(cols: cols, rows: rows, cellStyle: cellStyle, hotkey: hotkey, socketHealthInterval: socketHealthInterval)
+        let result = GridConfig(cols: cols, rows: rows, cellStyle: cellStyle, hotkey: hotkey, socketHealthInterval: socketHealthInterval, uiScale: uiScale, autoHideTimeout: autoHideTimeout, theme: theme, showMode: showMode, maxSpaces: maxSpaces, backgroundAlpha: backgroundAlpha, mode: mode, iconScale: iconScale, showNames: showNames, spaceNames: spaceNames)
+        if !silentMode { NSLog("spacemap/ConfigReader: loaded cols=\(cols) rows=\(rows) style=\(cellStyle) scale=\(uiScale) theme=\(theme) autoHide=\(autoHideTimeout) showMode=\(showMode) maxSpaces=\(maxSpaces) bgAlpha=\(backgroundAlpha) mode=\(mode) iconScale=\(iconScale) showNames=\(showNames) spaceNames=\(spaceNames.count) hotkey=\(hotkey)") }
+        return result
     }
 
     private static func parseHotkey(_ value: String) -> HotkeyConfig? {

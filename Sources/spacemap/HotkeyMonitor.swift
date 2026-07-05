@@ -8,6 +8,19 @@ class HotkeyMonitor {
     private let targetModifiers: CGEventFlags
     private var isStarted = false
 
+    func stop() {
+        guard isStarted else { return }
+        if let tap = eventTap {
+            CGEvent.tapEnable(tap: tap, enable: false)
+        }
+        if let source = runLoopSource {
+            CFRunLoopRemoveSource(CFRunLoopGetMain(), source, .commonModes)
+        }
+        eventTap = nil
+        runLoopSource = nil
+        isStarted = false
+    }
+
     init(config: HotkeyConfig, onTrigger: @escaping () -> Void) {
         self.targetKeyCode = config.keyCode
         self.targetModifiers = config.modifiers
@@ -18,17 +31,26 @@ class HotkeyMonitor {
         guard !isStarted else { return }
 
         if !AXIsProcessTrusted() {
+            NSLog("spacemap/Hotkey: accessibility not yet granted")
             let isRestarting = CommandLine.arguments.contains("--restarting")
             let opts = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: !isRestarting] as CFDictionary
-            _ = AXIsProcessTrustedWithOptions(opts)
-            Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
-                guard let self else { timer.invalidate(); return }
-                if AXIsProcessTrusted() {
-                    timer.invalidate()
-                    self.start()
+            let granted = AXIsProcessTrustedWithOptions(opts)
+            if !granted {
+                // Poll every 2 seconds until user grants permission
+                var pollCount = 0
+                let maxPolls = 15
+                _ = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] timer in
+                    guard let self else { timer.invalidate(); return }
+                    pollCount += 1
+                    if AXIsProcessTrusted() {
+                        timer.invalidate()
+                        self.start()
+                    } else if pollCount >= maxPolls {
+                        timer.invalidate()
+                    }
                 }
+                return
             }
-            return
         }
 
         isStarted = true

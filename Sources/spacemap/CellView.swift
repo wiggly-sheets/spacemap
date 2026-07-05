@@ -80,11 +80,13 @@ var body: some View {
                 iconStrip()
             }
 
-            // Always show space number at top-left
-            Text("\(spaceIndex)")
-                .font(.system(size: 12 * uiScale * 10, weight: .bold, design: .monospaced))
-                .foregroundColor(textColor.opacity(0.7))
-                .position(x: 8, y: 8)
+            // Show space number at top-left when showNames is enabled
+            if showNames {
+                Text("\(spaceIndex)")
+                    .font(.system(size: 12 * uiScale * 10, weight: .bold, design: .monospaced))
+                    .foregroundColor(textColor.opacity(0.7))
+                    .position(x: 8, y: 8)
+            }
 
             // Show space name (if exists) in center
             if let name = spaceName, !name.isEmpty {

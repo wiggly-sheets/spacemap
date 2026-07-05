@@ -1,0 +1,165 @@
+# spacemap - AGENTS.md
+
+## Project Overview
+
+**spacemap** is a native macOS utility that visualizes yabai workspaces in a floating 2D grid overlay. Think of it as a "mission control" for your tiling window manager that doesn't require SIP to be disabled.
+
+### What It Does
+- Shows a HUD overlay (toggle with hotkey) displaying your yabai desktops in a configurable grid
+- Live-updates as you switch spaces via yabai
+- Lets you click cells to jump to spaces
+- Supports three display styles: colored rectangles, app icons, or hybrid
+- Window drag-and-drop between cells (drag a window onto a cell to move it)
+- Menubar icon for manual show/hide
+
+## Architecture
+
+### Tech Stack
+- **Language:** Swift 5.9, targeting macOS 13+
+- **UI Framework:** SwiftUI embedded in AppKit (NSHostingView)
+- **Build System:** Swift Package Manager (Package.swift)
+- **Dependencies:** ZERO external dependencies
+- **System Integration:** Low-level macOS APIs (CoreGraphics, AppKit), yabai CLI calls, Unix domain sockets, CGEventTaps
+
+### File Structure
+```
+Sources/spacemap/
+├── App.swift              # App entry point, menubar, hotkey setup
+├── HUDWindowController.swift  # Manages NSPanel HUD (show/hide/render)
+├── GridView.swift         # SwiftUI grid container
+├── CellView.swift         # Individual cell rendering (rects/icons/hybrid)
+├── YabaiClient.swift      # Shells out to yabai binary for data/manipulation
+├── ConfigReader.swift     # Parses ~/.config/spacemap/config
+├── HotkeyMonitor.swift   # Global CGEventTap for toggle hotkey
+├── WindowDragHandler.swift # Detects window drag-and-drop over HUD
+├── SocketListener.swift   # Unix domain socket server for yabai signals
+├── Models.swift           # Data structures (GridConfig, YabaiSpace, etc.)
+└── Info.plist            # App bundle metadata
+```
+
+### Key Data Flow
+
+1. **App launches** → `App.swift` sets up menubar, hotkey monitor, and socket listener
+2. **Hotkey pressed** → `HUDWindowController.show()` is called
+3. **Show fetches data** → `YabaiClient.querySpaces()` / `queryWindows()` (shells to `/opt/homebrew/bin/yabai`)
+4. **Builds state** → `YabaiClient.buildGridState()` assembles `GridState` with config
+5. **Renders grid** → SwiftUI `GridView` → `CellView` for each cell
+6. **Live updates** → yabai signal triggers → socket message → `HUDWindowController.refresh()`
+7. **Drag-and-drop** → `WindowDragHandler` uses CGEventTap to track mouse, yabai to move window
+
+### External Dependencies
+- **yabai** (installed at `/opt/homebrew/bin/yabai`) - tiling window manager
+- **skhd** (installed at `/opt/homebrew/bin/skhd`) - hotkey daemon, configured for 2D grid navigation
+
+### Configuration
+Reads from `~/.config/spacemap/config` on every HUD open (no restart needed):
+```bash
+GRID_COLS=8              # Grid columns
+GRID_ROWS=2              # Grid rows
+CELL_STYLE=rects         # rects | icons | hybrid
+HOTKEY=ctrl+pgdn         # Toggle hotkey (requires restart)
+SOCKET_HEALTH_INTERVAL=60  # Socket health check interval (seconds)
+```
+
+## Important Technical Details
+
+### CGEventTap (Not NSEvent)
+Uses `CGEvent.tapCreate` at `cgSessionEventTap` / `headInsertEventTap` for global hotkey capture. This requires Accessibility permissions.
+
+### Binary Running vs App Bundle
+macOS grants Accessibility to the `.app` bundle, not the raw binary. Running the binary directly will fail the trust check. Always use `make run` or `open /Applications/spacemap.app`.
+
+### Permission Revocation on Reinstall
+Rebuilding and reinstalling revokes Accessibility permissions because the binary hash changes. Use the `make dev1` / `make dev2` workflow.
+
+### App Activation Policy
+`NSApp.setActivationPolicy(.prohibited)` means the app never appears in the dock or Cmd+Tab switcher. It runs purely as a background utility.
+
+### yabai Signal Integration
+When the HUD is visible, yabai sends a signal to a Unix domain socket on `space_changed`. This triggers HUD refresh for live updates without polling.
+
+### Window Drag Detection
+A second CGEventTap (listenOnly, tailAppend) monitors mouse drag events to detect when the user drags an actual window over the HUD. It correlates the mouse position against cell hit-rectangles and uses the frontmost application to identify which window is being dragged.
+
+### Cell Styles
+- **rects:** Scales real window geometry to 80x50 cell, colored by app name hash
+- **icons:** App icons at window position; app strip at bottom
+- **hybrid:** Rectangles PLUS app icon strip at bottom
+
+## Development Workflow
+
+### Build Commands
+```bash
+make build       # swift build -c release
+make app         # Build and assemble .app bundle
+make install     # Install to /Applications
+make run         # Install and launch
+make dev1        # Uninstall (then remove Accessibility in System Settings)
+make dev2        # Reinstall, relaunch, re-grant permissions
+make config      # Create default config
+make permissions # Show permission fix instructions
+make clean       # Remove build artifacts
+make archive     # Build signed archive for release
+```
+
+### Testing Changes
+1. `make dev1` (uninstalls app)
+2. Remove spacemap from System Settings → Privacy & Security → Accessibility
+3. Make code changes
+4. `make dev2` (builds, installs, launches)
+5. Grant permission when prompted
+
+## Known Limitations / Gotchas
+
+1. **yabai path hardcoded:** `/opt/homebrew/bin/yabai` - doesn't support other install locations (no PATH search)
+2. **Homebrew-specific:** Brew formula only, no other package managers
+3. **SwiftUI performance:** Each HUD open creates a new NSHostingView. The state is cached during a drag, but the view is recreated.
+4. **Icon strip flicker:** On space change, `CellView` rerenders and re-fetches icons via `NSWorkspace.shared.icon(forFile:)` which is potentially expensive
+5. **Drag resolution:** Window drag detection uses frontmost app name matching, which can be ambiguous for multi-window apps. Falls back to click proximity.
+6. **No tests:** There are zero unit tests
+7. **Socket health check:** Periodic `fcntl(fd, F_GETFD)` check + file existence check. Restarts on failure.
+
+## Potential Extension Points
+
+### Appearance
+- Custom cell colors, backgrounds, or opacity
+- Custom fonts/sizes for space numbers
+- Rounded corners, borders, shadow customization
+- Animations for cell focus/hover
+
+### Behavior
+- Customizable cell size (currently hardcoded 80x50)
+- Grid gap/padding config
+- Multi-monitor awareness (spaces per display)
+
+### Features
+- Show window titles on hover
+- Keyboard navigation within HUD (arrows + enter)
+- Pin HUD to always show (like a dashboard)
+- Window thumbnail previews instead of rectangles
+- Filter/hide specific apps from the grid
+
+### Integration
+- Support for other window managers besides yabai ( Parallel to yabai? Or macOS native Spaces? )
+- Scripting / CLI interface to trigger HUD from scripts
+- Notifications / system alerts
+- Better multi-monitor support
+
+### Build / Dev
+- Add unit tests (XCTest)
+- Linting / formatting (SwiftFormat)
+- CI/CD for automated builds/releases
+- Homebrew formula improvements
+
+## Tasks & Roadmap
+
+See [TASKS.md](./TASKS.md) for planned features, bug fixes, and known issues.
+
+## Questions
+
+1. **Why only `/opt/homebrew/bin/yabai`?** What about Intel Macs with `/usr/local/bin/yabai` or non-brew installs?
+2. **Electron app?** The screenshot in the README shows what looks like an electron-style window. Is there a web/JS component, or is this pure Swift? (It is pure Swift with SwiftUI, the screenshot is just the HUD).
+3. **i18n?** No localization is present. Are there plans for it?
+4. **Accessibility of the config?** The config file uses a simple key=value format, but there's no validation or schema. Would a JSON or YAML config be better?
+5. **Hotkey parsing limitations?** The hotkey parser only supports a subset of keys (see `ConfigReader.keyCodeFor`). Keys like F13-F20, media keys, etc., are not supported. Is this by design?
+6. **The `yabaiPath` is static in `YabaiClient`:** Should it be configurable or auto-discovered?

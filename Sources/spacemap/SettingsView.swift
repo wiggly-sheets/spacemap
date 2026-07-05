@@ -19,15 +19,18 @@ struct SettingsView: View {
     @State private var mode: ThemeMode = .automatic
     @State private var iconScale: Double = 1.0
     @State private var showNames: Bool = true
+    @State private var isRecording = false
+    @State private var monitor: Any?
     
     private let socketHealthOptions = [15, 30, 45, 60]
     
     private let configPath = NSString(string: "~/.config/spacemap/config").expandingTildeInPath
     
-    private var maxSpacesOptions: [Int] { Array(1...16) }
-    
-    private var backgroundAlphaSteps: [Double] {
-        (0...20).map { Double($0) / 20.0 } // 0.0, 0.05, 0.10, ..., 1.0
+private var maxSpacesOptions: [Int] { Array(1...16) }
+
+    private var backgroundTransparencySteps: [Double] {
+        // 10 steps: fully transparent (index 0) to fully opaque (index 9)
+        [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.95]
     }
     
     private var uiScaleSteps: [Double] {
@@ -76,7 +79,7 @@ struct SettingsView: View {
         _theme = State(initialValue: config.theme)
         _showMode = State(initialValue: showMode)
         _maxSpaces = State(initialValue: maxSpaces)
-        _backgroundAlpha = State(initialValue: nearest(to: config.backgroundAlpha, from: backgroundAlphaSteps))
+        _backgroundAlpha = State(initialValue: nearest(to: config.backgroundAlpha, from: backgroundTransparencySteps))
         _mode = State(initialValue: mode)
         _iconScale = State(initialValue: nearest(to: iconScale, from: iconScaleSteps))
         _showNames = State(initialValue: showNames)
@@ -142,47 +145,47 @@ private func saveConfig() {
                     .onChange(of: showNames) { _ in saveConfig() }
             }
 
-            Section(header: Text("Appearance")) {
-                Picker("Theme", selection: $theme) {
-                    Text("Default").tag("default")
-                    Text("Tokyo Night").tag("tokyonight")
-                    Text("Catppuccin").tag("catppuccin")
-                    Text("Monokai Dark").tag("monokai-dark")
-                    Text("Monokai Light").tag("monokai-light")
-                    Text("Dracula").tag("dracula")
-                    Text("AYU").tag("ayu")
-                    Text("GitHub").tag("github")
-                    Text("VS Code").tag("vscode")
-                    Text("Xcode").tag("xcode")
-                    Text("Nord").tag("nord")
-                    Text("Atom One Dark").tag("atom-one-dark")
-                }
-                .onChange(of: theme) { _ in saveConfig() }
-                Picker("Mode", selection: $mode) {
-                    Text("Light").tag(ThemeMode.light)
-                    Text("Dark").tag(ThemeMode.dark)
-                    Text("Auto").tag(ThemeMode.automatic)
-                }
-                .onChange(of: mode) { _ in saveConfig() }
-                VStack(alignment: .leading) {
-                    Text("Background Alpha")
-                    Slider(value: $backgroundAlpha, in: 0...1, step: 0.05)
+Section(header: Text("Appearance")) {
+                 Picker("Theme", selection: $theme) {
+                     Text("Default").tag("default")
+                     Text("Tokyo Night").tag("tokyonight")
+                     Text("Catppuccin").tag("catppuccin")
+                     Text("Monokai Dark").tag("monokai-dark")
+                     Text("Monokai Light").tag("monokai-light")
+                     Text("Dracula").tag("dracula")
+                     Text("AYU").tag("ayu")
+                     Text("GitHub").tag("github")
+                     Text("VS Code").tag("vscode")
+                     Text("Xcode").tag("xcode")
+                     Text("Nord").tag("nord")
+                     Text("Atom One Dark").tag("atom-one-dark")
+                 }
+                 .onChange(of: theme) { _ in saveConfig() }
+                 Picker("Background Color", selection: $mode) {
+                     Text("Light").tag(ThemeMode.light)
+                     Text("Dark").tag(ThemeMode.dark)
+                     Text("Auto").tag(ThemeMode.automatic)
+                 }
+                 .onChange(of: mode) { _ in saveConfig() }
+VStack(alignment: .leading) {
+                    Text("Background Transparency")
+                    CustomStepper(steps: backgroundTransparencySteps, value: $backgroundAlpha)
                         .onChange(of: backgroundAlpha) { _ in saveConfig() }
                 }
-                VStack(alignment: .leading) {
-                    Text("Icon Scale")
-                    Slider(value: $iconScale, in: 0.5...2.0, step: 0.05)
-                        .onChange(of: iconScale) { _ in saveConfig() }
-                }
-                VStack(alignment: .leading) {
-                    Text("UI Scale")
-                    Slider(value: $uiScale, in: 0.1...3.0, step: 0.05)
-                        .onChange(of: uiScale) { _ in saveConfig() }
-                }
-            }
+                 VStack(alignment: .leading) {
+                     Text("Icon Scale")
+                     CustomStepper(steps: iconScaleSteps, value: $iconScale)
+                         .onChange(of: iconScale) { _ in saveConfig() }
+                 }
+                 VStack(alignment: .leading) {
+                     Text("UI Scale")
+                     CustomStepper(steps: uiScaleSteps, value: $uiScale)
+                         .onChange(of: uiScale) { _ in saveConfig() }
+                 }
+             }
 
             Section(header: Text("Behavior")) {
-                TextField("Hotkey", text: $hotkeyString)
+                HotkeyRecorder(label: "Hotkey", hotkey: $hotkeyString)
                     .onChange(of: hotkeyString) { _ in saveConfig() }
                 Picker("Socket Health Interval (s)", selection: $socketHealthInterval) {
                     ForEach(socketHealthOptions, id: \.self) { v in
@@ -274,6 +277,49 @@ private func saveConfig() {
 }
 
 // NOTE: CellStyle, ShowMode, ThemeMode, HotkeyConfig imported from Models.swift
+
+struct CustomStepper: View {
+    let steps: [Double]
+    @Binding var value: Double
+    
+    var body: some View {
+        HStack {
+            Button(action: { stepDown() }) {
+                Image(systemName: "minus.circle")
+            }
+            .disabled(currentIndex == 0)
+            
+            Slider(value: Binding(
+                get: { Double(currentIndex) },
+                set: { newIndex in
+                    let idx = max(0, min(steps.count - 1, Int(newIndex.rounded())))
+                    value = steps[idx]
+                }
+            ), in: 0...Double(steps.count - 1), step: 1)
+            
+            Button(action: { stepUp() }) {
+                Image(systemName: "plus.circle")
+            }
+            .disabled(currentIndex == steps.count - 1)
+        }
+    }
+    
+    private var currentIndex: Int {
+        steps.firstIndex(of: value) ?? 0
+    }
+    
+    private func stepDown() {
+        if currentIndex > 0 {
+            value = steps[currentIndex - 1]
+        }
+    }
+    
+    private func stepUp() {
+        if currentIndex < steps.count - 1 {
+            value = steps[currentIndex + 1]
+        }
+    }
+}
 
 extension Notification.Name {
     static let settingsChanged = Notification.Name("settingsChanged")
