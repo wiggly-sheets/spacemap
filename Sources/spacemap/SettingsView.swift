@@ -31,13 +31,13 @@ struct SettingsView: View {
     }
     
     private var uiScaleSteps: [Double] {
-        // 10 steps from 0.1 to 1.0
-        [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+        // 10 steps: 0.2 is middle (index 5)
+        [0.05, 0.08, 0.11, 0.14, 0.17, 0.2, 0.3, 0.4, 0.5, 0.6]
     }
     
     private var iconScaleSteps: [Double] {
-        // 10 steps from 0.5 to 2.0
-        [0.5, 0.67, 0.83, 1.0, 1.17, 1.33, 1.5, 1.67, 1.83, 2.0]
+        // 10 steps: 0.7 is middle (index 5)
+        [0.3, 0.38, 0.46, 0.54, 0.62, 0.7, 0.9, 1.1, 1.3, 1.5]
     }
     
     private func nearest<T: FixedWidthInteger>(to value: T, from sorted: [T]) -> T {
