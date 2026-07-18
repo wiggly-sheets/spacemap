@@ -143,3 +143,12 @@ distconfig:
 	@echo "SPACE_NAMES=1:Desktop,2:Dev" >> ~/.config/spacemap/config
 	@echo "Wrote ~/.config/spacemap/config"
 	@cat ~/.config/spacemap/config
+
+symlink:
+	ln -sf /Applications/spacemap.app/Contents/MacOS/spacemap /usr/local/bin/spacemap
+	@echo "Symlink created: /usr/local/bin/spacemap → /Applications/spacemap.app/Contents/MacOS/spacemap"
+	@echo "Note: You may need to run with sudo for /usr/local/bin access"
+
+unsymlink:
+	rm -f /usr/local/bin/spacemap
+	@echo "Symlink removed"

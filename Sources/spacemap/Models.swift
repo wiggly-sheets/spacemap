@@ -152,6 +152,7 @@ struct YabaiWindow: Decodable {
 }
 
 struct GridState {
+
     let config: GridConfig
     let spaces: [YabaiSpace]
     let windows: [YabaiWindow]
@@ -159,6 +160,6 @@ struct GridState {
     let focusedIndex: Int?
 
     func windows(forSpace index: Int) -> [YabaiWindow] {
-        windows.filter { $0.space == index }
+        return self.windows.filter { $0.space == index }
     }
 }

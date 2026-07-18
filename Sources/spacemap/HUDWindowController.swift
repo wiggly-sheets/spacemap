@@ -4,7 +4,20 @@ import SwiftUI
 class HUDWindowController {
     private var panel: NSPanel?
     private var isVisible = false
-    private var config = ConfigReader.load()
+    private var _config: GridConfig? = nil
+    private var config: GridConfig {
+        get {
+            if let c = _config {
+                return c
+            } else {
+                _config = ConfigReader.load()
+                return _config!
+            }
+        }
+        set {
+            _config = newValue
+        }
+    }
     private var hoveredCell: Int? = nil
     // Snapshot of grid state taken when HUD opens; reused for hover rerenders so
     // the thumbnail layout doesn't flicker during a drag and cachedWindows stays stable.
@@ -46,25 +59,48 @@ class HUDWindowController {
     func show() {
         NSLog("spacemap/HUD: show() called")
         hide()
-        config = ConfigReader.load()
-        let focusedIndex = YabaiClient.queryFocusedSpaceIndex()
+        reloadConfig()
+        let focused = YabaiClient.queryFocusedSpaceIndex()
         
         panel = makePanel()
         guard let panel else { return }
         
-        let state = YabaiClient.buildGridState(config: config, focusedIndex: focusedIndex)
+        let state = YabaiClient.buildGridState(config: config, focusedIndex: focused)
         currentState = state
         dragHandler.cachedWindows = state.windows
         // Capture focused window before HUD renders, so drag handler knows what the user had active.
-        dragHandler.focusedWindowIDAtOpen = (try? YabaiClient.queryFocusedWindow()) ?? nil
+        if let focusedWindowID = (try? YabaiClient.queryFocusedWindow()) {
+            dragHandler.focusedWindowIDAtOpen = focusedWindowID
+        }
         renderState(state, panel: panel)
         updateCellFrames(state: state, panel: panel)
-dragHandler.start()
-    startLiveRefreshTimer()   // now does nothing
-    lastFocusedSpaceIndex = focusedIndex
-    isVisible = true
-    resetAutoHideTimer()
-}
+        dragHandler.start()
+        startLiveRefreshTimer()
+        lastFocusedSpaceIndex = focused
+        isVisible = true
+        resetAutoHideTimer()
+    }
+    
+    func hide() {
+        dragHandler.stop()
+        autoHideTimer?.invalidate()
+        autoHideTimer = nil
+        liveRefreshTimer?.invalidate()
+        liveRefreshTimer = nil
+        
+        if let p = panel {
+            p.orderOut(nil)
+            p.close()
+        }
+        panel = nil
+        
+        isVisible = false
+        hoveredCell = nil
+        currentState = nil
+        dragHandler.cellFrames = []
+        dragHandler.cachedWindows = []
+        dragHandler.focusedWindowIDAtOpen = nil
+    }
     
     // Called by SocketListener on space_changed. Only updates if HUD is already visible.
     func refresh() {
@@ -112,35 +148,14 @@ dragHandler.start()
         panel.orderFrontRegardless()
     }
     
-    func hide() {
-        dragHandler.stop()
-        autoHideTimer?.invalidate()
-        autoHideTimer = nil
-        liveRefreshTimer?.invalidate()
-        liveRefreshTimer = nil
-        
-        if let p = panel {
-            p.orderOut(nil)
-            p.close()
-        }
-        panel = nil
-        
-        isVisible = false
-        hoveredCell = nil
-        currentState = nil
-        dragHandler.cellFrames = []
-        dragHandler.cachedWindows = []
-        dragHandler.focusedWindowIDAtOpen = nil
-    }
-    
-private func updateCellFrames(state: GridState, panel: NSPanel) {
-         let scale = config.uiScale
-         let cellWidth: CGFloat = 80 * scale * 3
-         let cellHeight: CGFloat = 50 * scale * 3
-         let gap: CGFloat = 6 * scale * 3
-         let padding: CGFloat = 12 * scale * 3
-         let slotWidth = cellWidth + gap
-         let slotHeight = cellHeight + gap
+    private func updateCellFrames(state: GridState, panel: NSPanel) {
+        let scale = config.uiScale
+        let cellWidth: CGFloat = 80 * scale * 3
+        let cellHeight: CGFloat = 50 * scale * 3
+        let gap: CGFloat = 6 * scale * 3
+        let padding: CGFloat = 12 * scale * 3
+        let slotWidth = cellWidth + gap
+        let slotHeight = cellHeight + gap
         
         // Compute visible cells same as GridView
         let maxN = min(config.maxSpaces, 16)
@@ -159,9 +174,6 @@ private func updateCellFrames(state: GridState, panel: NSPanel) {
         var frames: [(spaceIndex: Int, frame: CGRect)] = []
         let origin = panel.frame.origin
         let totalHeight = CGFloat(rowCount) * (cellHeight + gap) - gap + padding * 2
-        
-        guard let screen = NSScreen.screens.first else { return }
-        let screenHeight = screen.frame.height
         
         for (i, spaceIndex) in cells.enumerated() {
             let row = i / cols
@@ -202,7 +214,24 @@ private func updateCellFrames(state: GridState, panel: NSPanel) {
     private func startLiveRefreshTimer() {
         liveRefreshTimer?.invalidate()
         liveRefreshTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
-            self?.resetAutoHideTimer()
+            self?.refreshState()
         }
+    }
+    
+    func reloadConfig() {
+        _config = nil
+    }
+    
+    private var screenHeight: CGFloat {
+        NSScreen.main?.frame.height ?? 0
+    }
+}
+
+// MARK: - QueueKey for DispatchSpecific
+private let queueKey = DispatchSpecificKey<Void>()
+private let listenerQueue = DispatchQueue(label: "com.spacemap.socketlistener")
+extension DispatchQueue {
+    static func getSpecific(key: DispatchSpecificKey<Void>) -> Void? {
+        return self.getSpecific(key: key)
     }
 }

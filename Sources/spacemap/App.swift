@@ -10,6 +10,33 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var settingsObserver: NSObjectProtocol?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        let args = ProcessInfo.processInfo.arguments
+        
+        #if !DEBUG
+        // Handle CLI arguments that cause immediate exit
+        if args.contains("--version") {
+            ConfigReader.silentMode = true
+            printVersionAndExit()
+            return
+        }
+        if args.contains("--help") {
+            ConfigReader.silentMode = true
+            printHelpAndExit()
+            return
+        }
+        if args.contains("--config") {
+            ConfigReader.silentMode = true
+            openConfigAndExit()
+            return
+        }
+        if args.contains("--trigger") {
+            ConfigReader.silentMode = true
+            setupForTriggerAndExit()
+            return
+        }
+        #endif
+        
+        // Normal setup (do not run for exit-only CLI args)
         NSApp.setActivationPolicy(.prohibited)
         
         // Check if app is in /Applications folder, if not, prompt to move
@@ -18,7 +45,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         setupMenubar()
         // Delay slightly so TCC/LaunchServices finishes registering the app
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            ConfigReader.silentMode = true
+            ConfigReader.silentMode = true
             let config = ConfigReader.load()
+            self.hud.reloadConfig()
             self.startHotkey(config: config)
             self.socketListener = SocketListener(
                 socketPath: self.socketPath,
@@ -36,12 +66,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 queue: .main
             ) { [weak self] _ in
                 guard let self = self else { return }
-                let config = ConfigReader.load()
+                ConfigReader.silentMode = true
+            ConfigReader.silentMode = true
+            let config = ConfigReader.load()
                 self.startHotkey(config: config)
             }
         }
+        
+        // Handle non-exit CLI arguments (after normal setup)
+        #if !DEBUG
+        if args.contains("--show-menu") {
+            // Show menu and continue running
+            if let button = self.statusItem?.button {
+                button.performClick(nil)
+            }
+        }
+        if args.contains("--settings") {
+            // Show settings window and continue running
+            self.showSettingsWindow()
+        }
+        #endif
     }
-
+    
     func applicationWillTerminate(_ notification: Notification) {
         YabaiClient.removeSignals()
         socketListener?.stop()
@@ -57,12 +103,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         let menu = NSMenu()
         menu.addItem(NSMenuItem(title: "Show/Hide Map", action: #selector(toggleHUD), keyEquivalent: ""))
-        menu.addItem(.separator())
+        menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Open Accessibility Permissions", action: #selector(openAccessibility), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Restart spacemap", action: #selector(restartApp), keyEquivalent: ""))
-        menu.addItem(.separator())
+        menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Settings...", action: #selector(showSettingsWindow), keyEquivalent: ","))
-        menu.addItem(.separator())
+        menu.addItem(NSMenuItem.separator())
         // Launch at Login
         let launchAtLoginItem = NSMenuItem(title: "Launch at Login", action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
         let isEnabled: Bool
@@ -75,7 +121,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             launchAtLoginItem.state = .on
         }
         menu.addItem(launchAtLoginItem)
-        menu.addItem(.separator())
+        menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Quit spacemap", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
         item.menu = menu
         statusItem = item
@@ -118,27 +164,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             let currentStatus = service.status
             let newEnabled = currentStatus != .enabled
             
-            if newEnabled {
-                do {
-                    try service.register()
-                } catch {
-                    let alert = NSAlert()
-                    alert.alertStyle = .critical
-                    alert.messageText = "Cannot enable Launch at Login"
-                    alert.informativeText = "Please try again or enable it manually in System Settings > General > Login Items."
-                    alert.runModal()
-                }
-            } else {
-                do {
-                    try service.unregister()
-                } catch {
-                    let alert = NSAlert()
-                    alert.alertStyle = .critical
-                    alert.messageText = "Cannot disable Launch at Login"
-                    alert.informativeText = "Please disable it manually in System Settings."
-                    alert.runModal()
-                }
-            }
+            setLoginAtLogin(enabled: newEnabled)
             
             // Update menu item state
             if let menu = statusItem?.menu {
@@ -158,17 +184,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    private func setupLaunchAtLogin(enable: Bool) {
+    private func setLoginAtLogin(enabled: Bool) {
         if #available(macOS 13, *) {
             let service = SMAppService.mainApp
             do {
-                if enable {
+                if enabled {
                     try service.register()
                 } else {
                     try service.unregister()
                 }
             } catch {
-                print("Failed to \(enable ? "enable" : "disable") launch at login: \(error)")
+                let actionString = enabled ? "enable" : "disable"
+                print("Failed to \(actionString) launch at login: \(error)")
             }
         } else {
             print("Launch at login requires macOS 13 or later")
@@ -242,7 +269,52 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         
         let response = alert.runModal()
         if response == .alertFirstButtonReturn {
-            setupLaunchAtLogin(enable: true)
+            setLoginAtLogin(enabled: true)
+        }
+    }
+
+    private func printVersionAndExit() {
+        if let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String {
+            print("spacemap \(version)")
+        } else {
+            print("spacemap 1.0.0")
+        }
+        NSApp.terminate(nil)
+    }
+
+    private func printHelpAndExit() {
+        let help = """
+        Usage: spacemap [OPTIONS]
+
+        Options:
+          --version          Print the version and exit
+          --trigger          Toggle the HUD visibility and exit
+          --show-menu        Show the menu bar dropdown (app continues running)
+          --settings         Open the settings window directly (app continues running)
+          --config           Open the config file in the default editor and exit
+          --help             Print this help and exit
+
+        Without any options, spacemap launches and waits for the hotkey (Ctrl+Space) to toggle the HUD.
+        """
+        print(help)
+        NSApp.terminate(nil)
+    }
+
+    private func openConfigAndExit() {
+        let configPath = NSString(string: "~/.config/spacemap/config").expandingTildeInPath
+        let url = URL(fileURLWithPath: configPath)
+        NSWorkspace.shared.open(url)
+        NSApp.terminate(nil)
+    }
+
+    private func setupForTriggerAndExit() {
+        // For --trigger, we still need minimal setup to toggle the HUD
+        NSApp.setActivationPolicy(.prohibited)
+        setupMenubar()
+        // Delay slightly so TCC/LaunchServices finishes registering the app
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            self.hud.toggle()
+            NSApp.terminate(nil)
         }
     }
 }
