@@ -26,6 +26,7 @@ class HUDWindowController {
     private var liveRefreshTimer: Timer?
     private let dragHandler = WindowDragHandler()
     private var lastFocusedSpaceIndex: Int? = nil
+    private var isToggling = false   // <-- NEW: prevents re-entry during toggle animations
     
     // Tokyo Night colors (approximate)
     private struct ThemeColors {
@@ -52,12 +53,13 @@ class HUDWindowController {
     }
     
     func toggle() {
+        guard !isToggling else { return }   // <-- NEW: ignore if already toggling
         NSLog("spacemap/HUD: toggle called, isVisible=\(isVisible)")
         if isVisible { hide() } else { show() }
     }
     
     func show() {
-        guard !isVisible else { return }
+        guard !isVisible, !isToggling else { return }   // <-- NEW: also check isToggling
         NSLog("spacemap/HUD: show() called")
         hide()
         reloadConfig()
@@ -80,10 +82,15 @@ class HUDWindowController {
         lastFocusedSpaceIndex = focused
         isVisible = true
         resetAutoHideTimer()
+        // Reset isToggling after a short delay to allow for animation settle
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.isToggling = false
+        }
     }
     
     func hide() {
-        guard isVisible else { return }
+        guard isVisible, !isToggling else { return }   // <-- NEW: also check isToggling
+        NSLog("spacemap/HUD: hide() called")
         dragHandler.stop()
         autoHideTimer?.invalidate()
         autoHideTimer = nil
@@ -102,6 +109,10 @@ class HUDWindowController {
         dragHandler.cellFrames = []
         dragHandler.cachedWindows = []
         dragHandler.focusedWindowIDAtOpen = nil
+        // Reset isToggling after a short delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.isToggling = false
+        }
     }
     
     // Called by SocketListener on space_changed. Only updates if HUD is already visible.
@@ -229,3 +240,6 @@ class HUDWindowController {
     }
 }
 
+// MARK: - QueueKey for DispatchSpecific
+private let queueKey = DispatchSpecificKey<Void>()
+private let listenerQueue = DispatchQueue(label: "com.spacemap.socketlistener")

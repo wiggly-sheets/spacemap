@@ -42,14 +42,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Check if app is in /Applications folder, if not, prompt to move
         checkApplicationLocation()
         
+        // Ensure symlink exists in /usr/local/bin for easy CLI access
+        ensureSymlink()
+        
         setupMenubar()
         // Delay slightly so TCC/LaunchServices finishes registering the app
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             ConfigReader.silentMode = true
-            ConfigReader.silentMode = true
             let config = ConfigReader.load()
             self.hud.reloadConfig()
-            self.startHotkey(config: config)
+            self.restartHotkey(config: config)
             self.socketListener = SocketListener(
                 socketPath: self.socketPath,
                 healthInterval: config.socketHealthInterval,
@@ -67,9 +69,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             ) { [weak self] _ in
                 guard let self = self else { return }
                 ConfigReader.silentMode = true
-            ConfigReader.silentMode = true
-            let config = ConfigReader.load()
-                self.startHotkey(config: config)
+                let config = ConfigReader.load()
+                self.restartHotkey(config: config)
             }
         }
         
@@ -143,6 +144,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         task.standardError = FileHandle.nullDevice
         try? task.run()
         NSApp.terminate(nil)
+    }
+
+    private func restartHotkey(config: GridConfig) {
+        self.hotkey?.stop()
+        self.hotkey = nil
+        self.startHotkey(config: config)
     }
 
     private func startHotkey(config: GridConfig) {
@@ -315,6 +322,42 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             self.hud.toggle()
             NSApp.terminate(nil)
+        }
+    }
+
+    // Ensure a symlink exists in /usr/local/bin for easy CLI access
+    private func ensureSymlink() {
+        let symlinkPath = "/usr/local/bin/spacemap"
+        let executablePath = Bundle.main.bundleURL.path
+        let fileManager = FileManager.default
+        
+        // If symlink exists, check if it points to the correct executable
+        if fileManager.fileExists(atPath: symlinkPath) {
+            do {
+                let destination = try fileManager.destinationOfSymbolicLink(atPath: symlinkPath)
+                if destination == executablePath {
+                    // Symlink is correct, nothing to do
+                    return
+                }
+                // Otherwise, remove and recreate
+                try fileManager.removeItem(atPath: symlinkPath)
+            } catch {
+                // If we cannot determine the destination, we'll recreate
+                do {
+                    try fileManager.removeItem(atPath: symlinkPath)
+                } catch {
+                    // Ignore error
+                }
+            }
+        }
+        
+        // Create the symlink
+        do {
+            try fileManager.createSymbolicLink(atPath: symlinkPath, withDestinationPath: executablePath)
+        } catch {
+            // Silently fail; user may need to create manually or run with appropriate permissions
+            // Optionally log the error
+            NSLog("spacemap: Failed to create symlink at \(symlinkPath): \(error)")
         }
     }
 }
