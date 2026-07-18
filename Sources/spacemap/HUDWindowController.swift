@@ -57,6 +57,7 @@ class HUDWindowController {
     }
     
     func show() {
+        guard !isVisible else { return }
         NSLog("spacemap/HUD: show() called")
         hide()
         reloadConfig()
@@ -82,6 +83,7 @@ class HUDWindowController {
     }
     
     func hide() {
+        guard isVisible else { return }
         dragHandler.stop()
         autoHideTimer?.invalidate()
         autoHideTimer = nil
@@ -227,11 +229,3 @@ class HUDWindowController {
     }
 }
 
-// MARK: - QueueKey for DispatchSpecific
-private let queueKey = DispatchSpecificKey<Void>()
-private let listenerQueue = DispatchQueue(label: "com.spacemap.socketlistener")
-extension DispatchQueue {
-    static func getSpecific(key: DispatchSpecificKey<Void>) -> Void? {
-        return self.getSpecific(key: key)
-    }
-}

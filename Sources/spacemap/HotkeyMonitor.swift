@@ -69,6 +69,10 @@ class HotkeyMonitor {
                 let monitor = Unmanaged<HotkeyMonitor>.fromOpaque(refcon).takeUnretainedValue()
 
                 guard type == .keyDown else { return Unmanaged.passUnretained(event) }
+                // Ignore auto-repeat events
+                if event.getIntegerValueField(.keyboardEventAutorepeat) != 0 {
+                    return Unmanaged.passUnretained(event)
+                }
                 let keyCode = CGKeyCode(event.getIntegerValueField(.keyboardEventKeycode))
                 let flags = event.flags.intersection([.maskControl, .maskCommand,
                                                       .maskAlternate, .maskShift])
