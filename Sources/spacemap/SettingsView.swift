@@ -273,7 +273,7 @@ struct SettingsView: View {
                     HStack {
                         Text("Space \(spaceIndex):")
                             .frame(width: 80, alignment: .leading)
-                        TextField("Optional name", text: binding(for: spaceIndex))
+                        TextField("", text: binding(for: spaceIndex))
                             .textFieldStyle(.roundedBorder)
                     }
                     .padding(.vertical, 4)
@@ -323,8 +323,8 @@ struct SettingsView: View {
     
     private func binding(for spaceIndex: Int) -> Binding<String> {
         return Binding(
-            get: { spaceNameInputs[spaceIndex, default: ""] },
-            set: { spaceNameInputs[spaceIndex] = $0 }
+            get: { self.spaceNameInputs[spaceIndex, default: ""] },
+            set: { self.spaceNameInputs[spaceIndex] = $0 }
         )
     }
     
