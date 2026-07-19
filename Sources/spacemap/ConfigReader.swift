@@ -204,7 +204,7 @@ case "MODE":
         let content = """
         GRID_COLS=\(d.cols)
         GRID_ROWS=\(d.rows)
-        CELL_STYLE=\(d.cellStyle.rawValue)              # rects | icons | hybrid
+        CELL_STYLE=\(cellStyleName(d.cellStyle))              # rects | icons | hybrid
         HOTKEY=\(hotkeyStr)
         SOCKET_HEALTH_INTERVAL=\(d.socketHealthInterval)
         UI_SCALE=\(d.uiScale)                  # 0.1–1.0
@@ -236,7 +236,7 @@ case "MODE":
         let content = """
         GRID_COLS=\(config.cols)
         GRID_ROWS=\(config.rows)
-        CELL_STYLE=\(config.cellStyle.rawValue)              # rects | icons | hybrid
+        CELL_STYLE=\(cellStyleName(config.cellStyle))              # rects | icons | hybrid
         HOTKEY=\(hotkeyString)
         SOCKET_HEALTH_INTERVAL=\(config.socketHealthInterval)
         UI_SCALE=\(config.uiScale)                  # 0.1–1.0
@@ -311,5 +311,13 @@ case "MODE":
             "n": 45, "m": 46,
         ]
         return alphanum[token]
+    }
+    
+    private static func cellStyleName(_ style: CellStyle) -> String {
+        switch style {
+        case .rects: return "rects"
+        case .icons: return "icons"
+        case .hybrid: return "hybrid"
+        }
     }
 }
