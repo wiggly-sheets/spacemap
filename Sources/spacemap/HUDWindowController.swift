@@ -100,6 +100,8 @@ class HUDWindowController {
             return
         }
         NSLog("spacemap/HUD: hide() called")
+        // Prevent hotkey toggle during hide
+        isToggling = true
         dragHandler.stop()
         autoHideTimer?.invalidate()
         autoHideTimer = nil
@@ -116,7 +118,7 @@ class HUDWindowController {
         dragHandler.cellFrames = []
         dragHandler.cachedWindows = []
         dragHandler.focusedWindowIDAtOpen = nil
-        // Reset isToggling after a short delay
+        // Reset isToggling after a short delay to allow for animation settle
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             self?.isToggling = false
         }
