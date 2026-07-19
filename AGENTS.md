@@ -12,6 +12,20 @@
 - Window drag-and-drop between cells (drag a window onto a cell to move it)
 - Menubar icon for manual show/hide
 
+## Quick Reference for Agents
+- **Entry point**: `Sources/spacemap/App.swift` – sets up menubar, hotkey monitor, socket listener.
+- **HUD controller**: `Sources/spacemap/HUDWindowController.swift` – manages NSPanel, show/hide, auto-hide timer, state refresh.
+- **UI**: `GridView.swift` (container) + `CellView.swift` (per-cell rendering).
+- **Data**: `YabaiClient.swift` – shells out to `/opt/homebrew/bin/yabai` for spaces/windows; `ConfigReader.swift` – reads `~/.config/spacemap/config`.
+- **Hotkey**: `HotkeyMonitor.swift` – global CGEventTap for toggle.
+- **Drag‑and‑drop**: `WindowDragHandler.swift` – second CGEventTap for window drag detection.
+- **Signals**: `SocketListener.swift` – Unix domain socket for yabai `space_changed` events.
+- **Models**: `Models.swift` – data structs (GridConfig, YabaiSpace, etc.).
+- **Settings**: `SettingsView.swift` + `SettingsWindowController.swift` – live‑save config UI.
+- **Build**: Use `make run` to build, install, launch. `make dev1`/`make dev2` for dev cycle.
+- **Config**: Stored at `~/.config/spacemap/config`; reloads on HUD open (except HOTKEY needs restart).
+- **Permissions**: Requires Accessibility permission (prompted on first launch).
+
 ## Architecture
 
 ### Tech Stack
@@ -152,6 +166,18 @@ make archive     # Build signed archive for release
 - Homebrew formula improvements
 
 ## Tasks & Roadmap
+
+### Recently Completed
+- CLI options (--version, --help, --config, --trigger, --show-menu, --settings)
+- Settings menu item (⌘+,)
+- Hotkey rapid-press fix
+- Automatic symlink creation (/usr/local/bin/spacemap)
+- HUD active space highlighting
+- Launch at Login toggle with state indicator
+- Show Space Numbers toggle
+- Move to Applications first-launch prompt
+- Config file auto-generation and self-healing
+- Fixed auto-hide timeout
 
 See [TASKS.md](./TASKS.md) for planned features, bug fixes, and known issues.
 

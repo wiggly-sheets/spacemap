@@ -88,7 +88,6 @@ class HUDWindowController {
         dragHandler.start()
         lastFocusedSpaceIndex = focused
         isVisible = true
-        resetAutoHideTimer()
         // Reset isToggling after a short delay to allow for animation settle
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             self?.isToggling = false

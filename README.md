@@ -243,6 +243,9 @@ Without installing the CLI, you can still run the commands directly:
 | [DEVELOPER.md](./DEVELOPER.md) | Technical deep-dive, debugging, configuration details |
 | [TASKS.md](./TASKS.md) | Roadmap, planned features, bug fixes, known issues |
 | [CONTRIBUTING.md](./CONTRIBUTING.md) | Guidelines for external contributors |
+| [CHEAT_SHEET.md](./CHEAT_SHEET.md) | Quick reference for commands, files, classes, common issues |
+| [FAQ.md](./FAQ.md) | Frequently asked questions and troubleshooting |
+| [API_SUMMARY.md](./API_SUMMARY.md) | Details of structs, classes, methods, and module responsibilities |
 
 ## Developer notes
 

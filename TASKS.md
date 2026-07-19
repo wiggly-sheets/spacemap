@@ -2,6 +2,19 @@
 
 A living list of planned features, known bugs, and future improvements for the project. Items are categorized by priority and status.
 
+## ✅ Completed
+
+- **CLI Options**: Implemented `--version`, `--help`, `--config`, `--trigger`, `--show-menu`, `--settings`
+- **Settings Menu Item**: Added Settings menu item (⌘+,) and made functional
+- **Hotkey Rapid-Press Fix**: Fixed with `isToggling` guard in `HUDWindowController`
+- **Symlink Creation**: Automated creation of `/usr/local/bin/spacemap` symlink at launch via `ensureSymlink()`
+- **HUD Active Space Highlighting**: Ensured live refresh timer calls `refreshState` for active space highlighting
+- **Launch at Login**: Implemented toggle with state indicator and first-launch prompt
+- **Show Space Numbers Toggle**: Implemented and functional
+- **Move to Applications Prompt**: Implemented first-launch prompt to move app to Applications folder
+- **Config File Self-Heal**: Config auto-generates on first launch and self-heals missing keys (`createDefaultConfigFile`, `saveConfig`)
+- **Auto-Hide Timeout Fix**: Fixed spurious reset by removing `hide()` from `show()` and `resetAutoHideTimer()` from `refreshState()`
+
 ## 🚀 High Priority
 
 ### Features
@@ -10,7 +23,7 @@ A living list of planned features, known bugs, and future improvements for the p
 |------|-------------|--------|
 | **App Icon** | Generate and bundle a proper `.icns` file for macOS app bundle. | 🟡 In Progress |
 | **yabai Mandatory Check** | Prevent app launch if yabai is not running. Show critical alert dialog. | ✅ Done |
-| **Space Naming System** | Show space names (from config) in cells instead of just numbers. Support menubar editor. | 🟡 In Progress |
+| **Space Naming System** | Show space names (from config) in cells instead of just numbers. Support menubar editor. | 🟡 In Progress (UI in Settings window pending) |
 | **Accessibility Permission Request** | Replace System Preferences link with direct permission request and polling. | ✅ Done |
 | **Settings Window** | Add a settings window with space name editor and config file reloader. | 🔄 Planned |
 | **Config Validation** | Validate config keys/values on load and log warnings for invalid entries. | 🔄 Planned |
@@ -37,7 +50,7 @@ A living list of planned features, known bugs, and future improvements for the p
 | **Multi-Monitor Awareness** | Show workspaces per display in HUD. | 🔄 Planned |
 | **Window Previews** | Replace rectangles with window thumbnails. | 🔄 Planned |
 | **Drag-and-Drop Reliability** | Improve window drag detection for multi-window apps. | 🔄 Planned |
-| **Keyboard Navigation** | Add arrow-key navigation within HUD. | 🔄 Planned |
+| **Keyboard Navigation** | Add arrow-key and vim-key navigation within HUD. | 🔄 Planned |
 
 ### Performance
 
