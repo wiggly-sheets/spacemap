@@ -339,6 +339,7 @@ struct SettingsView: View {
             }
         }
         }
+        .padding(.horizontal, 20)
         .frame(minWidth: 500)
         .onAppear {
             let config = ConfigReader.load()
