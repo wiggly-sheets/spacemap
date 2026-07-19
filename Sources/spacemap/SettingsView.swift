@@ -4,6 +4,53 @@ import CoreGraphics
 import AppKit
 import ServiceManagement
 
+struct CustomStepper: View {
+    let steps: [Double]
+    @Binding var value: Double
+    
+    var body: some View {
+        HStack {
+            Button(action: { stepDown() }) {
+                Image(systemName: "minus.circle")
+            }
+            .disabled(currentIndex == 0)
+            
+            Slider(value: Binding(
+                get: { Double(currentIndex) },
+                set: { newIndex in
+                    let idx = max(0, min(steps.count - 1, Int(newIndex.rounded())))
+                    value = steps[idx]
+                }
+            ), in: 0...Double(steps.count - 1), step: 1)
+            
+            Button(action: { stepUp() }) {
+                Image(systemName: "plus.circle")
+            }
+            .disabled(currentIndex == steps.count - 1)
+        }
+    }
+    
+    private var currentIndex: Int {
+        steps.firstIndex(of: value) ?? 0
+    }
+    
+    private func stepDown() {
+        if currentIndex > 0 {
+            value = steps[currentIndex - 1]
+        }
+    }
+    
+    private func stepUp() {
+        if currentIndex < steps.count - 1 {
+            value = steps[currentIndex + 1]
+        }
+    }
+}
+
+extension Notification.Name {
+    static let settingsChanged = Notification.Name("settingsChanged")
+}
+
 struct SettingsView: View {
     @State private var cols: Int = 8
     @State private var rows: Int = 2
@@ -26,21 +73,18 @@ struct SettingsView: View {
     private let socketHealthOptions = [15, 30, 45, 60]
     
     private let configPath = NSString(string: "~/.config/spacemap/config").expandingTildeInPath
-    
-private var maxSpacesOptions: [Int] { Array(1...16) }
 
-private var backgroundTransparencySteps: [Double] {
-        // 10 steps: 0.00 to 1.00, approximately equal increments
+    private var maxSpacesOptions: [Int] { Array(1...16) }
+
+    private var backgroundTransparencySteps: [Double] {
         [0.00, 0.11, 0.22, 0.33, 0.44, 0.55, 0.66, 0.77, 0.88, 1.00]
     }
     
     private var uiScaleSteps: [Double] {
-        // 10 steps: 0.2 is middle (index 5)
         [0.05, 0.08, 0.11, 0.14, 0.17, 0.2, 0.3, 0.4, 0.5, 0.6]
     }
     
     private var iconScaleSteps: [Double] {
-        // 10 steps: 0.7 is middle (index 5)
         [0.3, 0.38, 0.46, 0.54, 0.62, 0.7, 0.9, 1.1, 1.3, 1.5]
     }
     
@@ -85,7 +129,6 @@ private var backgroundTransparencySteps: [Double] {
         _iconScale = State(initialValue: nearest(to: config.iconScale, from: iconScaleSteps))
         _showNames = State(initialValue: config.showNames)
         _spaceNamesString = State(initialValue: config.spaceNames.map { "\($0.key):\($0.value)" }.joined(separator: ","))
-        print("spacemap/SettingsView: init() loaded autoHideTimeout=\(config.autoHideTimeout)")
     }
     
     private func saveConfig() {
@@ -112,12 +155,11 @@ private var backgroundTransparencySteps: [Double] {
         let content = lines.joined(separator: "\n")
         do {
             try content.write(toFile: configPath, atomically: true, encoding: .utf8)
-            // Notify any open HUD to reload config
             NotificationCenter.default.post(name: .settingsChanged, object: nil)
         } catch {
             print("Failed to write config: \(error)")
         }
-}
+    }
     
     var body: some View {
         Form {
@@ -145,58 +187,66 @@ private var backgroundTransparencySteps: [Double] {
                     }
                 }
                 .onChange(of: maxSpaces) { _ in saveConfig() }
-                Toggle("Show Space Numbers", isOn: $showNames)
+                Toggle("Show Space Names", isOn: $showNames)
                     .onChange(of: showNames) { _ in saveConfig() }
-                Section {
                 Divider()
                 Text("Space Names (e.g. 1:Term,2:Code)")
                     .font(.headline)
                 TextField("", text: $spaceNamesString)
                     .onChange(of: spaceNamesString) { _ in saveConfig() }
             }
-            }
-
-Section(header: Text("Appearance").font(.title).bold()) {
-            Divider()
-                 Picker("Theme", selection: $theme) {
-                     Text("Default").tag("default")
-                     Text("Tokyo Night").tag("tokyonight")
-                     Text("Catppuccin").tag("catppuccin")
-                     Text("Monokai Dark").tag("monokai-dark")
-                     Text("Monokai Light").tag("monokai-light")
-                     Text("Dracula").tag("dracula")
-                     Text("AYU").tag("ayu")
-                     Text("GitHub").tag("github")
-                     Text("VS Code").tag("vscode")
-                     Text("Xcode").tag("xcode")
-                     Text("Nord").tag("nord")
-                     Text("Atom One Dark").tag("atom-one-dark")
-                 }
-                 .onChange(of: theme) { _ in saveConfig() }
-                 Picker("Background Color", selection: $mode) {
-                     Text("Light").tag(ThemeMode.light)
-                     Text("Dark").tag(ThemeMode.dark)
-                     Text("Auto").tag(ThemeMode.auto)
-                 }
-                 .onChange(of: mode) { _ in saveConfig() }
-VStack(alignment: .leading) {
+            
+            Section(header: Text("Appearance").font(.title).bold()) {
+                Divider()
+                Picker("Theme", selection: $theme) {
+                    Text("Default").tag("default")
+                    Text("Tokyo Night").tag("tokyonight")
+                    Text("Catppuccin").tag("catppuccin")
+                    Text("Monokai Dark").tag("monokai-dark")
+                    Text("Monokai Light").tag("monokai-light")
+                    Text("Dracula").tag("dracula")
+                    Text("AYU").tag("ayu")
+                    Text("GitHub").tag("github")
+                    Text("VS Code").tag("vscode")
+                    Text("Xcode").tag("xcode")
+                    Text("Nord").tag("nord")
+                    Text("Atom One Dark").tag("atom-one-dark")
+                }
+                .onChange(of: theme) { _ in saveConfig() }
+                Picker("Background Color", selection: $mode) {
+                    Text("Light").tag(ThemeMode.light)
+                    Text("Dark").tag(ThemeMode.dark)
+                    Text("Auto").tag(ThemeMode.auto)
+                }
+                .onChange(of: mode) { _ in saveConfig() }
+                
+                VStack(alignment: .leading) {
                     Text("Background Transparency")
+                        .font(.subheadline)
+                        .bold()
                     CustomStepper(steps: backgroundTransparencySteps, value: $backgroundAlpha)
                         .onChange(of: backgroundAlpha) { _ in saveConfig() }
                 }
-                 VStack(alignment: .leading) {
-                     Text("Icon Scale")
-                     CustomStepper(steps: iconScaleSteps, value: $iconScale)
-                         .onChange(of: iconScale) { _ in saveConfig() }
-                 }
-                 VStack(alignment: .leading) {
-                     Text("UI Scale")
-                     CustomStepper(steps: uiScaleSteps, value: $uiScale)
-                         .onChange(of: uiScale) { _ in saveConfig() }
-                 }
-             }
-
-            Section(header: Text("Behavior")) {
+                
+                VStack(alignment: .leading) {
+                    Text("Icon Scale")
+                        .font(.subheadline)
+                        .bold()
+                    CustomStepper(steps: iconScaleSteps, value: $iconScale)
+                        .onChange(of: iconScale) { _ in saveConfig() }
+                }
+                
+                VStack(alignment: .leading) {
+                    Text("UI Scale")
+                        .font(.subheadline)
+                        .bold()
+                    CustomStepper(steps: uiScaleSteps, value: $uiScale)
+                        .onChange(of: uiScale) { _ in saveConfig() }
+                }
+            }
+            
+            Section(header: Text("Behavior").font(.title).bold()) {
+                Divider()
                 HotkeyRecorder(label: "Hotkey", hotkey: $hotkeyString)
                     .onChange(of: hotkeyString) { _ in saveConfig() }
                 Picker("Socket Health Interval (s)", selection: $socketHealthInterval) {
@@ -208,14 +258,15 @@ VStack(alignment: .leading) {
                 Stepper("Auto-hide Timeout (s): \(autoHideTimeout)", value: $autoHideTimeout, in: 0...60)
                     .onChange(of: autoHideTimeout) { _ in saveConfig() }
             }
-
+            
             Section {
+                Divider()
                 Button("Open Config Folder") {
                     openConfigFolder()
                 }
             }
         }
-        .frame(width: 450, height: 650)
+        .frame(width: 480, height: 700)
         .onAppear {
             let config = ConfigReader.load()
             if iconScale != nearest(to: config.iconScale, from: iconScaleSteps) { iconScale = nearest(to: config.iconScale, from: iconScaleSteps) }
@@ -224,12 +275,14 @@ VStack(alignment: .leading) {
             if spaceNamesString != computedSpaceNames { spaceNamesString = computedSpaceNames }
         }
     }
-        let url = URL(fileURLWithPath: NSString(string: "~/.config/spacemap").expandingTildeInPath)
+        
+    let url = URL(fileURLWithPath: NSString(string: "~/.config/spacemap").expandingTildeInPath)
     
     private func openConfigFolder() {
         let url = URL(fileURLWithPath: NSString(string: "~/.config/spacemap").expandingTildeInPath)
         NSWorkspace.shared.open(url)
     }
+    
     private var cellStyleString: String {
         switch cellStyle {
         case .rects: return "rects"
@@ -293,143 +346,4 @@ VStack(alignment: .leading) {
         parts.append(keyString)
         return parts.joined(separator: "+")
     }
-}
-
-// NOTE: CellStyle, ShowMode, ThemeMode, HotkeyConfig imported from Models.swift
-
-struct CustomStepper: View {
-    let steps: [Double]
-    @Binding var value: Double
-    
-    var body: some View {
-        HStack {
-            Button(action: { stepDown() }) {
-                Image(systemName: "minus.circle")
-            }
-            .disabled(currentIndex == 0)
-            
-            Slider(value: Binding(
-                get: { Double(currentIndex) },
-                set: { newIndex in
-                    let idx = max(0, min(steps.count - 1, Int(newIndex.rounded())))
-                    value = steps[idx]
-                }
-            ), in: 0...Double(steps.count - 1), step: 1)
-            
-            Button(action: { stepUp() }) {
-                Image(systemName: "plus.circle")
-            }
-            .disabled(currentIndex == steps.count - 1)
-        }
-    }
-    
-    private var currentIndex: Int {
-        steps.firstIndex(of: value) ?? 0
-    }
-    
-    private func stepDown() {
-        if currentIndex > 0 {
-            value = steps[currentIndex - 1]
-        }
-    }
-    
-    private func stepUp() {
-        if currentIndex < steps.count - 1 {
-            value = steps[currentIndex + 1]
-        }
-    }
-}
-
-// MARK: - HotkeyRecorder
-
-struct HotkeyRecorder: View {
-    let label: String
-    @Binding var hotkey: String
-    @State private var isRecording = false
-    @State private var monitor: Any?
-    
-    var body: some View {
-        HStack {
-            Text(label)
-            Spacer()
-            Button(isRecording ? "Recording..." : hotkey.isEmpty ? "Click to record" : hotkey) {
-                if isRecording {
-                    stopRecording()
-                } else {
-                    startRecording()
-                }
-            }
-            .keyboardShortcut(.defaultAction)
-        }
-    }
-    
-    private func startRecording() {
-        isRecording = true
-        monitor = NSEvent.addGlobalMonitorForEvents(matching: [.keyDown]) { event in
-            guard isRecording else { return }
-            
-            var parts: [String] = []
-            let flags = event.modifierFlags
-            if flags.contains(.control) { parts.append("ctrl") }
-            if flags.contains(.command) { parts.append("cmd") }
-            if flags.contains(.option) { parts.append("alt") }
-            if flags.contains(.shift) { parts.append("shift") }
-            
-            let keyString: String
-            switch Int(event.keyCode) {
-            case 49: keyString = "space"
-            case 48: keyString = "tab"
-            case 36: keyString = "return"
-            case 53: keyString = "escape"
-            case 51: keyString = "delete"
-            case 76: keyString = "delete"
-            case 121: keyString = "pgdn"
-            case 116: keyString = "pgup"
-            case 115: keyString = "home"
-            case 119: keyString = "end"
-            case 123: keyString = "left"
-            case 124: keyString = "right"
-            case 125: keyString = "down"
-            case 126: keyString = "up"
-            case 122: keyString = "f1"
-            case 120: keyString = "f2"
-            case 99:  keyString = "f3"
-            case 118: keyString = "f4"
-            case 96:  keyString = "f5"
-            case 97:  keyString = "f6"
-            case 98:  keyString = "f7"
-            case 100: keyString = "f8"
-            case 101: keyString = "f9"
-            case 109: keyString = "f10"
-            case 103: keyString = "f11"
-            case 111: keyString = "f12"
-            default:
-                if let chars = event.charactersIgnoringModifiers, !chars.isEmpty {
-                    keyString = String(chars.lowercased().first!)
-                } else {
-                    keyString = "\(event.keyCode)"
-                }
-            }
-            
-            parts.append(keyString)
-            let recorded = parts.joined(separator: "+")
-            
-            DispatchQueue.main.async {
-                hotkey = recorded
-                stopRecording()
-            }
-        }
-    }
-    
-    private func stopRecording() {
-        isRecording = false
-        if let monitor = monitor {
-            NSEvent.removeMonitor(monitor)
-        }
-        monitor = nil
-    }
-}
-
-extension Notification.Name {
-    static let settingsChanged = Notification.Name("settingsChanged")
 }
