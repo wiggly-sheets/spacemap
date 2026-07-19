@@ -244,7 +244,6 @@ struct SettingsView: View {
             }
             
             Section(header: Text("Appearance").font(.title).bold()) {
-                Divider()
                 Picker("Theme", selection: $theme) {
                     Text("Default").tag("default")
                     Text("Tokyo Night").tag("tokyonight")
@@ -293,7 +292,6 @@ struct SettingsView: View {
             }
             
             Section(header: Text("Behavior").font(.title).bold()) {
-                Divider()
                 HotkeyRecorder(label: "Hotkey", hotkey: $hotkeyString)
                     .onChange(of: hotkeyString) { _ in saveConfig() }
                 Picker("Socket Health Interval (s)", selection: $socketHealthInterval) {
@@ -311,7 +309,6 @@ struct SettingsView: View {
             }
             
             Section {
-                Divider()
                 Text("Space Names")
                     .font(.title)
                     .bold()
