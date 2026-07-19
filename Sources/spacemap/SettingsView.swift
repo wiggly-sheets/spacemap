@@ -302,8 +302,12 @@ struct SettingsView: View {
                     }
                 }
                 .onChange(of: socketHealthInterval) { _ in saveConfig() }
-                Stepper("Auto-hide Timeout (s): \(autoHideTimeout)", value: $autoHideTimeout, in: 0...60)
-                    .onChange(of: autoHideTimeout) { _ in saveConfig() }
+                HStack {
+                    Spacer()
+                    Stepper("Auto-hide Timeout (s): \(autoHideTimeout)", value: $autoHideTimeout, in: 0...60)
+                        .onChange(of: autoHideTimeout) { _ in saveConfig() }
+                    Spacer()
+                }
             }
             
             Section {
