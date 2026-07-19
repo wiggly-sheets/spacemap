@@ -8,7 +8,7 @@ A native macOS work`spacemap` that shows your yabai workspace grid on demand. Pr
 [![Quick Demo](https://img.youtube.com/vi/oYN-4LCuQnE/0.jpg)](https://www.youtube.com/watch?v=oYN-4LCuQnE)
 
 With [yabai](https://github.com/koekeishiya/yabai) and [skhd](https://github.com/asmvik/skhd) you can set up your desktop switching behavior to be on a grid in the macOS. 
-You just don't have any visual reference that your workspaces are layed out that way. It takes alot of mental gymnastics to keep everything streight in your head.
+You just don't have any visual reference that your workspaces are layed out that way. It takes a lot of mental gymnastics to keep everything streight in your head.
 Spacemap can help you find where you left your things.
 
 Before you run off because I said yabai:
@@ -139,13 +139,13 @@ cp docs/config-examples/spacemap-config-8x2-rects ~/.config/spacemap/config
 ```
 
 ## Install ( in 5 steps )
-1. Install Pre-Requesits 
+1. Install Pre-requisites
 2. Install spacemap
 3. Grant Accessibility Permission
 4. Configure skhd 
 5. Configure spacemap
 
-**Step 1: Install Pre-Requesits**
+**Step 1: Install Pre-requisites**
 ```
 brew install asmvik/formulae/yabai
 brew install asmvik/formulae/skhd
