@@ -206,7 +206,7 @@ struct SettingsView: View {
     var body: some View {
         ScrollView {
             Form {
-            Section(header: Text("Grid").font(.title).bold()) {
+                Section(header: Text("Grid").font(.title).bold()) {
                 Picker("Max Spaces", selection: $maxSpaces) {
                     ForEach(maxSpacesOptions, id: \.self) { n in
                         Text("\(n)").tag(n)
@@ -339,7 +339,7 @@ struct SettingsView: View {
             }
         }
         }
-        .padding(.horizontal, 20)
+        .formStyle(.grouped)
         .frame(minWidth: 500)
         .onAppear {
             let config = ConfigReader.load()
