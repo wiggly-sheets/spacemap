@@ -12,6 +12,7 @@ enum ConfigReader {
             if !silentMode { NSLog("spacemap/ConfigReader: successfully read config from \(path)") }
         } catch {
             if !silentMode { NSLog("spacemap/ConfigReader: failed to read config at \(path) — error: \(error)") }
+            createDefaultConfigFile()
             return .default
         }
 
@@ -124,7 +125,131 @@ case "MODE":
 
         let result = GridConfig(cols: cols, rows: rows, cellStyle: cellStyle, hotkey: hotkey, socketHealthInterval: socketHealthInterval, uiScale: uiScale, autoHideTimeout: autoHideTimeout, theme: theme, showMode: showMode, maxSpaces: maxSpaces, backgroundAlpha: backgroundAlpha, mode: mode, iconScale: iconScale, showNames: showNames, spaceNames: spaceNames)
         if !silentMode { NSLog("spacemap/ConfigReader: loaded cols=\(cols) rows=\(rows) style=\(cellStyle) scale=\(uiScale) theme=\(theme) autoHide=\(autoHideTimeout) showMode=\(showMode) maxSpaces=\(maxSpaces) bgAlpha=\(backgroundAlpha) mode=\(mode) iconScale=\(iconScale) showNames=\(showNames) spaceNames=\(spaceNames.count) hotkey=\(hotkey)") }
+        // Ensure config file contains all keys (add missing ones with current values)
+        saveConfig(result)
         return result
+    }
+
+    private static func createDefaultConfigFile() {
+        let path = NSString(string: "~/.config/spacemap/config").expandingTildeInPath
+        let dir = (path as NSString).deletingLastPathComponent
+        try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
+        let content = """
+        GRID_COLS=6
+        GRID_ROWS=2
+        CELL_STYLE=rects              # rects | icons | hybrid
+        HOTKEY=ctrl+space
+        SOCKET_HEALTH_INTERVAL=60
+        UI_SCALE=0.2                  # 0.1–1.0
+        AUTO_HIDE_TIMEOUT=0           # 0 = disabled, seconds
+        THEME=tokyonight
+        SHOW_MODE=all                 # all | active
+        MAX_SPACES=16
+        BACKGROUND_ALPHA=1.0          # 0.0–1.0
+        MODE=auto                     # light | dark | auto
+        ICON_SCALE=0.9                # 0.5–2.0
+        SHOW_NAMES=false              # true | false
+        SPACE_NAMES=                  # comma-separated, e.g. "1:Term,2:Code"
+        """
+        do {
+            try content.write(toFile: path, atomically: true, encoding: .utf8)
+            if !silentMode { print("spacemap: default config created at \(path)") }
+        } catch {
+            print("spacemap: failed to create default config at \(path): \(error)")
+        }
+    }
+    
+    private static func saveConfig(_ config: GridConfig) {
+        let path = NSString(string: "~/.config/spacemap/config").expandingTildeInPath
+        let dir = (path as NSString).deletingLastPathComponent
+        try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
+        
+        // Convert HotkeyConfig to string
+        let hotkeyString: String
+        let modifiers = config.hotkey.modifiers
+        let keyCode = config.hotkey.keyCode
+        var modString = ""
+        if modifiers.contains(.maskControl) { modString += "ctrl" }
+        if modifiers.contains(.maskCommand) { 
+            if !modString.isEmpty { modString += "+" }
+            modString += "cmd"
+        }
+        if modifiers.contains(.maskAlternate) { 
+            if !modString.isEmpty { modString += "+" }
+            modString += "alt"
+        }
+        if modifiers.contains(.maskShift) { 
+            if !modString.isEmpty { modString += "+" }
+            modString += "shift"
+        }
+        if modString.isEmpty {
+            modString = "none"
+        }
+        // Map keyCode to string
+        let keyString: String
+        switch keyCode {
+        case 49: keyString = "space"
+        case 48: keyString = "tab"
+        case 36: keyString = "return"
+        case 53: keyString = "escape"
+        case 51: keyString = "delete"
+        case 121: keyString = "pgdn"
+        case 116: keyString = "pgup"
+        case 115: keyString = "home"
+        case 119: keyString = "end"
+        case 123: keyString = "left"
+        case 124: keyString = "right"
+        case 125: keyString = "down"
+        case 126: keyString = "up"
+        case 122: keyString = "f1"
+        case 120: keyString = "f2"
+        case 99: keyString = "f3"
+        case 118: keyString = "f4"
+        case 96: keyString = "f5"
+        case 97: keyString = "f6"
+        case 98: keyString = "f7"
+        case 100: keyString = "f8"
+        case 101: keyString = "f9"
+        case 109: keyString = "f10"
+        case 103: keyString = "f11"
+        case 111: keyString = "f12"
+        default:
+            // fallback to alphanumeric mapping
+            let alphanum: [CGKeyCode: String] = [
+                0: "a", 1: "s", 2: "d", 3: "f", 4: "h", 5: "g",
+                6: "z", 7: "x", 8: "c", 9: "v", 11: "b", 12: "q",
+                13: "w", 14: "e", 15: "r", 16: "y", 17: "t", 18: "1",
+                19: "2", 20: "3", 21: "4", 22: "6", 23: "5", 24: "=",
+                25: "9", 26: "7", 27: "-", 28: "8", 29: "0", 31: "o",
+                32: "u", 33: "i", 34: "p", 35: "l", 36: "j", 37: "k", 38: "n", 39: "m"
+            ]
+            keyString = alphanum[keyCode] ?? "unknown"
+        }
+        hotkeyString = (modString == "none" ? "" : modString + "+") + keyString
+        
+        let content = """
+        GRID_COLS=\(config.cols)
+        GRID_ROWS=\(config.rows)
+        CELL_STYLE=\(config.cellStyle.rawValue)              # rects | icons | hybrid
+        HOTKEY=\(hotkeyString)
+        SOCKET_HEALTH_INTERVAL=\(config.socketHealthInterval)
+        UI_SCALE=\(config.uiScale)                  # 0.1–1.0
+        AUTO_HIDE_TIMEOUT=\(config.autoHideTimeout)           # 0 = disabled, seconds
+        THEME=\(config.theme)
+        SHOW_MODE=\(config.showMode.rawValue)                 # all | active
+        MAX_SPACES=\(config.maxSpaces)
+        BACKGROUND_ALPHA=\(config.backgroundAlpha)          # 0.0–1.0
+        MODE=\(config.mode.rawValue)                     # light | dark | auto
+        ICON_SCALE=\(config.iconScale)                # 0.5–2.0
+        SHOW_NAMES=\(config.showNames ? "true" : "false")              # true | false
+        SPACE_NAMES=\(config.spaceNames.map { "\($0.key):\($0.value)" }.joined(separator: ","))                  # comma-separated, e.g. "1:Term,2:Code"
+        """
+        do {
+            try content.write(toFile: path, atomically: true, encoding: .utf8)
+            if !silentMode { print("spacemap: config saved to \(path)") }
+        } catch {
+            print("spacemap: failed to save config to \(path): \(error)")
+        }
     }
 
     private static func parseHotkey(_ value: String) -> HotkeyConfig? {
