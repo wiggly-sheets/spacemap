@@ -12,11 +12,17 @@ class SettingsWindowController: NSWindowController {
             defer: false
         )
         window.center()
-        window.setContentSize(windowRect.size)
         window.title = "spacemap Settings"
         window.contentViewController = hostingController
         window.minSize = NSSize(width: 500, height: 400)
         window.maxSize = NSSize(width: 800, height: 10000)
+        window.orderFrontRegardless()
+        NSApp.activate(ignoringOtherApps: true)
+        window.setFrameUsingName("Settings Window")
+        if !window.frameAutosaveName.isEmpty {
+            window.setFrameAutosaveName("")
+        }
+        window.setFrame(windowRect, display: true)
         self.init(window: window)
     }
     
