@@ -59,11 +59,15 @@ class HUDWindowController {
         NSLog("spacemap/HUD: toggle called, isVisible=\(isVisible)")
         isToggling = true
         if isVisible { hide() } else { show() }
+        // Reset isToggling after a short delay to allow for animation settle
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            self?.isToggling = false
+        }
     }
     
     func show() {
-        guard !isVisible, !isToggling else { 
-            // Already showing; do nothing, keep isToggling true until the current action finishes
+        guard !isVisible else { 
+            // Already showing; do nothing
             return
         }
         NSLog("spacemap/HUD: show() called")
@@ -72,7 +76,6 @@ class HUDWindowController {
         
         panel = makePanel()
         guard let panel else { 
-            isToggling = false
             return
         }
         
@@ -88,20 +91,15 @@ class HUDWindowController {
         dragHandler.start()
         lastFocusedSpaceIndex = focused
         isVisible = true
-        // Reset isToggling after a short delay to allow for animation settle
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-            self?.isToggling = false
-        }
+        resetAutoHideTimer()
     }
     
     func hide() {
         guard isVisible else { 
-            // Already hidden; do nothing, keep isToggling true until the current action finishes
+            // Already hidden; do nothing
             return
         }
         NSLog("spacemap/HUD: hide() called")
-        // Prevent hotkey toggle during hide
-        isToggling = true
         dragHandler.stop()
         autoHideTimer?.invalidate()
         autoHideTimer = nil
@@ -118,10 +116,6 @@ class HUDWindowController {
         dragHandler.cellFrames = []
         dragHandler.cachedWindows = []
         dragHandler.focusedWindowIDAtOpen = nil
-        // Reset isToggling after a short delay to allow for animation settle
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-            self?.isToggling = false
-        }
     }
     
     // Called by SocketListener on space_changed. Only updates if HUD is already visible.
