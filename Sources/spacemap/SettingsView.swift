@@ -76,7 +76,7 @@ struct SettingsView: View {
     
     private let configPath = NSString(string: "~/.config/spacemap/config").expandingTildeInPath
 
-    private var maxSpacesOptions: [Int] { Array(1...maxSpaces) }
+    private var maxSpacesOptions: [Int] { Array(1...16) }
 
     private var backgroundTransparencySteps: [Double] {
         [0.00, 0.11, 0.22, 0.33, 0.44, 0.55, 0.66, 0.77, 0.88, 1.00]
@@ -270,14 +270,18 @@ struct SettingsView: View {
                     .font(.footnote)
                     .foregroundColor(.secondary)
                 ForEach(maxSpacesOptions, id: \.self) { spaceIndex in
-                    HStack {
-                        Text("Space \(spaceIndex):")
-                            .frame(width: 80, alignment: .leading)
-                        TextField("", text: binding(for: spaceIndex))
-                            .textFieldStyle(.roundedBorder)
-                            .id("spaceName-\(spaceIndex)")
+                    Group {
+                        if spaceIndex <= maxSpaces {
+                            HStack {
+                                Text("Space \(spaceIndex):")
+                                    .frame(width: 80, alignment: .leading)
+                                TextField("", text: binding(for: spaceIndex))
+                                    .textFieldStyle(.roundedBorder)
+                                    .id("spaceName-\(spaceIndex)")
+                            }
+                            .padding(.vertical, 4)
+                        }
                     }
-                    .padding(.vertical, 4)
                 }
             }
         }
