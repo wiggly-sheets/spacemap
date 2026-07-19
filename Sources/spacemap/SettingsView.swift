@@ -64,6 +64,7 @@ struct SettingsView: View {
     @State private var theme: String = "default"
     @State private var showMode: ShowMode = .all
     @State private var maxSpaces: Int = 16
+    @State private var gridLayoutIndex: Int = 0
     @State private var backgroundAlpha: Double = 0.3
     @State private var mode: ThemeMode = .auto
     @State private var iconScale: Double = 1.0
@@ -77,6 +78,17 @@ struct SettingsView: View {
     private let configPath = NSString(string: "~/.config/spacemap/config").expandingTildeInPath
 
     private var maxSpacesOptions: [Int] { Array(1...16) }
+
+    private var gridLayouts: [(cols: Int, rows: Int, label: String)] {
+        var layouts: [(Int, Int, String)] = []
+        for c in 1...maxSpaces {
+            if maxSpaces % c == 0 {
+                let r = maxSpaces / c
+                layouts.append((c, r, "\(c)×\(r)"))
+            }
+        }
+        return layouts
+    }
 
     private var backgroundTransparencySteps: [Double] {
         [0.00, 0.11, 0.22, 0.33, 0.44, 0.55, 0.66, 0.77, 0.88, 1.00]
@@ -131,6 +143,19 @@ struct SettingsView: View {
         _iconScale = State(initialValue: nearest(to: config.iconScale, from: iconScaleSteps))
         _showNames = State(initialValue: config.showNames)
         _spaceNameInputs = State(initialValue: config.spaceNames)
+        _gridLayoutIndex = State(initialValue: findBestGridLayoutIndexFor(cols: config.cols, rows: config.rows, maxSpaces: config.maxSpaces))
+    }
+    
+    private func findBestGridLayoutIndexFor(cols: Int, rows: Int, maxSpaces: Int) -> Int {
+        let layouts: [(Int, Int)] = (1...maxSpaces).compactMap { c in
+            maxSpaces % c == 0 ? (c, maxSpaces / c) : nil
+        }
+        for (idx, layout) in layouts.enumerated() {
+            if layout.0 == cols && layout.1 == rows {
+                return idx
+            }
+        }
+        return layouts.isEmpty ? 0 : 0
     }
     
     private func saveConfig() {
@@ -167,35 +192,55 @@ struct SettingsView: View {
         return spaceNameInputs.compactMap { "\($0.key):\($0.value)" }.joined(separator: ",")
     }
     
+    private func findBestGridLayoutIndex() -> Int {
+        let layouts = gridLayouts
+        guard !layouts.isEmpty else { return 0 }
+        for (idx, layout) in layouts.enumerated() {
+            if layout.cols == cols && layout.rows == rows {
+                return idx
+            }
+        }
+        return layouts.firstIndex(where: { $0.cols * $0.rows == maxSpaces }) ?? 0
+    }
+    
     var body: some View {
         ScrollView {
             Form {
             Section(header: Text("Grid").font(.title).bold()) {
-                HStack {
-                    Stepper("Columns: \(cols)", value: $cols, in: 1...20)
-                        .onChange(of: cols) { _ in saveConfig() }
-                    Stepper("Rows: \(rows)", value: $rows, in: 1...10)
-                        .onChange(of: rows) { _ in saveConfig() }
+                Picker("Max Spaces", selection: $maxSpaces) {
+                    ForEach(maxSpacesOptions, id: \.self) { n in
+                        Text("\(n)").tag(n)
+                    }
                 }
+                .onChange(of: maxSpaces) { _ in
+                    gridLayoutIndex = findBestGridLayoutIndex()
+                    let layout = gridLayouts[gridLayoutIndex]
+                    cols = layout.cols
+                    rows = layout.rows
+                    saveConfig()
+                }
+                Picker("Grid Layout", selection: $gridLayoutIndex) {
+                    ForEach(Array(gridLayouts.enumerated()), id: \.offset) { idx, layout in
+                        Text(layout.label).tag(idx)
+                    }
+                }
+                .onChange(of: gridLayoutIndex) { _ in
+                    let layout = gridLayouts[gridLayoutIndex]
+                    cols = layout.cols
+                    rows = layout.rows
+                    saveConfig()
+                }
+                Picker("Show Mode", selection: $showMode) {
+                    Text("All Spaces").tag(ShowMode.all)
+                    Text("Active Spaces").tag(ShowMode.active)
+                }
+                .onChange(of: showMode) { _ in saveConfig() }
                 Picker("Cell Style", selection: $cellStyle) {
                     Text("Rectangles").tag(CellStyle.rects)
                     Text("Icons").tag(CellStyle.icons)
                     Text("Hybrid").tag(CellStyle.hybrid)
                 }
                 .onChange(of: cellStyle) { _ in saveConfig() }
-                Picker("Show Mode", selection: $showMode) {
-                    Text("All Spaces").tag(ShowMode.all)
-                    Text("Active Spaces").tag(ShowMode.active)
-                }
-                .onChange(of: showMode) { _ in saveConfig() }
-                Picker("Max Spaces", selection: $maxSpaces) {
-                    ForEach(maxSpacesOptions, id: \.self) { n in
-                        Text("\(n)").tag(n)
-                    }
-                }
-                .onChange(of: maxSpaces) { _ in saveConfig() }
-                Toggle("Show Space Names", isOn: $showNames)
-                    .onChange(of: showNames) { _ in saveConfig() }
             }
             
             Section(header: Text("Appearance").font(.title).bold()) {
@@ -266,20 +311,24 @@ struct SettingsView: View {
                 Text("Space Names")
                     .font(.title)
                     .bold()
-                Text("(Each input below corresponds to each space number, up to Max Spaces)")
-                    .font(.footnote)
-                    .foregroundColor(.secondary)
-                ForEach(maxSpacesOptions, id: \.self) { spaceIndex in
-                    Group {
-                        if spaceIndex <= maxSpaces {
-                            HStack {
-                                Text("Space \(spaceIndex):")
-                                    .frame(width: 80, alignment: .leading)
-                                TextField("", text: binding(for: spaceIndex))
-                                    .textFieldStyle(.roundedBorder)
-                                    .id("spaceName-\(spaceIndex)")
+                Toggle("Show Space Names", isOn: $showNames)
+                    .onChange(of: showNames) { _ in saveConfig() }
+                if showNames {
+                    Text("(Each input below corresponds to each space number, up to Max Spaces)")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                    ForEach(maxSpacesOptions, id: \.self) { spaceIndex in
+                        Group {
+                            if spaceIndex <= maxSpaces {
+                                HStack {
+                                    Text("Space \(spaceIndex):")
+                                        .frame(width: 80, alignment: .leading)
+                                    TextField("", text: binding(for: spaceIndex))
+                                        .textFieldStyle(.roundedBorder)
+                                        .id("spaceName-\(spaceIndex)")
+                                }
+                                .padding(.vertical, 4)
                             }
-                            .padding(.vertical, 4)
                         }
                     }
                 }
