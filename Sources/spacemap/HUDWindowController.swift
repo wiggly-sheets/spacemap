@@ -23,10 +23,9 @@ class HUDWindowController {
     // the thumbnail layout doesn't flicker during a drag and cachedWindows stays stable.
     private var currentState: GridState? = nil
     private var autoHideTimer: Timer?
-    private var liveRefreshTimer: Timer?
     private let dragHandler = WindowDragHandler()
     private var lastFocusedSpaceIndex: Int? = nil
-    private var isToggling = false   // <-- NEW: prevents re-entry during toggle animations
+    private var isToggling = false   // prevents re-entry during toggle animations
     
     // Tokyo Night colors (approximate)
     private struct ThemeColors {
@@ -53,20 +52,29 @@ class HUDWindowController {
     }
     
     func toggle() {
-        guard !isToggling else { return }   // <-- NEW: ignore if already toggling
+        guard !isToggling else { 
+            NSLog("spacemap/HUD: toggle ignored, isToggling=\(isToggling)")
+            return 
+        }
         NSLog("spacemap/HUD: toggle called, isVisible=\(isVisible)")
+        isToggling = true
         if isVisible { hide() } else { show() }
     }
     
     func show() {
-        guard !isVisible, !isToggling else { return }   // <-- NEW: also check isToggling
+        guard !isVisible, !isToggling else { 
+            // Already showing; do nothing, keep isToggling true until the current action finishes
+            return
+        }
         NSLog("spacemap/HUD: show() called")
-        hide()
         reloadConfig()
         let focused = YabaiClient.queryFocusedSpaceIndex()
         
         panel = makePanel()
-        guard let panel else { return }
+        guard let panel else { 
+            isToggling = false
+            return
+        }
         
         let state = YabaiClient.buildGridState(config: config, focusedIndex: focused)
         currentState = state
@@ -78,24 +86,24 @@ class HUDWindowController {
         renderState(state, panel: panel)
         updateCellFrames(state: state, panel: panel)
         dragHandler.start()
-        startLiveRefreshTimer()
         lastFocusedSpaceIndex = focused
         isVisible = true
         resetAutoHideTimer()
         // Reset isToggling after a short delay to allow for animation settle
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             self?.isToggling = false
         }
     }
     
     func hide() {
-        guard isVisible, !isToggling else { return }   // <-- NEW: also check isToggling
+        guard isVisible else { 
+            // Already hidden; do nothing, keep isToggling true until the current action finishes
+            return
+        }
         NSLog("spacemap/HUD: hide() called")
         dragHandler.stop()
         autoHideTimer?.invalidate()
         autoHideTimer = nil
-        liveRefreshTimer?.invalidate()
-        liveRefreshTimer = nil
         
         if let p = panel {
             p.orderOut(nil)
@@ -110,7 +118,7 @@ class HUDWindowController {
         dragHandler.cachedWindows = []
         dragHandler.focusedWindowIDAtOpen = nil
         // Reset isToggling after a short delay
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             self?.isToggling = false
         }
     }
@@ -130,7 +138,6 @@ class HUDWindowController {
         renderState(state, panel: panel)
         updateCellFrames(state: state, panel: panel)
         lastFocusedSpaceIndex = focused
-        resetAutoHideTimer()
     }
     
     private func renderState(_ state: GridState, panel: NSPanel) {
@@ -223,13 +230,6 @@ class HUDWindowController {
             }
         }
     }
-
-    private func startLiveRefreshTimer() {
-        liveRefreshTimer?.invalidate()
-        liveRefreshTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
-            self?.refreshState()
-        }
-    }
     
     func reloadConfig() {
         _config = nil
@@ -239,7 +239,3 @@ class HUDWindowController {
         NSScreen.main?.frame.height ?? 0
     }
 }
-
-// MARK: - QueueKey for DispatchSpecific
-private let queueKey = DispatchSpecificKey<Void>()
-private let listenerQueue = DispatchQueue(label: "com.spacemap.socketlistener")
