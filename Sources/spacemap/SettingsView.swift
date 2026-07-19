@@ -347,3 +347,90 @@ struct SettingsView: View {
         return parts.joined(separator: "+")
     }
 }
+struct HotkeyRecorder: View {
+    let label: String
+    @Binding var hotkey: String
+    @State private var isRecording = false
+    @State private var monitor: Any?
+    
+    var body: some View {
+        HStack {
+            Text(label)
+            Spacer()
+            Button(isRecording ? "Recording..." : hotkey.isEmpty ? "Click to record" : hotkey) {
+                if isRecording {
+                    stopRecording()
+                } else {
+                    startRecording()
+                }
+            }
+            .keyboardShortcut(.defaultAction)
+        }
+    }
+    
+    private func startRecording() {
+        isRecording = true
+        monitor = NSEvent.addGlobalMonitorForEvents(matching: [.keyDown]) { event in
+            guard isRecording else { return }
+            
+            var parts: [String] = []
+            let flags = event.modifierFlags
+            if flags.contains(.control) { parts.append("ctrl") }
+            if flags.contains(.command) { parts.append("cmd") }
+            if flags.contains(.option) { parts.append("alt") }
+            if flags.contains(.shift) { parts.append("shift") }
+            
+            let keyString: String
+            switch Int(event.keyCode) {
+            case 49: keyString = "space"
+            case 48: keyString = "tab"
+            case 36: keyString = "return"
+            case 53: keyString = "escape"
+            case 51: keyString = "delete"
+            case 76: keyString = "delete"
+            case 121: keyString = "pgdn"
+            case 116: keyString = "pgup"
+            case 115: keyString = "home"
+            case 119: keyString = "end"
+            case 123: keyString = "left"
+            case 124: keyString = "right"
+            case 125: keyString = "down"
+            case 126: keyString = "up"
+            case 122: keyString = "f1"
+            case 120: keyString = "f2"
+            case 99:  keyString = "f3"
+            case 118: keyString = "f4"
+            case 96:  keyString = "f5"
+            case 97:  keyString = "f6"
+            case 98:  keyString = "f7"
+            case 100: keyString = "f8"
+            case 101: keyString = "f9"
+            case 109: keyString = "f10"
+            case 103: keyString = "f11"
+            case 111: keyString = "f12"
+            default:
+                if let chars = event.charactersIgnoringModifiers, !chars.isEmpty {
+                    keyString = String(chars.lowercased().first!)
+                } else {
+                    keyString = "\(event.keyCode)"
+                }
+            }
+            
+            parts.append(keyString)
+            let recorded = parts.joined(separator: "+")
+            
+            DispatchQueue.main.async {
+                hotkey = recorded
+                stopRecording()
+            }
+        }
+    }
+    
+    private func stopRecording() {
+        isRecording = false
+        if let monitor = monitor {
+            NSEvent.removeMonitor(monitor)
+        }
+        monitor = nil
+    }
+}
