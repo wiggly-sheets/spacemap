@@ -6,7 +6,7 @@ enum CellStyle: Int, CaseIterable, Identifiable {
     var id: Int { rawValue }
 }
 enum ShowMode: String, CaseIterable, Identifiable { case all, active; var id: String { rawValue } }
-enum ThemeMode: String, CaseIterable, Identifiable { case light, dark, automatic; var id: String { rawValue } }
+enum ThemeMode: String, CaseIterable, Identifiable { case light, dark, auto; var id: String { rawValue } }
 
 struct HotkeyConfig {
     var keyCode: CGKeyCode
@@ -33,7 +33,7 @@ struct GridConfig {
     var showNames: Bool // show space names overlay
     var spaceNames: [Int: String] // space id to name mapping
 
-    static let `default` = GridConfig(cols: 8, rows: 2, cellStyle: .rects, hotkey: .default, socketHealthInterval: 60, uiScale: 1.0, autoHideTimeout: 5, theme: "default", showMode: .all, maxSpaces: 16, backgroundAlpha: 0.3, mode: .automatic, iconScale: 1.0, showNames: true, spaceNames: [:])
+    static let `default` = GridConfig(cols: 8, rows: 2, cellStyle: .rects, hotkey: .default, socketHealthInterval: 60, uiScale: 1.0, autoHideTimeout: 5, theme: "default", showMode: .all, maxSpaces: 16, backgroundAlpha: 0.3, mode: .auto, iconScale: 1.0, showNames: true, spaceNames: [:])
 }
 
 struct AppTheme {

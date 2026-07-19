@@ -97,10 +97,10 @@ enum ConfigReader {
                 }
 case "MODE":
                  switch value.lowercased() {
-                 case "light": mode = .light
-                 case "dark":  mode = .dark
-                 case "auto": mode = .automatic
-                 default:     mode = .automatic
+              case "light": mode = .light
+              case "dark":  mode = .dark
+              case "auto", "automatic": mode = .auto
+              default:     mode = .auto
                  }
              case "ICON_SCALE":
                  if let v = Double(value), v >= 0.5 && v <= 2.0 {
@@ -130,62 +130,26 @@ case "MODE":
         return result
     }
 
-    private static func createDefaultConfigFile() {
-        let path = NSString(string: "~/.config/spacemap/config").expandingTildeInPath
-        let dir = (path as NSString).deletingLastPathComponent
-        try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
-        let content = """
-        GRID_COLS=6
-        GRID_ROWS=2
-        CELL_STYLE=rects              # rects | icons | hybrid
-        HOTKEY=ctrl+space
-        SOCKET_HEALTH_INTERVAL=60
-        UI_SCALE=0.2                  # 0.1–1.0
-        AUTO_HIDE_TIMEOUT=0           # 0 = disabled, seconds
-        THEME=tokyonight
-        SHOW_MODE=all                 # all | active
-        MAX_SPACES=16
-        BACKGROUND_ALPHA=1.0          # 0.0–1.0
-        MODE=auto                     # light | dark | auto
-        ICON_SCALE=0.9                # 0.5–2.0
-        SHOW_NAMES=false              # true | false
-        SPACE_NAMES=                  # comma-separated, e.g. "1:Term,2:Code"
-        """
-        do {
-            try content.write(toFile: path, atomically: true, encoding: .utf8)
-            if !silentMode { print("spacemap: default config created at \(path)") }
-        } catch {
-            print("spacemap: failed to create default config at \(path): \(error)")
-        }
-    }
-    
-    private static func saveConfig(_ config: GridConfig) {
-        let path = NSString(string: "~/.config/spacemap/config").expandingTildeInPath
-        let dir = (path as NSString).deletingLastPathComponent
-        try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
-        
-        // Convert HotkeyConfig to string
-        let hotkeyString: String
-        let modifiers = config.hotkey.modifiers
-        let keyCode = config.hotkey.keyCode
+    private static func hotkeyToString(_ hotkey: HotkeyConfig) -> String {
+        let modifiers = hotkey.modifiers
+        let keyCode = hotkey.keyCode
         var modString = ""
         if modifiers.contains(.maskControl) { modString += "ctrl" }
-        if modifiers.contains(.maskCommand) { 
+        if modifiers.contains(.maskCommand) {
             if !modString.isEmpty { modString += "+" }
             modString += "cmd"
         }
-        if modifiers.contains(.maskAlternate) { 
+        if modifiers.contains(.maskAlternate) {
             if !modString.isEmpty { modString += "+" }
             modString += "alt"
         }
-        if modifiers.contains(.maskShift) { 
+        if modifiers.contains(.maskShift) {
             if !modString.isEmpty { modString += "+" }
             modString += "shift"
         }
         if modString.isEmpty {
             modString = "none"
         }
-        // Map keyCode to string
         let keyString: String
         switch keyCode {
         case 49: keyString = "space"
@@ -214,7 +178,6 @@ case "MODE":
         case 103: keyString = "f11"
         case 111: keyString = "f12"
         default:
-            // fallback to alphanumeric mapping
             let alphanum: [CGKeyCode: String] = [
                 0: "a", 1: "s", 2: "d", 3: "f", 4: "h", 5: "g",
                 6: "z", 7: "x", 8: "c", 9: "v", 11: "b", 12: "q",
@@ -225,7 +188,47 @@ case "MODE":
             ]
             keyString = alphanum[keyCode] ?? "unknown"
         }
-        hotkeyString = (modString == "none" ? "" : modString + "+") + keyString
+        return (modString == "none" ? "" : modString + "+") + keyString
+    }
+
+    private static func createDefaultConfigFile() {
+        let path = NSString(string: "~/.config/spacemap/config").expandingTildeInPath
+        let dir = (path as NSString).deletingLastPathComponent
+        try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
+        let d = GridConfig.default
+        let hotkeyStr = hotkeyToString(d.hotkey)
+        let modeStr = d.mode == .auto ? "auto" : d.mode.rawValue
+        let content = """
+        GRID_COLS=\(d.cols)
+        GRID_ROWS=\(d.rows)
+        CELL_STYLE=\(d.cellStyle.rawValue)              # rects | icons | hybrid
+        HOTKEY=\(hotkeyStr)
+        SOCKET_HEALTH_INTERVAL=\(d.socketHealthInterval)
+        UI_SCALE=\(d.uiScale)                  # 0.1–1.0
+        AUTO_HIDE_TIMEOUT=\(d.autoHideTimeout)           # 0 = disabled, seconds
+        THEME=\(d.theme)
+        SHOW_MODE=\(d.showMode.rawValue)                 # all | active
+        MAX_SPACES=\(d.maxSpaces)
+        BACKGROUND_ALPHA=\(d.backgroundAlpha)          # 0.0–1.0
+        MODE=\(modeStr)                     # light | dark | auto
+        ICON_SCALE=\(d.iconScale)                # 0.5–2.0
+        SHOW_NAMES=\(d.showNames ? "true" : "false")              # true | false
+        SPACE_NAMES=\(d.spaceNames.map { "\($0.key):\($0.value)" }.joined(separator: ","))                  # comma-separated, e.g. "1:Term,2:Code"
+        """
+        do {
+            try content.write(toFile: path, atomically: true, encoding: .utf8)
+            if !silentMode { print("spacemap: default config created at \(path)") }
+        } catch {
+            print("spacemap: failed to create default config at \(path): \(error)")
+        }
+    }
+    
+    private static func saveConfig(_ config: GridConfig) {
+        let path = NSString(string: "~/.config/spacemap/config").expandingTildeInPath
+        let dir = (path as NSString).deletingLastPathComponent
+        try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
+        
+        let hotkeyString = hotkeyToString(config.hotkey)
         
         let content = """
         GRID_COLS=\(config.cols)

@@ -25,7 +25,7 @@ struct CellView: View {
         switch mode {
         case .light: return false
         case .dark:  return true
-        case .automatic:  return NSApp.effectiveAppearance.name == .darkAqua
+        case .auto:  return NSApp.effectiveAppearance.name == .darkAqua
         }
     }
     
@@ -44,7 +44,7 @@ init(spaceIndex: Int,
             onSelect: @escaping (Int) -> Void,
             uiScale: CGFloat = 1.0,
             theme: String = "default",
-            mode: ThemeMode = .automatic,
+            mode: ThemeMode = .auto,
             iconScale: CGFloat = 1.0,
             showNames: Bool = true) {
         self.spaceIndex = spaceIndex

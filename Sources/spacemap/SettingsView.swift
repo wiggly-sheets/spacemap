@@ -16,7 +16,7 @@ struct SettingsView: View {
     @State private var showMode: ShowMode = .all
     @State private var maxSpaces: Int = 16
     @State private var backgroundAlpha: Double = 0.3
-    @State private var mode: ThemeMode = .automatic
+    @State private var mode: ThemeMode = .auto
     @State private var iconScale: Double = 1.0
     @State private var showNames: Bool = true
     @State private var isRecording = false
@@ -164,7 +164,7 @@ Section(header: Text("Appearance")) {
                  Picker("Background Color", selection: $mode) {
                      Text("Light").tag(ThemeMode.light)
                      Text("Dark").tag(ThemeMode.dark)
-                     Text("Auto").tag(ThemeMode.automatic)
+                     Text("Auto").tag(ThemeMode.auto)
                  }
                  .onChange(of: mode) { _ in saveConfig() }
 VStack(alignment: .leading) {
@@ -230,7 +230,7 @@ VStack(alignment: .leading) {
         switch mode {
         case .light: return "light"
         case .dark: return "dark"
-        case .automatic: return "auto"
+        case .auto: return "auto"
         }
     }
     

@@ -11,7 +11,7 @@ struct GridView: View {
         switch state.config.mode {
         case .light: return false
         case .dark:  return true
-        case .automatic:  return NSApp.effectiveAppearance.name == .darkAqua
+        case .auto:  return NSApp.effectiveAppearance.name == .darkAqua
         }
     }
     
