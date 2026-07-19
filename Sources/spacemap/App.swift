@@ -73,6 +73,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 guard let self = self else { return }
                 ConfigReader.silentMode = true
                 let config = ConfigReader.load()
+                self.hud.reloadConfig()
                 self.restartHotkey(config: config)
             }
         }

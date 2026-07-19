@@ -342,6 +342,7 @@ struct SettingsView: View {
             let config = ConfigReader.load()
             if iconScale != nearest(to: config.iconScale, from: iconScaleSteps) { iconScale = nearest(to: config.iconScale, from: iconScaleSteps) }
             if showNames != config.showNames { showNames = config.showNames }
+            if autoHideTimeout != config.autoHideTimeout { autoHideTimeout = config.autoHideTimeout }
             let computedSpaceNames = config.spaceNames
             if spaceNameInputs != computedSpaceNames { spaceNameInputs = computedSpaceNames }
         }
