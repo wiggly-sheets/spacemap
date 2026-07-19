@@ -51,6 +51,57 @@ extension Notification.Name {
     static let settingsChanged = Notification.Name("settingsChanged")
 }
 
+enum CellStyle: Int, CaseIterable, Identifiable {
+    case rects, icons, hybrid
+    var id: Int { rawValue }
+}
+
+enum ShowMode: String, CaseIterable, Identifiable { case all, active; var id: String { rawValue } }
+enum ThemeMode: String, CaseIterable, Identifiable { case light, dark, auto; var id: String { rawValue } }
+
+struct HotkeyConfig {
+    var keyCode: CGKeyCode
+    var modifiers: CGEventFlags
+
+    static let `default` = HotkeyConfig(keyCode: 121, modifiers: .maskControl)
+}
+
+struct GridConfig {
+    var cols: Int
+    var rows: Int
+    var cellStyle: CellStyle
+    var hotkey: HotkeyConfig
+    var socketHealthInterval: Int
+    var uiScale: Double
+    var autoHideTimeout: Int
+    var theme: String
+    var showMode: ShowMode
+    var maxSpaces: Int
+    var backgroundAlpha: Double
+    var mode: ThemeMode
+    var iconScale: Double
+    var showNames: Bool
+    var spaceNames: [Int: String]
+
+    static let `default` = GridConfig(
+        cols: 8,
+        rows: 2,
+        cellStyle: .rects,
+        hotkey: .default,
+        socketHealthInterval: 60,
+        uiScale: 1.0,
+        autoHideTimeout: 5,
+        theme: "default",
+        showMode: .all,
+        maxSpaces: 16,
+        backgroundAlpha: 0.3,
+        mode: .auto,
+        iconScale: 1.0,
+        showNames: true,
+        spaceNames: [:]
+    )
+}
+
 struct SettingsView: View {
     @State private var cols: Int = 8
     @State private var rows: Int = 2
@@ -66,7 +117,7 @@ struct SettingsView: View {
     @State private var mode: ThemeMode = .auto
     @State private var iconScale: Double = 1.0
     @State private var showNames: Bool = true
-    @State private var spaceNamesString: String = ""
+    @State private var spaceNameInputs: [Int: String] = [:]
     @State private var isRecording = false
     @State private var monitor: Any?
     
@@ -128,7 +179,7 @@ struct SettingsView: View {
         _mode = State(initialValue: config.mode)
         _iconScale = State(initialValue: nearest(to: config.iconScale, from: iconScaleSteps))
         _showNames = State(initialValue: config.showNames)
-        _spaceNamesString = State(initialValue: config.spaceNames.map { "\($0.key):\($0.value)" }.joined(separator: ","))
+        _spaceNameInputs = State(initialValue: config.spaceNames)
     }
     
     private func saveConfig() {
@@ -149,7 +200,7 @@ struct SettingsView: View {
             "MODE=\(modeString)",
             "ICON_SCALE=\(iconScale)",
             "SHOW_NAMES=\(showNamesStr)",
-            "SPACE_NAMES=\(spaceNamesString)",
+            "SPACE_NAMES=\(formatSpaceNames())",
             "LAUNCH_AT_LOGIN=\(launchAtLogin ? "true" : "false")"
         ]
         let content = lines.joined(separator: "\n")
@@ -159,6 +210,10 @@ struct SettingsView: View {
         } catch {
             print("Failed to write config: \(error)")
         }
+    }
+    
+    private func formatSpaceNames() -> String {
+        return spaceNameInputs.compactMap { "\($0.key):\($0.value)" }.joined(separator: ",")
     }
     
     var body: some View {
@@ -189,11 +244,6 @@ struct SettingsView: View {
                 .onChange(of: maxSpaces) { _ in saveConfig() }
                 Toggle("Show Space Names", isOn: $showNames)
                     .onChange(of: showNames) { _ in saveConfig() }
-                Divider()
-                Text("Space Names (e.g. 1:Term,2:Code)")
-                    .font(.headline)
-                TextField("", text: $spaceNamesString)
-                    .onChange(of: spaceNamesString) { _ in saveConfig() }
             }
             
             Section(header: Text("Appearance").font(.title).bold()) {
@@ -261,8 +311,20 @@ struct SettingsView: View {
             
             Section {
                 Divider()
-                Button("Open Config Folder") {
-                    openConfigFolder()
+                Text("Space Names")
+                    .font(.title)
+                    .bold()
+                Text("(Each input below corresponds to each space number, up to Max Spaces)")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+                ForEach(maxSpacesOptions, id: \.self) { spaceIndex in
+                    HStack {
+                        Text("Space \(spaceIndex):")
+                            .frame(width: 80, alignment: .leading)
+                        TextField("Optional name", text: binding(for: spaceIndex))
+                            .textFieldStyle(RoundedRectangleTextFieldStyle())
+                    }
+                    .padding(.vertical, 4)
                 }
             }
         }
@@ -271,15 +333,15 @@ struct SettingsView: View {
             let config = ConfigReader.load()
             if iconScale != nearest(to: config.iconScale, from: iconScaleSteps) { iconScale = nearest(to: config.iconScale, from: iconScaleSteps) }
             if showNames != config.showNames { showNames = config.showNames }
-            let computedSpaceNames = config.spaceNames.map { "\($0.key):\($0.value)" }.joined(separator: ",")
-            if spaceNamesString != computedSpaceNames { spaceNamesString = computedSpaceNames }
+            let computedSpaceNames = config.spaceNames
+            if spaceNameInputs != computedSpaceNames { spaceNameInputs = computedSpaceNames }
         }
     }
         
-    let url = URL(fileURLWithPath: NSString(string: "~/.config/spacemap").expandingTildeInPath)
+    let url = URL(fileURLWithPath: NSString(string: "~/.config/spacemap/config").expandingTildeInPath)
     
     private func openConfigFolder() {
-        let url = URL(fileURLWithPath: NSString(string: "~/.config/spacemap").expandingTildeInPath)
+        let url = URL(fileURLWithPath: NSString(string: "~/.config/spacemap/config").expandingTildeInPath)
         NSWorkspace.shared.open(url)
     }
     
@@ -304,6 +366,13 @@ struct SettingsView: View {
         case .dark: return "dark"
         case .auto: return "auto"
         }
+    }
+    
+    private func binding(for spaceIndex: Int) -> Binding<String> {
+        return Binding(
+            get: { spaceNameInputs[spaceIndex, default: ""] },
+            set: { spaceNameInputs[spaceIndex] = $0 }
+        )
     }
     
     static func hotkeyStringFrom(_ hotkey: HotkeyConfig) -> String {
@@ -347,6 +416,9 @@ struct SettingsView: View {
         return parts.joined(separator: "+")
     }
 }
+
+// MARK: - HotkeyRecorder
+
 struct HotkeyRecorder: View {
     let label: String
     @Binding var hotkey: String
