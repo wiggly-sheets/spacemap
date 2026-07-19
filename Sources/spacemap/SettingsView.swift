@@ -275,6 +275,7 @@ struct SettingsView: View {
                             .frame(width: 80, alignment: .leading)
                         TextField("", text: binding(for: spaceIndex))
                             .textFieldStyle(.roundedBorder)
+                            .id("spaceName-\(spaceIndex)")
                     }
                     .padding(.vertical, 4)
                 }
