@@ -12,6 +12,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         let args = ProcessInfo.processInfo.arguments
         
+        // Ensure symlink first, before any early exits from CLI flags
+        ensureSymlink()
+        
         #if !DEBUG
         // Handle CLI arguments that cause immediate exit
         if args.contains("--version") {
@@ -328,36 +331,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // Ensure a symlink exists in /usr/local/bin for easy CLI access
     private func ensureSymlink() {
         let symlinkPath = "/usr/local/bin/spacemap"
-        let executablePath = Bundle.main.executablePath ?? Bundle.main.bundleURL.appendingPathComponent("Contents/MacOS/spacemap").path
+        let executablePath = "/Applications/spacemap.app/Contents/MacOS/spacemap"
         let fileManager = FileManager.default
-        
-        // If symlink exists, check if it points to the correct executable
-        if fileManager.fileExists(atPath: symlinkPath) {
-            do {
-                let destination = try fileManager.destinationOfSymbolicLink(atPath: symlinkPath)
-                if destination == executablePath {
-                    // Symlink is correct, nothing to do
-                    return
-                }
-                // Otherwise, remove and recreate
-                try fileManager.removeItem(atPath: symlinkPath)
-            } catch {
-                // If we cannot determine the destination, we'll recreate
-                do {
-                    try fileManager.removeItem(atPath: symlinkPath)
-                } catch {
-                    // Ignore error
-                }
-            }
-        }
-        
-        // Create the symlink
+
+        // Always remove any existing symlink first (handles broken/self-referential symlinks)
+        try? fileManager.removeItem(atPath: symlinkPath)
+
         do {
             try fileManager.createSymbolicLink(atPath: symlinkPath, withDestinationPath: executablePath)
         } catch {
-            // Silently fail; user may need to create manually or run with appropriate permissions
-            // Optionally log the error
-            NSLog("spacemap: Failed to create symlink at \(symlinkPath): \(error)")
+            print("spacemap: failed to create symlink at \(symlinkPath): \(error)")
         }
     }
 }

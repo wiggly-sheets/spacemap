@@ -117,42 +117,11 @@ private var backgroundTransparencySteps: [Double] {
         } catch {
             print("Failed to write config: \(error)")
         }
-    }
-    
-private func saveConfigWithValue(_ timeout: Int) {
-    let showNamesStr = showNames ? "true" : "false"
-    let launchAtLogin = SMAppService.mainApp.status == .enabled
-    let lines = [
-        "GRID_COLS=\(cols)",
-        "GRID_ROWS=\(rows)",
-        "CELL_STYLE=\(cellStyleString)",
-        "HOTKEY=\(hotkeyString)",
-        "SOCKET_HEALTH_INTERVAL=\(socketHealthInterval)",
-        "UI_SCALE=\(uiScale)",
-        "AUTO_HIDE_TIMEOUT=\(timeout)",
-        "THEME=\(theme)",
-        "SHOW_MODE=\(showModeString)",
-        "MAX_SPACES=\(maxSpaces)",
-        "BACKGROUND_ALPHA=\(backgroundAlpha)",
-        "MODE=\(modeString)",
-        "ICON_SCALE=\(iconScale)",
-"SHOW_NAMES=\(showNamesStr)",
-            "SPACE_NAMES=\(spaceNamesString)",
-            "LAUNCH_AT_LOGIN=\(launchAtLogin ? "true" : "false")"
-        ]
-    let content = lines.joined(separator: "\n")
-    do {
-        try content.write(toFile: configPath, atomically: true, encoding: .utf8)
-        NotificationCenter.default.post(name: .settingsChanged, object: nil)
-        print("spacemap/SettingsView: saveConfigWithValue wrote AUTO_HIDE_TIMEOUT=\(timeout)")
-    } catch {
-        print("Failed to write config: \(error)")
-    }
 }
-
+    
     var body: some View {
         Form {
-            Section(header: Text("Grid")) {
+            Section(header: Text("Grid").font(.title).bold()) {
                 HStack {
                     Stepper("Columns: \(cols)", value: $cols, in: 1...20)
                         .onChange(of: cols) { _ in saveConfig() }
@@ -178,11 +147,17 @@ private func saveConfigWithValue(_ timeout: Int) {
                 .onChange(of: maxSpaces) { _ in saveConfig() }
                 Toggle("Show Space Numbers", isOn: $showNames)
                     .onChange(of: showNames) { _ in saveConfig() }
-                TextField("Space Names (e.g. 1:Term,2:Code)", text: $spaceNamesString)
+                Section {
+                Divider()
+                Text("Space Names (e.g. 1:Term,2:Code)")
+                    .font(.headline)
+                TextField("", text: $spaceNamesString)
                     .onChange(of: spaceNamesString) { _ in saveConfig() }
             }
+            }
 
-Section(header: Text("Appearance")) {
+Section(header: Text("Appearance").font(.title).bold()) {
+            Divider()
                  Picker("Theme", selection: $theme) {
                      Text("Default").tag("default")
                      Text("Tokyo Night").tag("tokyonight")
@@ -231,9 +206,7 @@ VStack(alignment: .leading) {
                 }
                 .onChange(of: socketHealthInterval) { _ in saveConfig() }
                 Stepper("Auto-hide Timeout (s): \(autoHideTimeout)", value: $autoHideTimeout, in: 0...60)
-                    .onChange(of: autoHideTimeout) { newValue in
-                        saveConfigWithValue(newValue)
-                    }
+                    .onChange(of: autoHideTimeout) { _ in saveConfig() }
             }
 
             Section {
@@ -244,25 +217,11 @@ VStack(alignment: .leading) {
         }
         .frame(width: 450, height: 650)
         .onAppear {
-            // Load config only if values not already set (avoid overwriting UI changes)
             let config = ConfigReader.load()
-            if cols != config.cols { cols = config.cols }
-            if rows != config.rows { rows = config.rows }
-            if cellStyle != config.cellStyle { cellStyle = config.cellStyle }
-            if hotkeyString != SettingsView.hotkeyStringFrom(config.hotkey) { hotkeyString = SettingsView.hotkeyStringFrom(config.hotkey) }
-            if socketHealthInterval != nearest(to: config.socketHealthInterval, from: socketHealthOptions) { socketHealthInterval = nearest(to: config.socketHealthInterval, from: socketHealthOptions) }
-            if uiScale != nearest(to: config.uiScale, from: uiScaleSteps) { uiScale = nearest(to: config.uiScale, from: uiScaleSteps) }
-            // Avoid resetting autoHideTimeout here – it is managed by saveConfigWithValue
-            if theme != config.theme { theme = config.theme }
-            if showMode != config.showMode { showMode = config.showMode }
-            if maxSpaces != config.maxSpaces { maxSpaces = config.maxSpaces }
-            if backgroundAlpha != nearest(to: config.backgroundAlpha, from: backgroundTransparencySteps) { backgroundAlpha = nearest(to: config.backgroundAlpha, from: backgroundTransparencySteps) }
-            if mode != config.mode { mode = config.mode }
             if iconScale != nearest(to: config.iconScale, from: iconScaleSteps) { iconScale = nearest(to: config.iconScale, from: iconScaleSteps) }
             if showNames != config.showNames { showNames = config.showNames }
             let computedSpaceNames = config.spaceNames.map { "\($0.key):\($0.value)" }.joined(separator: ",")
             if spaceNamesString != computedSpaceNames { spaceNamesString = computedSpaceNames }
-            print("spacemap/SettingsView: onAppear loaded autoHideTimeout=\(config.autoHideTimeout), state now=\(self.autoHideTimeout)")
         }
     }
         let url = URL(fileURLWithPath: NSString(string: "~/.config/spacemap").expandingTildeInPath)
