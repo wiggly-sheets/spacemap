@@ -19,6 +19,7 @@ struct SettingsView: View {
     @State private var mode: ThemeMode = .auto
     @State private var iconScale: Double = 1.0
     @State private var showNames: Bool = true
+    @State private var spaceNamesString: String = ""
     @State private var isRecording = false
     @State private var monitor: Any?
     
@@ -83,29 +84,44 @@ private var backgroundTransparencySteps: [Double] {
         _mode = State(initialValue: config.mode)
         _iconScale = State(initialValue: nearest(to: config.iconScale, from: iconScaleSteps))
         _showNames = State(initialValue: config.showNames)
+        _spaceNamesString = State(initialValue: config.spaceNames.map { "\($0.key):\($0.value)" }.joined(separator: ","))
+        print("spacemap/SettingsView: init() loaded autoHideTimeout=\(config.autoHideTimeout)")
     }
     
-private func saveConfig() {
-    let showNamesStr = showNames ? "true" : "false"
-    let launchAtLogin = SMAppService.mainApp.status == .enabled
-    
-    // Preserve existing AUTO_HIDE_TIMEOUT from file if present and valid
-    var autoHideTimeout = self.autoHideTimeout
-    if let existing = try? String(contentsOfFile: configPath, encoding: .utf8) {
-        for line in existing.components(separatedBy: .newlines) {
-            let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard trimmed.hasPrefix("AUTO_HIDE_TIMEOUT=") else { continue }
-            let raw = trimmed.dropFirst("AUTO_HIDE_TIMEOUT=".count)
-            let cleaned = String(raw).trimmingCharacters(in: .whitespacesAndNewlines)
-            if let commentIdx = cleaned.firstIndex(of: "#") {
-                let val = cleaned[..<commentIdx].trimmingCharacters(in: .whitespacesAndNewlines)
-                if let v = Int(val), v >= 0 { autoHideTimeout = v }
-            } else {
-                if let v = Int(cleaned), v >= 0 { autoHideTimeout = v }
-            }
+    private func saveConfig() {
+        let showNamesStr = showNames ? "true" : "false"
+        let launchAtLogin = SMAppService.mainApp.status == .enabled
+        let lines = [
+            "GRID_COLS=\(cols)",
+            "GRID_ROWS=\(rows)",
+            "CELL_STYLE=\(cellStyleString)",
+            "HOTKEY=\(hotkeyString)",
+            "SOCKET_HEALTH_INTERVAL=\(socketHealthInterval)",
+            "UI_SCALE=\(uiScale)",
+            "AUTO_HIDE_TIMEOUT=\(autoHideTimeout)",
+            "THEME=\(theme)",
+            "SHOW_MODE=\(showModeString)",
+            "MAX_SPACES=\(maxSpaces)",
+            "BACKGROUND_ALPHA=\(backgroundAlpha)",
+            "MODE=\(modeString)",
+            "ICON_SCALE=\(iconScale)",
+            "SHOW_NAMES=\(showNamesStr)",
+            "SPACE_NAMES=\(spaceNamesString)",
+            "LAUNCH_AT_LOGIN=\(launchAtLogin ? "true" : "false")"
+        ]
+        let content = lines.joined(separator: "\n")
+        do {
+            try content.write(toFile: configPath, atomically: true, encoding: .utf8)
+            // Notify any open HUD to reload config
+            NotificationCenter.default.post(name: .settingsChanged, object: nil)
+        } catch {
+            print("Failed to write config: \(error)")
         }
     }
     
+private func saveConfigWithValue(_ timeout: Int) {
+    let showNamesStr = showNames ? "true" : "false"
+    let launchAtLogin = SMAppService.mainApp.status == .enabled
     let lines = [
         "GRID_COLS=\(cols)",
         "GRID_ROWS=\(rows)",
@@ -113,21 +129,22 @@ private func saveConfig() {
         "HOTKEY=\(hotkeyString)",
         "SOCKET_HEALTH_INTERVAL=\(socketHealthInterval)",
         "UI_SCALE=\(uiScale)",
-        "AUTO_HIDE_TIMEOUT=\(autoHideTimeout)",
+        "AUTO_HIDE_TIMEOUT=\(timeout)",
         "THEME=\(theme)",
         "SHOW_MODE=\(showModeString)",
         "MAX_SPACES=\(maxSpaces)",
         "BACKGROUND_ALPHA=\(backgroundAlpha)",
         "MODE=\(modeString)",
         "ICON_SCALE=\(iconScale)",
-        "SHOW_NAMES=\(showNamesStr)",
-        "LAUNCH_AT_LOGIN=\(launchAtLogin ? "true" : "false")"
-    ]
+"SHOW_NAMES=\(showNamesStr)",
+            "SPACE_NAMES=\(spaceNamesString)",
+            "LAUNCH_AT_LOGIN=\(launchAtLogin ? "true" : "false")"
+        ]
     let content = lines.joined(separator: "\n")
     do {
         try content.write(toFile: configPath, atomically: true, encoding: .utf8)
-        // Notify any open HUD to reload config
         NotificationCenter.default.post(name: .settingsChanged, object: nil)
+        print("spacemap/SettingsView: saveConfigWithValue wrote AUTO_HIDE_TIMEOUT=\(timeout)")
     } catch {
         print("Failed to write config: \(error)")
     }
@@ -161,6 +178,8 @@ private func saveConfig() {
                 .onChange(of: maxSpaces) { _ in saveConfig() }
                 Toggle("Show Space Numbers", isOn: $showNames)
                     .onChange(of: showNames) { _ in saveConfig() }
+                TextField("Space Names (e.g. 1:Term,2:Code)", text: $spaceNamesString)
+                    .onChange(of: spaceNamesString) { _ in saveConfig() }
             }
 
 Section(header: Text("Appearance")) {
@@ -212,7 +231,9 @@ VStack(alignment: .leading) {
                 }
                 .onChange(of: socketHealthInterval) { _ in saveConfig() }
                 Stepper("Auto-hide Timeout (s): \(autoHideTimeout)", value: $autoHideTimeout, in: 0...60)
-                    .onChange(of: autoHideTimeout) { _ in saveConfig() }
+                    .onChange(of: autoHideTimeout) { newValue in
+                        saveConfigWithValue(newValue)
+                    }
             }
 
             Section {
@@ -223,21 +244,25 @@ VStack(alignment: .leading) {
         }
         .frame(width: 450, height: 650)
         .onAppear {
+            // Load config only if values not already set (avoid overwriting UI changes)
             let config = ConfigReader.load()
-            cols = config.cols
-            rows = config.rows
-            cellStyle = config.cellStyle
-            hotkeyString = SettingsView.hotkeyStringFrom(config.hotkey)
-            socketHealthInterval = nearest(to: config.socketHealthInterval, from: socketHealthOptions)
-            uiScale = nearest(to: config.uiScale, from: uiScaleSteps)
-            autoHideTimeout = config.autoHideTimeout
-            theme = config.theme
-            showMode = config.showMode
-            maxSpaces = config.maxSpaces
-            backgroundAlpha = nearest(to: config.backgroundAlpha, from: backgroundTransparencySteps)
-            mode = config.mode
-            iconScale = nearest(to: config.iconScale, from: iconScaleSteps)
-            showNames = config.showNames
+            if cols != config.cols { cols = config.cols }
+            if rows != config.rows { rows = config.rows }
+            if cellStyle != config.cellStyle { cellStyle = config.cellStyle }
+            if hotkeyString != SettingsView.hotkeyStringFrom(config.hotkey) { hotkeyString = SettingsView.hotkeyStringFrom(config.hotkey) }
+            if socketHealthInterval != nearest(to: config.socketHealthInterval, from: socketHealthOptions) { socketHealthInterval = nearest(to: config.socketHealthInterval, from: socketHealthOptions) }
+            if uiScale != nearest(to: config.uiScale, from: uiScaleSteps) { uiScale = nearest(to: config.uiScale, from: uiScaleSteps) }
+            // Avoid resetting autoHideTimeout here – it is managed by saveConfigWithValue
+            if theme != config.theme { theme = config.theme }
+            if showMode != config.showMode { showMode = config.showMode }
+            if maxSpaces != config.maxSpaces { maxSpaces = config.maxSpaces }
+            if backgroundAlpha != nearest(to: config.backgroundAlpha, from: backgroundTransparencySteps) { backgroundAlpha = nearest(to: config.backgroundAlpha, from: backgroundTransparencySteps) }
+            if mode != config.mode { mode = config.mode }
+            if iconScale != nearest(to: config.iconScale, from: iconScaleSteps) { iconScale = nearest(to: config.iconScale, from: iconScaleSteps) }
+            if showNames != config.showNames { showNames = config.showNames }
+            let computedSpaceNames = config.spaceNames.map { "\($0.key):\($0.value)" }.joined(separator: ",")
+            if spaceNamesString != computedSpaceNames { spaceNamesString = computedSpaceNames }
+            print("spacemap/SettingsView: onAppear loaded autoHideTimeout=\(config.autoHideTimeout), state now=\(self.autoHideTimeout)")
         }
     }
         let url = URL(fileURLWithPath: NSString(string: "~/.config/spacemap").expandingTildeInPath)

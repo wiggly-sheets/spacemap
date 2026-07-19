@@ -328,7 +328,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // Ensure a symlink exists in /usr/local/bin for easy CLI access
     private func ensureSymlink() {
         let symlinkPath = "/usr/local/bin/spacemap"
-        let executablePath = Bundle.main.bundleURL.path
+        let executablePath = Bundle.main.executablePath ?? Bundle.main.bundleURL.appendingPathComponent("Contents/MacOS/spacemap").path
         let fileManager = FileManager.default
         
         // If symlink exists, check if it points to the correct executable

@@ -75,8 +75,9 @@ enum ConfigReader {
             case "AUTO_HIDE_TIMEOUT":
                 if let v = Int(value), v >= 0 {
                     autoHideTimeout = v
+                    print("spacemap/ConfigReader: PARSED autoHideTimeout=\(v) from value='\(value)'")
                 } else {
-                    print("spacemap: invalid AUTO_HIDE_TIMEOUT '\(value)', using default")
+                    print("spacemap/ConfigReader: FAILED to parse AUTO_HIDE_TIMEOUT value='\(value)'")
                 }
             case "THEME":
                 theme = value
@@ -230,23 +231,6 @@ case "MODE":
         let dir = (path as NSString).deletingLastPathComponent
         try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
         
-        // Preserve existing AUTO_HIDE_TIMEOUT value if present and valid
-        var autoHideTimeout = config.autoHideTimeout
-        if let existing = try? String(contentsOfFile: path, encoding: .utf8) {
-            for line in existing.components(separatedBy: .newlines) {
-                let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
-                guard trimmed.hasPrefix("AUTO_HIDE_TIMEOUT=") else { continue }
-                let raw = trimmed.dropFirst("AUTO_HIDE_TIMEOUT=".count)
-                let cleaned = String(raw).trimmingCharacters(in: .whitespacesAndNewlines)
-                if let commentIdx = cleaned.firstIndex(of: "#") {
-                    let val = cleaned[..<commentIdx].trimmingCharacters(in: .whitespacesAndNewlines)
-                    if let v = Int(val), v >= 0 { autoHideTimeout = v }
-                } else {
-                    if let v = Int(cleaned), v >= 0 { autoHideTimeout = v }
-                }
-            }
-        }
-        
         let hotkeyString = hotkeyToString(config.hotkey)
         
         let content = """
@@ -256,7 +240,7 @@ case "MODE":
         HOTKEY=\(hotkeyString)
         SOCKET_HEALTH_INTERVAL=\(config.socketHealthInterval)
         UI_SCALE=\(config.uiScale)                  # 0.1–1.0
-        AUTO_HIDE_TIMEOUT=\(autoHideTimeout)           # 0 = disabled, seconds
+        AUTO_HIDE_TIMEOUT=\(config.autoHideTimeout)           # 0 = disabled, seconds
         THEME=\(config.theme)
         SHOW_MODE=\(config.showMode.rawValue)                 # all | active
         MAX_SPACES=\(config.maxSpaces)
