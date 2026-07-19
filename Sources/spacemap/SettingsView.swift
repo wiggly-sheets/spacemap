@@ -71,23 +71,41 @@ private var backgroundTransparencySteps: [Double] {
         let config = ConfigReader.load()
         _cols = State(initialValue: config.cols)
         _rows = State(initialValue: config.rows)
-        _cellStyle = State(initialValue: cellStyle)
+        _cellStyle = State(initialValue: config.cellStyle)
         _hotkeyString = State(initialValue: SettingsView.hotkeyStringFrom(config.hotkey))
         _socketHealthInterval = State(initialValue: nearest(to: config.socketHealthInterval, from: socketHealthOptions))
         _uiScale = State(initialValue: nearest(to: config.uiScale, from: uiScaleSteps))
         _autoHideTimeout = State(initialValue: config.autoHideTimeout)
         _theme = State(initialValue: config.theme)
-        _showMode = State(initialValue: showMode)
-        _maxSpaces = State(initialValue: maxSpaces)
+        _showMode = State(initialValue: config.showMode)
+        _maxSpaces = State(initialValue: config.maxSpaces)
         _backgroundAlpha = State(initialValue: nearest(to: config.backgroundAlpha, from: backgroundTransparencySteps))
-        _mode = State(initialValue: mode)
-        _iconScale = State(initialValue: nearest(to: iconScale, from: iconScaleSteps))
-        _showNames = State(initialValue: showNames)
+        _mode = State(initialValue: config.mode)
+        _iconScale = State(initialValue: nearest(to: config.iconScale, from: iconScaleSteps))
+        _showNames = State(initialValue: config.showNames)
     }
     
 private func saveConfig() {
     let showNamesStr = showNames ? "true" : "false"
     let launchAtLogin = SMAppService.mainApp.status == .enabled
+    
+    // Preserve existing AUTO_HIDE_TIMEOUT from file if present and valid
+    var autoHideTimeout = self.autoHideTimeout
+    if let existing = try? String(contentsOfFile: configPath, encoding: .utf8) {
+        for line in existing.components(separatedBy: .newlines) {
+            let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard trimmed.hasPrefix("AUTO_HIDE_TIMEOUT=") else { continue }
+            let raw = trimmed.dropFirst("AUTO_HIDE_TIMEOUT=".count)
+            let cleaned = String(raw).trimmingCharacters(in: .whitespacesAndNewlines)
+            if let commentIdx = cleaned.firstIndex(of: "#") {
+                let val = cleaned[..<commentIdx].trimmingCharacters(in: .whitespacesAndNewlines)
+                if let v = Int(val), v >= 0 { autoHideTimeout = v }
+            } else {
+                if let v = Int(cleaned), v >= 0 { autoHideTimeout = v }
+            }
+        }
+    }
+    
     let lines = [
         "GRID_COLS=\(cols)",
         "GRID_ROWS=\(rows)",
@@ -204,6 +222,23 @@ VStack(alignment: .leading) {
             }
         }
         .frame(width: 450, height: 650)
+        .onAppear {
+            let config = ConfigReader.load()
+            cols = config.cols
+            rows = config.rows
+            cellStyle = config.cellStyle
+            hotkeyString = SettingsView.hotkeyStringFrom(config.hotkey)
+            socketHealthInterval = nearest(to: config.socketHealthInterval, from: socketHealthOptions)
+            uiScale = nearest(to: config.uiScale, from: uiScaleSteps)
+            autoHideTimeout = config.autoHideTimeout
+            theme = config.theme
+            showMode = config.showMode
+            maxSpaces = config.maxSpaces
+            backgroundAlpha = nearest(to: config.backgroundAlpha, from: backgroundTransparencySteps)
+            mode = config.mode
+            iconScale = nearest(to: config.iconScale, from: iconScaleSteps)
+            showNames = config.showNames
+        }
     }
         let url = URL(fileURLWithPath: NSString(string: "~/.config/spacemap").expandingTildeInPath)
     
