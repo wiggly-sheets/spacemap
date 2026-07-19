@@ -8,7 +8,12 @@ let package = Package(
         .executableTarget(
             name: "spacemap",
             path: "Sources/spacemap",
-            exclude: ["Info.plist"]
+            exclude: ["Info.plist"],
+            resources: [
+                .process("AppIcon.icns"),
+                .process("spacemap.icns"),
+                .process("Assets.xcassets"),
+            ]
         )
     ]
 )
