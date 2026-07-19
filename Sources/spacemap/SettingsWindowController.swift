@@ -4,9 +4,10 @@ import SwiftUI
 class SettingsWindowController: NSWindowController {
     convenience init() {
         let hostingController = NSHostingController(rootView: SettingsView())
+        let windowRect = NSRect(x: 0, y: 0, width: 520, height: 800)
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 460, height: 660),
-            styleMask: [.titled, .closable],
+            contentRect: windowRect,
+            styleMask: [.titled, .closable, .resizable, .miniaturizable],
             backing: .buffered,
             defer: false
         )
@@ -14,6 +15,7 @@ class SettingsWindowController: NSWindowController {
         window.setFrameAutosaveName("Settings Window")
         window.title = "spacemap Settings"
         window.contentViewController = hostingController
+        window.minSize = NSSize(width: 500, height: 700)
         self.init(window: window)
     }
     
