@@ -37,14 +37,16 @@ enum ConfigReader {
         for line in contents.components(separatedBy: .newlines) {
             let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !trimmed.hasPrefix("#"), !trimmed.isEmpty else { continue }
-            let parts = trimmed.components(separatedBy: "=")
-            guard parts.count == 2 else { continue }
-            let key = parts[0].trimmingCharacters(in: .whitespacesAndNewlines)
-            var value = parts[1].trimmingCharacters(in: .whitespacesAndNewlines)
-            // Strip inline comment (anything after a # that follows whitespace)
-            if let commentIdx = value.firstIndex(of: "#") {
-                value = String(value[..<commentIdx]).trimmingCharacters(in: .whitespacesAndNewlines)
+            // Strip inline comment: " #" marks start of comment
+            let stripped: String
+            if let commentRange = trimmed.range(of: " #") {
+                stripped = String(trimmed[..<commentRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+            } else {
+                stripped = trimmed
             }
+            guard let firstEqual = stripped.firstIndex(of: "=") else { continue }
+            let key = String(stripped[..<firstEqual]).trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+            let value = String(stripped[stripped.index(after: firstEqual)...]).trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
             switch key {
             case "GRID_COLS": cols = Int(value) ?? cols
             case "GRID_ROWS": rows = Int(value) ?? rows
