@@ -8,7 +8,9 @@ enum ConfigReader {
         let path = NSString(string: "~/.config/spacemap/config").expandingTildeInPath
         let contents: String
         do {
-            contents = try String(contentsOfFile: path, encoding: .utf8)
+            var raw = try String(contentsOfFile: path, encoding: .utf8)
+            if raw.hasPrefix("\u{FEFF}") { raw = String(raw.dropFirst()) }
+            contents = raw
             if !silentMode { NSLog("spacemap/ConfigReader: successfully read config from \(path)") }
         } catch {
             if !silentMode { NSLog("spacemap/ConfigReader: failed to read config at \(path) — error: \(error)") }
@@ -33,15 +35,15 @@ enum ConfigReader {
         var spaceNames: [Int: String] = [:]
 
         for line in contents.components(separatedBy: .newlines) {
-            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !trimmed.hasPrefix("#"), !trimmed.isEmpty else { continue }
             let parts = trimmed.components(separatedBy: "=")
             guard parts.count == 2 else { continue }
-            let key = parts[0].trimmingCharacters(in: .whitespaces)
-            var value = parts[1].trimmingCharacters(in: .whitespaces)
+            let key = parts[0].trimmingCharacters(in: .whitespacesAndNewlines)
+            var value = parts[1].trimmingCharacters(in: .whitespacesAndNewlines)
             // Strip inline comment (anything after a # that follows whitespace)
             if let commentIdx = value.firstIndex(of: "#") {
-                value = String(value[..<commentIdx]).trimmingCharacters(in: .whitespaces)
+                value = String(value[..<commentIdx]).trimmingCharacters(in: .whitespacesAndNewlines)
             }
             switch key {
             case "GRID_COLS": cols = Int(value) ?? cols
