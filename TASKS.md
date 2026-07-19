@@ -12,7 +12,7 @@ A living list of planned features, known bugs, and future improvements for the p
 - **Launch at Login**: Implemented toggle with state indicator and first-launch prompt
 - **Show Space Numbers Toggle**: Implemented and functional
 - **Move to Applications Prompt**: Implemented first-launch prompt to move app to Applications folder
-- **Config File Self-Heal**: Config auto-generates on first launch and self-heals missing keys. Fixed: `createDefaultConfigFile()` now uses `GridConfig.default` values instead of mismatched hardcoded values. Fixed: `ThemeMode.automatic` renamed to `.auto` with rawValue "auto" for consistent serialization.
+- **Config File Self-Heal**: Config auto-generates on first launch and self-heals missing keys. Fixed: `createDefaultConfigFile()` now uses `GridConfig.default` values instead of mismatched hardcoded values. Fixed: `ThemeMode.automatic` renamed to `.auto` with rawValue "auto" for consistent serialization. Fixed: BOM (\u{FEFF}) and CR/LF handling in config parser (uses `whitespacesAndNewlines` for all trimming).
 - **Auto-Hide Timeout Fix**: Fixed HUD not hiding and hotkey double-trigger by correcting show/hide guard logic and ensuring auto-hide timer is reset on show.
 
 ## 🚀 High Priority
