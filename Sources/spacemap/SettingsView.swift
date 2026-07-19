@@ -11,7 +11,7 @@ struct SettingsView: View {
     @State private var hotkeyString: String = "ctrl+pgdn"
     @State private var socketHealthInterval: Int = 60
     @State private var uiScale: Double = 1.0
-    @State private var autoHideTimeout: Int = 5
+    @State private var autoHideTimeout: Int = 0
     @State private var theme: String = "default"
     @State private var showMode: ShowMode = .all
     @State private var maxSpaces: Int = 16
