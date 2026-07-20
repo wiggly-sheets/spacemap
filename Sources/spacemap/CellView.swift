@@ -220,10 +220,7 @@ var body: some View {
     }
     
     private func appIcon(for appName: String) -> NSImage? {
-        NSWorkspace.shared.runningApplications
-            .first { $0.localizedName == appName }
-            .flatMap { $0.bundleURL }
-            .map { NSWorkspace.shared.icon(forFile: $0.path) }
+        IconCache.shared.icon(for: appName)
     }
     
     private func thumbnailImage(_ spaceIndex: Int) -> some View {
