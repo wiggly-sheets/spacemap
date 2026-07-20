@@ -175,6 +175,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func showSettingsWindow() {
+        NSApp.setActivationPolicy(.regular)
         let settingsWindowController = SettingsWindowController()
         settingsWindowController.showWindow()
     }

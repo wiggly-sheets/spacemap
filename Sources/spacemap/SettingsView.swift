@@ -333,6 +333,7 @@ struct SettingsView: View {
                                     TextField("", text: binding(for: spaceIndex))
                                         .textFieldStyle(.roundedBorder)
                                         .id("spaceName-\(spaceIndex)")
+                                        .onChange(of: binding(for: spaceIndex).wrappedValue) { _ in saveConfig() }
                                 }
                                 .padding(.vertical, 4)
                             }
