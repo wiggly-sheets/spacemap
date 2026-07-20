@@ -39,6 +39,10 @@ Window positions are drawn as colored rectangles inside each cell (one color per
 | Action | Result |
 |--------|--------|
 | `Ctrl+PgDn` | Toggle HUD open/closed |
+| Arrow keys (←↑↓→) | Navigate spaces in grid (when enabled) |
+| Vim keys (hjkl) | Navigate spaces in grid (when enabled) |
+| `Escape` | Close HUD |
+| `Return` | Jump to selected space |
 | Switch desktops while HUD is open | Active cell updates live |
 | Click on a workspace | Switches to workspace and closes spacemap |
 | Drag a window onto a cell | Moves the window to that space |
@@ -80,7 +84,9 @@ CELL_STYLE=rects
 | Option | Values | Default | Description |
 |--------|--------|---------|-------------|
 | `CELL_STYLE` | `rects`, `icons`, `thumbnails` | `rects` | How windows are drawn in each cell. `thumbnails` requires Screen Recording permission |
-| `THEME` | `default`, `tokyonight`, `catppuccin`, `monokai-dark`, `monokai-light`, `dracula`, `ayu`, `github`, `vscode`, `xcode`, `nord`, `atom-one-dark` | `default` | Color theme. Controls HUD background and focused-space highlight color |
+| `THEME` | theme name | `default` | Color theme. Edit `.smthemes` files in `~/.config/spacemap/themes/` to customize or add new themes |
+| `VIM_KEYS` | `true`, `false` | `false` | Navigate spaces with hjkl when HUD is visible |
+| `ARROW_KEYS` | `true`, `false` | `false` | Navigate spaces with arrow keys when HUD is visible |
 | `UI_SCALE` | `0.1`–`1.0` | `1.0` | Scale multiplier for HUD size |
 | `BACKGROUND_ALPHA` | `0.0`–`1.0` | `0.3` | HUD background transparency (0=transparent, 1=opaque) |
 | `MODE` | `dark`, `light`, `auto` | `auto` | HUD background appearance. `auto` follows system setting |

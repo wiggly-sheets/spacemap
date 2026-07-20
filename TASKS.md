@@ -28,6 +28,9 @@ A living list of planned features, known bugs, and future improvements for the p
 - **Config Validation**: Validates keys/values on load, logs warnings for invalid entries
 - **DMG Assets**: DMG installer with /Applications symlink
 - **HUD Pinning**: Implemented via `AUTO_HIDE_TIMEOUT=0` (never auto-hide)
+- **File-based Theme System**: `.smthemes` files in `~/.config/spacemap/themes/`, editable text files, auto-seeded on first launch
+- **Grid-aware Keyboard Navigation**: Arrow keys + vim keys (hjkl) with row/column wrapping
+- **Dynamic yabai Path**: Auto-detects ARM (`/opt/homebrew/bin/yabai`) or Intel (`/usr/local/bin/yabai`) via FileManager
 
 ## 🚀 High Priority
 
@@ -36,7 +39,7 @@ A living list of planned features, known bugs, and future improvements for the p
 | Task | Description | Status |
 |------|-------------|--------|
 | **Icon Caching** | Cache app icons via `IconCache` singleton to avoid re-fetching on every render | ✅ Done |
-| **Dynamic yabai Path** | Auto-detect yabai location (`/opt/homebrew/bin/yabai` or `/usr/local/bin/yabai`) for Intel Mac support | 🔄 Planned |
+| **Dynamic yabai Path** | Auto-detect yabai location (`/opt/homebrew/bin/yabai` or `/usr/local/bin/yabai`) for Intel Mac support | ✅ Done |
 
 ### Bug Fixes
 
@@ -54,7 +57,7 @@ A living list of planned features, known bugs, and future improvements for the p
 
 | Task | Description | Status |
 |------|-------------|--------|
-| **Theme Files (.smthemes)** | Expose themes as editable files in `~/.config/spacemap/themes/`. Default greyscale theme, import/export | 🔄 Planned |
+| **Theme Files (.smthemes)** | Expose themes as editable files in `~/.config/spacemap/themes/`. Default greyscale theme, import/export | ✅ Done |
 | **Drag-to-Swap** | Swap windows between spaces via drag-and-drop within the HUD | 🔄 Planned |
 | **Custom Cell Colors** | Allow per-space/app custom colors in config | 🔄 Planned |
 | **Grid Gap/Padding Customization** | Add config options for spacing between cells | 🔄 Planned |
@@ -77,7 +80,7 @@ A living list of planned features, known bugs, and future improvements for the p
 |------|-------------|--------|
 | **i18n Localization** | Spanish, German, Italian, French, and other major languages | 🔄 Planned |
 | **Hotkey Conflicts UI** | Show menubar conflicts with other apps | 🔄 Planned |
-| **Keyboard Navigation** | Arrow-key and vim-key navigation within HUD (currently handled via skhd) | 🔄 Planned |
+| **Keyboard Navigation** | Arrow-key and vim-key navigation within HUD (currently handled via skhd) | ✅ Done |
 
 ### Integration
 

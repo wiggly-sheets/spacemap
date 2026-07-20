@@ -16,7 +16,8 @@
 - **Entry point**: `Sources/spacemap/App.swift` – sets up menubar, hotkey monitor, socket listener.
 - **HUD controller**: `Sources/spacemap/HUDWindowController.swift` – manages NSPanel, show/hide, auto-hide timer, state refresh.
 - **UI**: `GridView.swift` (container) + `CellView.swift` (per-cell rendering).
-- **Data**: `YabaiClient.swift` – shells out to `/opt/homebrew/bin/yabai` for spaces/windows; `ConfigReader.swift` – reads `~/.config/spacemap/config`.
+- **Data**: `YabaiClient.swift` – auto-detects yabai (`/opt/homebrew/bin/yabai` or `/usr/local/bin/yabai`) for spaces/windows; `ConfigReader.swift` – reads `~/.config/spacemap/config`.
+- **Themes**: `ThemeManager.swift` – loads `.smthemes` files from `~/.config/spacemap/themes/`, seeds built-in themes on first launch.
 - **Hotkey**: `HotkeyMonitor.swift` – global CGEventTap for toggle.
 - **Drag‑and‑drop**: `WindowDragHandler.swift` – second CGEventTap for window drag detection.
 - **Signals**: `SocketListener.swift` – Unix domain socket for yabai `space_changed` events.
@@ -51,6 +52,7 @@ Sources/spacemap/
 ├── Models.swift           # Data structures (GridConfig, YabaiSpace, etc.)
 ├── ThumbnailCache.swift   # ScreenCaptureKit capture, per-space caching (macOS 14+)
 ├── IconCache.swift         # App icon cache to avoid repeated NSWorkspace lookups
+├── ThemeManager.swift      # Loads .smthemes files, seeds built-in themes on first launch
 ├── SettingsView.swift     # Settings window UI with live config save
 ├── SettingsWindowController.swift # AppKit window wrapper for SettingsView
 └── Info.plist            # App bundle metadata
@@ -130,7 +132,7 @@ make archive     # Build signed archive for release
 
 ## Known Limitations / Gotchas
 
-1. **yabai path hardcoded:** `/opt/homebrew/bin/yabai` - doesn't support other install locations (no PATH search)
+1. **yabai path auto-detected:** Checks `/opt/homebrew/bin/yabai` (ARM) then `/usr/local/bin/yabai` (Intel) via `FileManager`
 2. **Homebrew-specific:** Brew formula only, no other package managers
 3. **SwiftUI performance:** Each HUD open creates a new NSHostingView. The state is cached during a drag, but the view is recreated.
 4. **Icon strip flicker:** On space change, `CellView` rerenders and re-fetches icons via `NSWorkspace.shared.icon(forFile:)` which is potentially expensive
@@ -141,7 +143,7 @@ make archive     # Build signed archive for release
 ## Potential Extension Points
 
 ### Appearance
-- Custom cell colors, backgrounds, or opacity
+- ~~Custom cell colors, backgrounds, or opacity~~ ✅ Theme files with rect1/rect2/rect3
 - Custom fonts/sizes for space numbers
 - Rounded corners, borders, shadow customization
 - Animations for cell focus/hover
@@ -153,7 +155,7 @@ make archive     # Build signed archive for release
 
 ### Features
 - Show window titles on hover
-- Keyboard navigation within HUD (arrows + enter)
+- ~~Keyboard navigation within HUD (arrows + enter)~~ ✅ Arrow keys + vim keys with grid-aware wrapping
 - Pin HUD to always show (like a dashboard)
 - Window thumbnail previews instead of rectangles
 - Filter/hide specific apps from the grid
@@ -186,13 +188,15 @@ make archive     # Build signed archive for release
 - Screen Recording permissions link in menubar
 - Cell opacity / inactive space dimming
 - Thumbnail cell style (ScreenCaptureKit, experimental)
+- File-based theme system (.smthemes files in ~/.config/spacemap/themes/)
+- Grid-aware keyboard navigation (arrow keys + vim keys with wrapping)
+- Dynamic yabai path detection (ARM + Intel)
 
 See [TASKS.md](./TASKS.md) for planned features, bug fixes, and known issues.
 
 ## Questions
 
-1. **Why only `/opt/homebrew/bin/yabai`?** What about Intel Macs with `/usr/local/bin/yabai` or non-brew installs?
-2. **Electron app?** The screenshot in the README shows what looks like an electron-style window. Is there a web/JS component, or is this pure Swift? (It is pure Swift with SwiftUI, the screenshot is just the HUD).
+1. **Electron app?** The screenshot in the README shows what looks like an electron-style window. Is there a web/JS component, or is this pure Swift? (It is pure Swift with SwiftUI, the screenshot is just the HUD).
 3. **i18n?** No localization is present. Are there plans for it?
 4. **Accessibility of the config?** The config file uses a simple key=value format, but there's no validation or schema. Would a JSON or YAML config be better?
 5. **Hotkey parsing limitations?** The hotkey parser only supports a subset of keys (see `ConfigReader.keyCodeFor`). Keys like F13-F20, media keys, etc., are not supported. Is this by design?
