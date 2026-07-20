@@ -267,27 +267,27 @@ class HUDWindowController {
             let code = UInt16(event.keyCode)
             let mods = event.modifierFlags
             let noModifiers = !mods.contains(.control) && !mods.contains(.command) && !mods.contains(.option)
-            var direction: Int? = nil
+            var dir: Direction? = nil
             if config.useArrowKeys && noModifiers {
                 switch code {
-                case 123: direction = -1  // left
-                case 124: direction = 1   // right
-                case 125: direction = config.cols   // down
-                case 126: direction = -config.cols  // up
+                case 123: dir = .left
+                case 124: dir = .right
+                case 125: dir = .down
+                case 126: dir = .up
                 default: break
                 }
             }
-            if direction == nil && config.useVimKeys && noModifiers {
+            if dir == nil && config.useVimKeys && noModifiers {
                 switch code {
-                case 38: direction = config.cols   // j = down
-                case 40: direction = -config.cols  // k = up
-                case 37: direction = 1             // l = right
-                case 4:  direction = -1            // h = left
+                case 38: dir = .down   // j
+                case 40: dir = .up     // k
+                case 37: dir = .right  // l
+                case 4:  dir = .left   // h
                 default: break
                 }
             }
-            if let dir = direction {
-                self.navigateSpace(by: dir)
+            if let d = dir {
+                self.navigateSpace(d)
             }
         }
     }
@@ -299,12 +299,54 @@ class HUDWindowController {
         }
     }
 
-    private func navigateSpace(by offset: Int) {
-        guard let current = lastFocusedSpaceIndex else { return }
-        let target = current + offset
-        guard target >= 1, target <= config.maxSpaces else { return }
-        YabaiClient.focusSpace(target)
-        hide()
+    private enum Direction { case left, right, up, down }
+
+    private func navigateSpace(_ direction: Direction) {
+        guard let idx = lastFocusedSpaceIndex else { return }
+        let cols = config.cols
+        let maxN = config.maxSpaces
+        let zero = idx - 1
+        let row = zero / cols
+        let col = zero % cols
+        let rowStart = row * cols + 1
+        var target: Int?
+
+        switch direction {
+        case .left:
+            if col == 0 {
+                var rowEnd = rowStart + cols - 1
+                if rowEnd > maxN { rowEnd = maxN }
+                target = rowEnd
+            } else {
+                target = idx - 1
+            }
+        case .right:
+            if col == cols - 1 {
+                target = rowStart
+            } else {
+                let next = idx + 1
+                target = next > maxN ? rowStart : next
+            }
+        case .up, .down:
+            var columnSpaces: [Int] = []
+            var i = col + 1
+            while i <= maxN {
+                columnSpaces.append(i)
+                i += cols
+            }
+            guard let pos = columnSpaces.firstIndex(of: idx) else { return }
+            let n = columnSpaces.count
+            let newPos: Int
+            if direction == .up {
+                newPos = (pos - 1 + n) % n
+            } else {
+                newPos = (pos + 1) % n
+            }
+            target = columnSpaces[newPos]
+        }
+
+        guard let t = target else { return }
+        YabaiClient.focusSpace(t)
     }
     
     private var screenHeight: CGFloat {
