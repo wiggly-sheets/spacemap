@@ -73,6 +73,8 @@ struct SettingsView: View {
     @State private var showIconStrip: Bool = true
     @State private var showMultiAppIcons: Bool = false
     @State private var hideMenuBarIcon: Bool = false
+    @State private var useVimKeys: Bool = false
+    @State private var useArrowKeys: Bool = false
     @State private var spaceNameInputs: [Int: String] = [:]
     @State private var isRecording = false
     @State private var monitor: Any?
@@ -150,6 +152,8 @@ struct SettingsView: View {
         _showIconStrip = State(initialValue: config.showIconStrip)
         _showMultiAppIcons = State(initialValue: config.showMultiAppIcons)
         _hideMenuBarIcon = State(initialValue: config.hideMenuBarIcon)
+        _useVimKeys = State(initialValue: config.useVimKeys)
+        _useArrowKeys = State(initialValue: config.useArrowKeys)
         _spaceNameInputs = State(initialValue: config.spaceNames)
         _gridLayoutIndex = State(initialValue: findBestGridLayoutIndexFor(cols: config.cols, rows: config.rows, maxSpaces: config.maxSpaces))
     }
@@ -192,6 +196,8 @@ struct SettingsView: View {
             "SHOW_ICON_STRIP=\(iconStripStr)",
             "SHOW_MULTI_APP_ICONS=\(multiAppIconsStr)",
             "HIDE_MENUBAR_ICON=\(hideMenuBarIconStr)",
+            "VIM_KEYS=\(useVimKeys ? "true" : "false")",
+            "ARROW_KEYS=\(useArrowKeys ? "true" : "false")",
             "SPACE_NAMES=\(formatSpaceNames())",
             "LAUNCH_AT_LOGIN=\(launchAtLogin ? "true" : "false")"
         ]
@@ -337,6 +343,10 @@ Picker("Cell Style", selection: $cellStyle) {
                         .font(.footnote)
                         .foregroundColor(.secondary)
                 }
+                Toggle("Navigate with Arrow Keys (←↑↓→)", isOn: $useArrowKeys)
+                    .onChange(of: useArrowKeys) { _ in saveConfig() }
+                Toggle("Navigate with Vim Keys (hjkl)", isOn: $useVimKeys)
+                    .onChange(of: useVimKeys) { _ in saveConfig() }
             }
             
             Section {
@@ -378,6 +388,8 @@ Picker("Cell Style", selection: $cellStyle) {
             if showIconStrip != config.showIconStrip { showIconStrip = config.showIconStrip }
             if showMultiAppIcons != config.showMultiAppIcons { showMultiAppIcons = config.showMultiAppIcons }
             if hideMenuBarIcon != config.hideMenuBarIcon { hideMenuBarIcon = config.hideMenuBarIcon }
+            if useVimKeys != config.useVimKeys { useVimKeys = config.useVimKeys }
+            if useArrowKeys != config.useArrowKeys { useArrowKeys = config.useArrowKeys }
             if autoHideTimeout != config.autoHideTimeout { autoHideTimeout = config.autoHideTimeout }
             let computedSpaceNames = config.spaceNames
             if spaceNameInputs != computedSpaceNames { spaceNameInputs = computedSpaceNames }
