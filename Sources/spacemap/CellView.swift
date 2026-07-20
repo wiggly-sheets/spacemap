@@ -31,6 +31,7 @@ struct CellView: View {
     private let showSpaceNumbers: Bool
     private let showSpaceNames: Bool
     private let showIconStrip: Bool
+    private let showMultiAppIcons: Bool
     
     private var isDarkMode: Bool {
         switch mode {
@@ -60,7 +61,8 @@ init(spaceIndex: Int,
              iconScale: CGFloat = 1.0,
              showSpaceNumbers: Bool = true,
              showSpaceNames: Bool = true,
-             showIconStrip: Bool = true) {
+             showIconStrip: Bool = true,
+             showMultiAppIcons: Bool = false) {
         self.spaceIndex = spaceIndex
         self.spaceLabel = spaceLabel
         self.spaceName = spaceName
@@ -78,6 +80,7 @@ init(spaceIndex: Int,
         self.showSpaceNumbers = showSpaceNumbers
         self.showSpaceNames = showSpaceNames
         self.showIconStrip = showIconStrip
+        self.showMultiAppIcons = showMultiAppIcons
     }
 
     
@@ -196,7 +199,7 @@ var body: some View {
     
     @ViewBuilder
     private func iconStrip() -> some View {
-        let icons = uniqueIconWindows()
+        let icons = showMultiAppIcons ? windows : uniqueIconWindows()
         let ic = iconScale
         HStack(spacing: 2 * uiScale * 10 * ic * 2) {
             ForEach(icons, id: \.id) { window in

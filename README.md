@@ -86,6 +86,7 @@ CELL_STYLE=rects
 | `MODE` | `dark`, `light`, `auto` | `auto` | HUD background appearance. `auto` follows system setting |
 | `ICON_SCALE` | `0.5`–`2.0` | `1.0` | App icon size in icon strip relative to proportional default |
 | `SHOW_ICON_STRIP` | `true`, `false` | `true` | Show app icon strip at bottom of each cell |
+| `SHOW_MULTI_APP_ICONS` | `true`, `false` | `false` | Show one icon per window (true) or one per unique app (false) in icon strip |
 | `SHOW_SPACE_NUMBERS` | `true`, `false` | `true` | Show space number in top-left of each cell |
 | `SHOW_SPACE_NAMES` | `true`, `false` | `true` | Show custom space names in center of each cell |
 | `HIDE_MENUBAR_ICON` | `true`, `false` | `false` | Hide the menubar icon (app runs headless; use hotkey or CLI to toggle) |
@@ -97,6 +98,7 @@ BACKGROUND_ALPHA=0.3
 MODE=auto
 ICON_SCALE=1.0
 SHOW_ICON_STRIP=true
+SHOW_MULTI_APP_ICONS=false
 SHOW_SPACE_NUMBERS=true
 SHOW_SPACE_NAMES=true
 HIDE_MENUBAR_ICON=false

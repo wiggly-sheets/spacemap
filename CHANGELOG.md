@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Icon caching**: `IconCache` singleton avoids re-fetching `NSWorkspace.shared.icon(forFile:)` on every render
+- **Show Each Window Icon toggle**: `SHOW_MULTI_APP_ICONS` config option to show one icon per window or one per unique app in icon strip
 - **Thumbnail cell style**: ScreenCaptureKit-based per-space capture, cached per cell index (macOS 14+)
 - **Show Icon Strip toggle**: Config option `SHOW_ICON_STRIP` to show/hide app icon strip in cells
 - **Show Space Numbers toggle**: Config option `SHOW_SPACE_NUMBERS` to show/hide space numbers

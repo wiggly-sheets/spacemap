@@ -71,6 +71,7 @@ struct SettingsView: View {
     @State private var showSpaceNumbers: Bool = true
     @State private var showSpaceNames: Bool = true
     @State private var showIconStrip: Bool = true
+    @State private var showMultiAppIcons: Bool = false
     @State private var hideMenuBarIcon: Bool = false
     @State private var spaceNameInputs: [Int: String] = [:]
     @State private var isRecording = false
@@ -147,6 +148,7 @@ struct SettingsView: View {
         _showSpaceNumbers = State(initialValue: config.showSpaceNumbers)
         _showSpaceNames = State(initialValue: config.showSpaceNames)
         _showIconStrip = State(initialValue: config.showIconStrip)
+        _showMultiAppIcons = State(initialValue: config.showMultiAppIcons)
         _hideMenuBarIcon = State(initialValue: config.hideMenuBarIcon)
         _spaceNameInputs = State(initialValue: config.spaceNames)
         _gridLayoutIndex = State(initialValue: findBestGridLayoutIndexFor(cols: config.cols, rows: config.rows, maxSpaces: config.maxSpaces))
@@ -168,6 +170,7 @@ struct SettingsView: View {
         let spaceNumbersStr = showSpaceNumbers ? "true" : "false"
         let spaceNamesStr = showSpaceNames ? "true" : "false"
         let iconStripStr = showIconStrip ? "true" : "false"
+        let multiAppIconsStr = showMultiAppIcons ? "true" : "false"
         let hideMenuBarIconStr = hideMenuBarIcon ? "true" : "false"
         let launchAtLogin = SMAppService.mainApp.status == .enabled
         let lines = [
@@ -187,6 +190,7 @@ struct SettingsView: View {
             "SHOW_SPACE_NUMBERS=\(spaceNumbersStr)",
             "SHOW_SPACE_NAMES=\(spaceNamesStr)",
             "SHOW_ICON_STRIP=\(iconStripStr)",
+            "SHOW_MULTI_APP_ICONS=\(multiAppIconsStr)",
             "HIDE_MENUBAR_ICON=\(hideMenuBarIconStr)",
             "SPACE_NAMES=\(formatSpaceNames())",
             "LAUNCH_AT_LOGIN=\(launchAtLogin ? "true" : "false")"
@@ -257,6 +261,10 @@ Picker("Cell Style", selection: $cellStyle) {
                     .onChange(of: showSpaceNumbers) { _ in saveConfig() }
                 Toggle("Show Icon Strip", isOn: $showIconStrip)
                     .onChange(of: showIconStrip) { _ in saveConfig() }
+                if showIconStrip {
+                    Toggle("Show Each Window Icon", isOn: $showMultiAppIcons)
+                        .onChange(of: showMultiAppIcons) { _ in saveConfig() }
+                }
             }
             
             Section(header: Text("Appearance").font(.title).bold()) {
@@ -368,6 +376,7 @@ Picker("Cell Style", selection: $cellStyle) {
             if showSpaceNumbers != config.showSpaceNumbers { showSpaceNumbers = config.showSpaceNumbers }
             if showSpaceNames != config.showSpaceNames { showSpaceNames = config.showSpaceNames }
             if showIconStrip != config.showIconStrip { showIconStrip = config.showIconStrip }
+            if showMultiAppIcons != config.showMultiAppIcons { showMultiAppIcons = config.showMultiAppIcons }
             if hideMenuBarIcon != config.hideMenuBarIcon { hideMenuBarIcon = config.hideMenuBarIcon }
             if autoHideTimeout != config.autoHideTimeout { autoHideTimeout = config.autoHideTimeout }
             let computedSpaceNames = config.spaceNames

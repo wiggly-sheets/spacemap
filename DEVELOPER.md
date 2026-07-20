@@ -26,6 +26,7 @@ Technical deep-dive, debugging, and configuration details for contributors.
 | `Models.swift` | Data structures (GridConfig, YabaiSpace, AppTheme) |
 | `SettingsView.swift` | Settings window UI with live config save |
 | `ThumbnailCache.swift` | ScreenCaptureKit thumbnail capture per space (macOS 14+) |
+| `IconCache.swift` | Caches app icons by name to avoid repeated NSWorkspace lookups |
 
 ## Configuration System
 
@@ -50,6 +51,7 @@ Technical deep-dive, debugging, and configuration details for contributors.
 | `SHOW_SPACE_NUMBERS` | Bool | `true` | `true\|false` | Show space number in top-left of each cell |
 | `SHOW_SPACE_NAMES` | Bool | `true` | `true\|false` | Show custom space names in center of each cell |
 | `SHOW_ICON_STRIP` | Bool | `true` | `true\|false` | Show app icon strip at bottom of each cell |
+| `SHOW_MULTI_APP_ICONS` | Bool | `false` | `true\|false` | Show one icon per window (true) or one per unique app (false) |
 | `HIDE_MENUBAR_ICON` | Bool | `false` | `true\|false` | Hide menubar icon (run headless) |
 | `SPACE_NAMES` | String | `""` | `"1:Name,2:Name"` | Custom space names |
 | `SOCKET_HEALTH_INTERVAL` | Int | 60 | 15–60 | Socket health check interval (seconds) |

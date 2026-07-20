@@ -35,7 +35,7 @@ A living list of planned features, known bugs, and future improvements for the p
 
 | Task | Description | Status |
 |------|-------------|--------|
-| **Icon Caching** | Cache app icons to avoid re-fetching on every render via `NSWorkspace.shared.icon(forFile:)` | 🔄 Planned |
+| **Icon Caching** | Cache app icons via `IconCache` singleton to avoid re-fetching on every render | ✅ Done |
 | **Dynamic yabai Path** | Auto-detect yabai location (`/opt/homebrew/bin/yabai` or `/usr/local/bin/yabai`) for Intel Mac support | 🔄 Planned |
 
 ### Bug Fixes
@@ -43,7 +43,7 @@ A living list of planned features, known bugs, and future improvements for the p
 | Task | Description | Status |
 |------|-------------|--------|
 | **Drag-and-Drop Ambiguity** | Falls back to click proximity for multi-window apps | 🔄 Open |
-| **Icon Strip Flicker** | Re-fetching icons via `NSWorkspace` causes flicker on space change | 🔄 Open |
+| **Icon Strip Flicker** | Re-fetching icons via `NSWorkspace` causes flicker on space change | ✅ Fixed (IconCache) |
 | **Hotkey Limited Key Support** | Missing support for F13-F20/media keys in config parser | 🔄 Open |
 
 ---

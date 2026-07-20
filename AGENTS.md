@@ -50,6 +50,7 @@ Sources/spacemap/
 ├── SocketListener.swift   # Unix domain socket server for yabai signals
 ├── Models.swift           # Data structures (GridConfig, YabaiSpace, etc.)
 ├── ThumbnailCache.swift   # ScreenCaptureKit capture, per-space caching (macOS 14+)
+├── IconCache.swift         # App icon cache to avoid repeated NSWorkspace lookups
 ├── SettingsView.swift     # Settings window UI with live config save
 ├── SettingsWindowController.swift # AppKit window wrapper for SettingsView
 └── Info.plist            # App bundle metadata
