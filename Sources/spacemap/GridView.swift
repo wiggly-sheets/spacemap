@@ -82,7 +82,8 @@ struct GridView: View {
             theme: theme,
             mode: state.config.mode,
             iconScale: state.config.iconScale,
-            showNames: state.config.showNames
+            showSpaceNumbers: state.config.showSpaceNumbers,
+            showSpaceNames: state.config.showSpaceNames
         )
     }
     

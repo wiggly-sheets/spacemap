@@ -20,7 +20,8 @@ struct CellView: View {
     private let theme: String
     private let mode: ThemeMode
     private let iconScale: CGFloat
-    private let showNames: Bool
+    private let showSpaceNumbers: Bool
+    private let showSpaceNames: Bool
     
     private var isDarkMode: Bool {
         switch mode {
@@ -38,17 +39,17 @@ init(spaceIndex: Int,
             spaceLabel: String? = nil,
             spaceName: String? = nil,
             isFocused: Bool,
-            isDropTarget: Bool,
-            isActive: Bool,
-            windows: [YabaiWindow],
-            displayBounds: CGRect,
-            cellStyle: CellStyle,
-            onSelect: @escaping (Int) -> Void,
-            uiScale: CGFloat = 1.0,
-            theme: String = "default",
-            mode: ThemeMode = .auto,
-            iconScale: CGFloat = 1.0,
-            showNames: Bool = true) {
+             isActive: Bool,
+             windows: [YabaiWindow],
+             displayBounds: CGRect,
+             cellStyle: CellStyle,
+             onSelect: @escaping (Int) -> Void,
+             uiScale: CGFloat = 1.0,
+             theme: String = "default",
+             mode: ThemeMode = .auto,
+             iconScale: CGFloat = 1.0,
+             showSpaceNumbers: Bool = true,
+             showSpaceNames: Bool = true) {
         self.spaceIndex = spaceIndex
         self.spaceLabel = spaceLabel
         self.spaceName = spaceName
