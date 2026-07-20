@@ -2,7 +2,19 @@ import Foundation
 import AppKit
 
 enum YabaiClient {
-    private static let yabaiPath = "/opt/homebrew/bin/yabai"
+    private static let yabaiPath: String = {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/bin/zsh")
+        process.arguments = ["-c", "which yabai"]
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = Pipe()
+        try? process.run()
+        process.waitUntilExit()
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        let path = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return path.isEmpty ? "/opt/homebrew/bin/yabai" : path
+    }()
 
     static func isYabaiRunning() -> Bool {
         let output = (try? shell("/usr/bin/pgrep", "yabai")) ?? ""
