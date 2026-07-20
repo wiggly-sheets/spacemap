@@ -56,6 +56,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
         
+        // Check if MRU spaces is enabled (bad for spacemap)
+        if isMRUSpacesEnabled() {
+            DispatchQueue.main.async {
+                self.showMRUAlert()
+            }
+        }
+        
         // Delay slightly so TCC/LaunchServices finishes registering the app
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             ConfigReader.silentMode = true
@@ -304,6 +311,43 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             NSWorkspace.shared.open(URL(string: "https://github.com/koekeishiya/yabai")!)
         }
         NSApp.terminate(nil)
+    }
+
+    private func isMRUSpacesEnabled() -> Bool {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/defaults")
+        process.arguments = ["read", "com.apple.dock", "mru-spaces"]
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = Pipe()
+        guard (try? process.run()) != nil else { return false }
+        process.waitUntilExit()
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        let output = String(data: data, encoding: .utf8) ?? ""
+        return output.trimmingCharacters(in: .whitespacesAndNewlines) == "1"
+    }
+
+    private func showMRUAlert() {
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = "Spaces Auto-Rearrange Enabled"
+        alert.informativeText = "spacemap needs this disabled for stable grid layout. Spaces must stay in a fixed order or the grid becomes unreliable."
+        alert.addButton(withTitle: "Leave as Is")
+        alert.addButton(withTitle: "Fix It")
+        
+        let response = alert.runModal()
+        if response == .alertSecondButtonReturn {
+            let task = Process()
+            task.executableURL = URL(fileURLWithPath: "/usr/bin/defaults")
+            task.arguments = ["write", "com.apple.dock", "mru-spaces", "-bool", "false"]
+            try? task.run()
+            task.waitUntilExit()
+            // Restart Dock for changes to take effect
+            let dock = Process()
+            dock.executableURL = URL(fileURLWithPath: "/usr/bin/killall")
+            dock.arguments = ["Dock"]
+            try? dock.run()
+        }
     }
 
     private func printVersionAndExit() {
