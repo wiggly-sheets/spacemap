@@ -4,16 +4,30 @@ A living list of planned features, known bugs, and future improvements for the p
 
 ## ✅ Completed
 
-- **CLI Options**: Implemented `--version`, `--help`, `--config`, `--trigger`, `--show-menu`, `--settings`
-- **Settings Menu Item**: Added Settings menu item (⌘+,) and made functional
-- **Hotkey Rapid-Press Fix**: Fixed with `isToggling` guard in `HUDWindowController`
-- **Symlink Creation**: Automated creation of `/usr/local/bin/spacemap` symlink at launch via `ensureSymlink()`
-- **HUD Active Space Highlighting**: Ensured live refresh timer calls `refreshState` for active space highlighting
-- **Launch at Login**: Implemented toggle with state indicator and first-launch prompt
-- **Show Space Numbers Toggle**: Implemented and functional
-- **Move to Applications Prompt**: Implemented first-launch prompt to move app to Applications folder
-- **Config File Self-Heal**: Config auto-generates on first launch and self-heals missing keys. Fixed: `createDefaultConfigFile()` now uses `GridConfig.default` values instead of mismatched hardcoded values. Fixed: `ThemeMode.automatic` renamed to `.auto` with rawValue "auto" for consistent serialization. Fixed: BOM (\u{FEFF}) and CR/LF handling in config parser (uses `whitespacesAndNewlines` for all trimming).
-- **Auto-Hide Timeout Fix**: Fixed HUD not hiding and hotkey double-trigger by correcting show/hide guard logic and ensuring auto-hide timer is reset on show.
+- **CLI Options**: `--version`, `--help`, `--config`, `--trigger`, `--show-menu`, `--settings`
+- **Settings Window**: Full settings UI with live-save, space name editor, hotkey recorder
+- **Hotkey Rapid-Press Fix**: `isToggling` guard in `HUDWindowController`
+- **Symlink Creation**: Automated `/usr/local/bin/spacemap` symlink at launch via `ensureSymlink()`
+- **HUD Active Space Highlighting**: Live refresh timer calls `refreshState` for active space highlighting
+- **Launch at Login**: Toggle with state indicator and first-launch prompt
+- **Show Space Numbers Toggle**: Per-cell space number display
+- **Show Space Names Toggle**: Per-cell custom name display
+- **Show Icon Strip Toggle**: Per-cell app icon strip at bottom
+- **Hide Menu Bar Icon Toggle**: Run headless, use hotkey or CLI
+- **Move to Applications Prompt**: First-launch prompt to move app to /Applications
+- **Config File Self-Heal**: Auto-generates on first launch, self-heals missing keys, handles BOM/CR/LF
+- **Auto-Hide Timeout Fix**: Fixed HUD not hiding and hotkey double-trigger
+- **Yabai Mandatory Check**: Prevents launch if yabai is not running; shows critical alert
+- **MRU Spaces Detection**: Warns user and offers to disable macOS MRU spaces
+- **Accessibility Permission Request**: Polls every 2s until granted, registers hotkey automatically
+- **Cell Opacity / Inactive Dimming**: Inactive spaces dimmed in the grid
+- **Window Previews / Thumbnails**: ScreenCaptureKit-based per-space thumbnail capture (experimental)
+- **App Icon**: Bundled `.icns` file for macOS app bundle
+- **Space Naming System**: Config-based `SPACE_NAMES=1:Name,2:Name` with settings UI editor
+- **Menubar Improvements**: Hotkey symbols shown, Cmd+R restart, Screen Recording permissions link
+- **Config Validation**: Validates keys/values on load, logs warnings for invalid entries
+- **DMG Assets**: DMG installer with /Applications symlink
+- **HUD Pinning**: Implemented via `AUTO_HIDE_TIMEOUT=0` (never auto-hide)
 
 ## 🚀 High Priority
 
@@ -21,21 +35,16 @@ A living list of planned features, known bugs, and future improvements for the p
 
 | Task | Description | Status |
 |------|-------------|--------|
-| **App Icon** | Generate and bundle a proper `.icns` file for macOS app bundle. | 🟡 In Progress |
-| **yabai Mandatory Check** | Prevent app launch if yabai is not running. Show critical alert dialog. | ✅ Done |
-| **Space Naming System** | Show space names (from config) in cells instead of just numbers. Support menubar editor. | 🟡 In Progress (UI in Settings window pending) |
-| **Accessibility Permission Request** | Replace System Preferences link with direct permission request and polling. | ✅ Done |
-| **Settings Window** | Add a settings window with space name editor and config file reloader. | 🔄 Planned |
-| **Config Validation** | Validate config keys/values on load and log warnings for invalid entries. | 🔄 Planned |
+| **Icon Caching** | Cache app icons to avoid re-fetching on every render via `NSWorkspace.shared.icon(forFile:)` | 🔄 Planned |
+| **Dynamic yabai Path** | Auto-detect yabai location (`/opt/homebrew/bin/yabai` or `/usr/local/bin/yabai`) for Intel Mac support | 🔄 Planned |
 
 ### Bug Fixes
 
 | Task | Description | Status |
 |------|-------------|--------|
-| **HUD Stuck Bug** | Fixed auto-hide being extended by `space_changed` signals. | ✅ Done |
-| **Config Comment Parsing** | Fixed config loader failing on inline `# comments`. | ✅ Done |
-| **UI Scaling** | Fixed `UI_SCALE` acting as 10× multiplier (0.1-1.0 → 1×-10× scale). | ✅ Done |
-| **Permissions Revocation** | Handle Accessibility revocation on reinstall by prompting user. | ✅ Done |
+| **Drag-and-Drop Ambiguity** | Falls back to click proximity for multi-window apps | 🔄 Open |
+| **Icon Strip Flicker** | Re-fetching icons via `NSWorkspace` causes flicker on space change | 🔄 Open |
+| **Hotkey Limited Key Support** | Missing support for F13-F20/media keys in config parser | 🔄 Open |
 
 ---
 
@@ -45,19 +54,18 @@ A living list of planned features, known bugs, and future improvements for the p
 
 | Task | Description | Status |
 |------|-------------|--------|
-| **Custom Cell Colors** | Allow per-space/app custom colors in config. | 🔄 Planned |
-| **Grid Gap/Padding Customization** | Add config options for spacing between cells. | 🔄 Planned |
-| **Multi-Monitor Awareness** | Show workspaces per display in HUD. | 🔄 Planned |
-| **Window Previews** | Replace rectangles with window thumbnails. | 🔄 Planned |
-| **Drag-and-Drop Reliability** | Improve window drag detection for multi-window apps. | 🔄 Planned |
-| **Keyboard Navigation** | Add arrow-key and vim-key navigation within HUD. | 🔄 Planned |
+| **Theme Files (.smthemes)** | Expose themes as editable files in `~/.config/spacemap/themes/`. Default greyscale theme, import/export | 🔄 Planned |
+| **Drag-to-Swap** | Swap windows between spaces via drag-and-drop within the HUD | 🔄 Planned |
+| **Custom Cell Colors** | Allow per-space/app custom colors in config | 🔄 Planned |
+| **Grid Gap/Padding Customization** | Add config options for spacing between cells | 🔄 Planned |
+| **Multi-Monitor Awareness** | Show workspaces per display in HUD | 🔄 Planned |
 
 ### Performance
 
 | Task | Description | Status |
 |------|-------------|--------|
-| **Icon Caching** | Cache app icons to avoid re-fetching on every render. | 🔄 Planned |
-| **Reduced SwiftUI Rerenders** | Optimize HUD recreations during drag-and-drop. | 🔄 Planned |
+| **CPU/Memory Optimization** | Profile and reduce resource usage, especially in background | 🔄 Planned |
+| **Reduced SwiftUI Rerenders** | Optimize HUD recreations during drag-and-drop | 🔄 Planned |
 
 ---
 
@@ -67,18 +75,24 @@ A living list of planned features, known bugs, and future improvements for the p
 
 | Task | Description | Status |
 |------|-------------|--------|
-| **Annotations** | Let users draw notes/labels on the HUD. | 🔄 Planned |
-| **Hotkey Conflicts UI** | Show menubar conflicts with other apps. | 🔄 Planned |
-| **Theme Editor UI** | Interactive theme editor in settings window. | 🔄 Planned |
-| **i18n Localization** | Add non-English language support. | 🔄 Planned |
+| **i18n Localization** | Spanish, German, Italian, French, and other major languages | 🔄 Planned |
+| **Hotkey Conflicts UI** | Show menubar conflicts with other apps | 🔄 Planned |
+| **Keyboard Navigation** | Arrow-key and vim-key navigation within HUD (currently handled via skhd) | 🔄 Planned |
 
 ### Integration
 
 | Task | Description | Status |
 |------|-------------|--------|
-| **Native Spaces Support** | Drop yabai dependency for native macOS Spaces. | 🔄 Planned |
+| **Native Spaces Support** | Drop yabai dependency for native macOS Spaces | 🔄 Planned |
 | **Other WM Support** | Add support for aerospace/rectangle/etc. | 🔄 Planned |
-| **CLI Interface** | Add command-line interface for scripting. | 🔄 Planned |
+
+### Build & CI
+
+| Task | Description | Status |
+|------|-------------|--------|
+| **Unit Tests** | Add XCTest for ConfigReader, YabaiClient, scaling logic | 🔄 Planned |
+| **GitHub Actions / CI** | Automated build, test, and release pipeline | 🔄 Planned |
+| **Homebrew Formula Updates** | Update tap for better Intel/homebrew paths | 🔄 Planned |
 
 ---
 
@@ -86,22 +100,7 @@ A living list of planned features, known bugs, and future improvements for the p
 
 | Bug | Description | Status |
 |-----|-------------|--------|
-| **Drag-and-Drop Ambiguity** | Falls back to click proximity for multi-window apps. | 🔄 Open |
-| **Icon Strip Flicker** | Re-fetching icons via `NSWorkspace` causes flicker on space change. | 🔄 Open |
-| **Config Corruption** | Corrupt config overrides all settings with defaults. | 🔄 Open |
-| **Hotkey Limited Key Support** | Missing support for F13-F20/media keys in config parser. | 🔄 Open |
-| **yabai Intel Path** | Hardcoded `/opt/homebrew` breaks Intel Macs (`/usr/local`). | 🔄 Open |
-
----
-
-## 📦 Build & Testing
-
-| Task | Description | Status |
-|------|-------------|--------|
-| **Unit Tests** | Add XCTest for ConfigReader, YabaiClient, scaling logic. | 🔄 Planned |
-| **GitHub Actions** | Add CI pipeline for macOS builds/tests. | 🔄 Planned |
-| **Homebrew Formula Updates** | Update tap for better Intel/homebrew paths. | 🔄 Planned |
-| **DMG Styling** | Improve DMG background/assets. | 🔄 Planned |
+| **Config Corruption** | Corrupt config overrides all settings with defaults | 🔄 Open |
 
 ---
 
@@ -109,8 +108,6 @@ A living list of planned features, known bugs, and future improvements for the p
 
 | Idea | Description | Status |
 |------|-------------|--------|
-| **Window Rules** | Move windows between spaces via regex matches. | 💡 Concept |
-| **Space Templates** | Predefined app layouts for quick setup. | 💡 Concept |
-| **HUD Pinning** | Option to pin HUD on-screen permanently. | 💡 Concept |
-| **Cell Opacity** | Dim inactive spaces. | 💡 Concept |
-| **Drag-to-Swap** | Swap windows/spaces via drag. | 💡 Concept |
+| **HUD Pinning** | Separate hotkey for temporary (timed) vs permanent HUD display | 💡 Concept |
+| **Window Rules** | Move windows between spaces via regex matches | 💡 Concept |
+| **Space Templates** | Predefined app layouts for quick setup | 💡 Concept |

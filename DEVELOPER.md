@@ -17,7 +17,7 @@ Technical deep-dive, debugging, and configuration details for contributors.
 | `App.swift` | Entry point, menubar, settings window, yabai/accessibility checks |
 | `HUDWindowController.swift` | NSPanel lifecycle, auto-hide timer, state management |
 | `GridView.swift` | SwiftUI grid container, cell layout, theme application |
-| `CellView.swift` | Per-cell rendering (rects/icons/hybrid), space names display |
+| `CellView.swift` | Per-cell rendering (rects/icons/thumbnails), space names display |
 | `YabaiClient.swift` | yabai CLI wrapper, signal management, space/window queries |
 | `ConfigReader.swift` | Config parsing with inline comments, SPACE_NAMES support |
 | `HotkeyMonitor.swift` | Global CGEventTap for hotkey capture |
@@ -25,6 +25,7 @@ Technical deep-dive, debugging, and configuration details for contributors.
 | `WindowDragHandler.swift` | Drag-and-drop detection via CGEventTap |
 | `Models.swift` | Data structures (GridConfig, YabaiSpace, AppTheme) |
 | `SettingsView.swift` | Settings window UI with live config save |
+| `ThumbnailCache.swift` | ScreenCaptureKit thumbnail capture per space (macOS 14+) |
 
 ## Configuration System
 
@@ -36,19 +37,22 @@ Technical deep-dive, debugging, and configuration details for contributors.
 |-----|------|--------|--------|-------------|
 | `GRID_COLS` | Int | 8 | 1–20 | Grid columns |
 | `GRID_ROWS` | Int | 2 | 1–10 | Grid rows |
-| `CELL_STYLE` | String | `rects` | `rects\|icons\|hybrid` | Window display style |
+| `CELL_STYLE` | String | `rects` | `rects\|icons\|thumbnails` | Window display style. `thumbnails` requires macOS 14+ and Screen Recording permission |
 | `HOTKEY` | String | `ctrl+pgdn` | modifiers+key | Toggle hotkey (requires restart) |
 | `UI_SCALE` | Double | 1.0 | 0.1–1.0 | HUD scale multiplier (0.1=1×, 1.0=10×) |
 | `THEME` | String | `default` | theme names | Color theme |
-| `AUTO_HIDE_TIMEOUT` | Int | 5 | 0–60 | Seconds before HUD hides |
+| `AUTO_HIDE_TIMEOUT` | Int | 5 | 0–60 | Seconds before HUD hides (0=never) |
 | `SHOW_MODE` | String | `all` | `all\|active` | Show all or active-only spaces |
 | `MAX_SPACES` | Int | 16 | 1–16 | Max spaces to display |
 | `BACKGROUND_ALPHA` | Double | 0.3 | 0.0–1.0 | HUD background transparency |
 | `MODE` | String | `auto` | `light\|dark\|auto` | Light/dark appearance |
 | `ICON_SCALE` | Double | 1.0 | 0.5–2.0 | App icon size multiplier |
-| `SHOW_NAMES` | Bool | `true` | `true\|false` | Show space number/name overlay |
+| `SHOW_SPACE_NUMBERS` | Bool | `true` | `true\|false` | Show space number in top-left of each cell |
+| `SHOW_SPACE_NAMES` | Bool | `true` | `true\|false` | Show custom space names in center of each cell |
+| `SHOW_ICON_STRIP` | Bool | `true` | `true\|false` | Show app icon strip at bottom of each cell |
+| `HIDE_MENUBAR_ICON` | Bool | `false` | `true\|false` | Hide menubar icon (run headless) |
 | `SPACE_NAMES` | String | `""` | `"1:Name,2:Name"` | Custom space names |
-| `SOCKET_HEALTH_INTERVAL` | Int | 60 | 15–60 | Socket health check interval |
+| `SOCKET_HEALTH_INTERVAL` | Int | 60 | 15–60 | Socket health check interval (seconds) |
 
 ### Space Naming Support
 Config format for custom space names:
@@ -56,9 +60,18 @@ Config format for custom space names:
 SPACE_NAMES=1:Desktop,2:Dev,3:Media,4:Music
 ```
 Format: `SPACE_ID:NAME` pairs separated by commas.
-- Space numbers displayed in top-right corner
+- Space numbers displayed in top-left corner
 - Name (if exists) displayed in cell center
 - Names editable via Settings window
+
+### Thumbnail Cache (macOS 14+)
+`ThumbnailCache` uses ScreenCaptureKit to capture per-space thumbnails.
+
+- Singleton: `ThumbnailCache.shared`
+- `captureActiveSpace(spaceIndex:)` — captures the active display, excluding spacemap's own windows, and caches the `CGImage` keyed by space index
+- `thumbnail(forSpace:)` — returns cached `CGImage?` for a cell; `nil` until space is visited
+- Requires **Screen Recording** permission
+- `@available(macOS 14.0, *)` — all callers must use `#available` guards
 
 ### Theme System
 Available themes with hex color values:

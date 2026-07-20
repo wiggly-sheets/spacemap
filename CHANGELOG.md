@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+- **Thumbnail cell style**: ScreenCaptureKit-based per-space capture, cached per cell index (macOS 14+)
+- **Show Icon Strip toggle**: Config option `SHOW_ICON_STRIP` to show/hide app icon strip in cells
+- **Show Space Numbers toggle**: Config option `SHOW_SPACE_NUMBERS` to show/hide space numbers
+- **Show Space Names toggle**: Config option `SHOW_SPACE_NAMES` to show/hide custom space names
+- **Hide Menu Bar Icon toggle**: Config option `HIDE_MENUBAR_ICON` to run headless
+- **Cell opacity / inactive dimming**: Inactive spaces dimmed in the grid
+- **MRU Spaces detection**: Warns user on launch if macOS MRU spaces is enabled, offers to disable
+- **Screen Recording permissions link**: Added to menubar menu for easy access
+- **Menubar hotkey symbols**: Show configured hotkey symbols in Show/Hide Map menu item
+- **Menubar restart shortcut**: Cmd+R to restart spacemap from menubar
+- **Settings window hotkey recorder**: Global keyboard capture for setting hotkey in settings UI
+- **Settings window space name editor**: Per-space text inputs in settings UI
+
+### Changed
+- Refactored `CellStyle` from 5 cases to 3: `rects`, `icons`, `thumbnails` (removed `hybrid`; use `icons` + `SHOW_ICON_STRIP=true` instead)
+- CellStyle `"icons"` in config now sets `showIconStrip=true` by default
+- Improved yabai mandatory check with alert dialog
+- Improved Accessibility permission flow with polling
+
+### Fixed
+- Settings window not receiving keyboard focus (activation policy now set to `.regular` temporarily)
+- Space name input field focus preservation
+
+---
+
 ## [1.0.0] - 2026-01-19
 
 ### Added

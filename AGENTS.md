@@ -8,9 +8,9 @@
 - Shows a HUD overlay (toggle with hotkey) displaying your yabai desktops in a configurable grid
 - Live-updates as you switch spaces via yabai
 - Lets you click cells to jump to spaces
-- Supports three display styles: colored rectangles, app icons, or hybrid
+- Supports three display styles: colored rectangles, app icons, or thumbnails (ScreenCaptureKit)
 - Window drag-and-drop between cells (drag a window onto a cell to move it)
-- Menubar icon for manual show/hide
+- Menubar icon for manual show/hide (can be hidden)
 
 ## Quick Reference for Agents
 - **Entry point**: `Sources/spacemap/App.swift` – sets up menubar, hotkey monitor, socket listener.
@@ -22,9 +22,10 @@
 - **Signals**: `SocketListener.swift` – Unix domain socket for yabai `space_changed` events.
 - **Models**: `Models.swift` – data structs (GridConfig, YabaiSpace, etc.).
 - **Settings**: `SettingsView.swift` + `SettingsWindowController.swift` – live‑save config UI.
+- **Thumbnails**: `ThumbnailCache.swift` – ScreenCaptureKit capture, per-space caching (macOS 14+).
 - **Build**: Use `make run` to build, install, launch. `make dev1`/`make dev2` for dev cycle.
 - **Config**: Stored at `~/.config/spacemap/config`; reloads on HUD open (except HOTKEY needs restart).
-- **Permissions**: Requires Accessibility permission (prompted on first launch).
+- **Permissions**: Requires Accessibility permission (prompted on first launch). Screen Recording permission required for thumbnail cell style.
 
 ## Architecture
 
@@ -41,13 +42,16 @@ Sources/spacemap/
 ├── App.swift              # App entry point, menubar, hotkey setup
 ├── HUDWindowController.swift  # Manages NSPanel HUD (show/hide/render)
 ├── GridView.swift         # SwiftUI grid container
-├── CellView.swift         # Individual cell rendering (rects/icons/hybrid)
+├── CellView.swift         # Individual cell rendering (rects/icons/thumbnails)
 ├── YabaiClient.swift      # Shells out to yabai binary for data/manipulation
 ├── ConfigReader.swift     # Parses ~/.config/spacemap/config
 ├── HotkeyMonitor.swift   # Global CGEventTap for toggle hotkey
 ├── WindowDragHandler.swift # Detects window drag-and-drop over HUD
 ├── SocketListener.swift   # Unix domain socket server for yabai signals
 ├── Models.swift           # Data structures (GridConfig, YabaiSpace, etc.)
+├── ThumbnailCache.swift   # ScreenCaptureKit capture, per-space caching (macOS 14+)
+├── SettingsView.swift     # Settings window UI with live config save
+├── SettingsWindowController.swift # AppKit window wrapper for SettingsView
 └── Info.plist            # App bundle metadata
 ```
 
@@ -70,7 +74,7 @@ Reads from `~/.config/spacemap/config` on every HUD open (no restart needed):
 ```bash
 GRID_COLS=8              # Grid columns
 GRID_ROWS=2              # Grid rows
-CELL_STYLE=rects         # rects | icons | hybrid
+CELL_STYLE=rects         # rects | icons | thumbnails
 HOTKEY=ctrl+pgdn         # Toggle hotkey (requires restart)
 SOCKET_HEALTH_INTERVAL=60  # Socket health check interval (seconds)
 ```
@@ -97,8 +101,8 @@ A second CGEventTap (listenOnly, tailAppend) monitors mouse drag events to detec
 
 ### Cell Styles
 - **rects:** Scales real window geometry to 80x50 cell, colored by app name hash
-- **icons:** App icons at window position; app strip at bottom
-- **hybrid:** Rectangles PLUS app icon strip at bottom
+- **icons:** App icons at window position; app strip at bottom (controlled by `SHOW_ICON_STRIP`)
+- **thumbnails:** ScreenCaptureKit display capture per cell (requires macOS 14+, Screen Recording permission)
 
 ## Development Workflow
 
@@ -178,6 +182,9 @@ make archive     # Build signed archive for release
 - Move to Applications first-launch prompt
 - Config file auto-generation and self-healing
 - Fixed auto-hide timeout
+- Screen Recording permissions link in menubar
+- Cell opacity / inactive space dimming
+- Thumbnail cell style (ScreenCaptureKit, experimental)
 
 See [TASKS.md](./TASKS.md) for planned features, bug fixes, and known issues.
 

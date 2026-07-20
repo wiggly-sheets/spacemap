@@ -1,21 +1,21 @@
 # spacemap
 
-A native macOS work`spacemap` that shows your yabai workspace grid on demand. Press `Ctrl+Space` to toggle a floating overlay showing all your desktops as a 2D grid with window positions highlighted inside each cell.
+A native macOS utility that shows your yabai workspace grid on demand. Press `Ctrl+PgDn` to toggle a floating overlay showing all your desktops as a 2D grid with window positions highlighted inside each cell.
 
 > Inspired by [WindowMaker](https://www.windowmaker.org/) 
 
 **Quick Demo of Spacemap**
 [![Quick Demo](https://img.youtube.com/vi/oYN-4LCuQnE/0.jpg)](https://www.youtube.com/watch?v=oYN-4LCuQnE)
 
-With [yabai](https://github.com/koekeishiya/yabai) and [skhd](https://github.com/asmvik/skhd) you can set up your desktop switching behavior to be on a grid in the macOS. 
-You just don't have any visual reference that your workspaces are layed out that way. It takes a lot of mental gymnastics to keep everything streight in your head.
+With [yabai](https://github.com/koekeishiya/yabai) and [skhd](https://github.com/asmvik/skhd) you can set up your desktop switching behavior to be on a grid in macOS. 
+You just don't have any visual reference that your workspaces are laid out that way. It takes a lot of mental gymnastics to keep everything straight in your head.
 Spacemap can help you find where you left your things.
 
 Before you run off because I said yabai:
 > You do not have to disable SIP System Integrity Protection to get this setup.
 
 ## Visualization of spacemap on a workspace
-Here I have 4 windows open and `spacemap` is opened via: `ctrl spacebar` key sequence.
+Here I have 4 windows open and `spacemap` is opened via: `Ctrl+PgDn` key sequence.
 It is in the middle of the screen. You can see that we are on desktop 6 and there are 4 apps open.
 <details><summary>Desktop Screenshot</summary>
 
@@ -38,23 +38,28 @@ Window positions are drawn as colored rectangles inside each cell (one color per
 
 | Action | Result |
 |--------|--------|
-| `Ctrl+Space` | Toggle HUD open/closed |
+| `Ctrl+PgDn` | Toggle HUD open/closed |
 | Switch desktops while HUD is open | Active cell updates live |
 | Click on a workspace | Switches to workspace and closes spacemap |
 | Drag a window onto a cell | Moves the window to that space |
+| Menubar icon → Settings (⌘+,) | Open settings window |
 | Menubar icon → Launch at Login | Toggle auto-start on login |
 | Menubar icon → Show/Hide Map | Toggle HUD |
+| Menubar icon → Restart spacemap (⌘+R) | Restart the app |
 
 ## Run Requirements
 
-- macOS 13+
-- [yabai](https://github.com/koekeishiya/yabai) installed at `/opt/homebrew/bin/yabai` and running
-- [skhd](https://github.com/asmvik/skhd) installed at `/opt/homebrew/bin/skhd` and running
+- macOS 13+ (macOS 14+ for thumbnail cell style)
+- [yabai](https://github.com/koekeishiya/yabai) installed and running
+- [skhd](https://github.com/asmvik/skhd) installed and running (for grid navigation)
 - Accessibility permission (prompted on first launch). This is not the same as disabling SIP protection, which is not required.
+- Screen Recording permission (only needed for thumbnail cell style)
 
 
 
-On first launch of spacemap macOS will prompt for Accessibility permission. Grant it — spacemap needs it to monitor the global Ctrl+Space hotkey.
+On first launch of spacemap macOS will prompt for Accessibility permission. Grant it — spacemap needs it to monitor the global Ctrl+PgDn hotkey.
+
+If you plan to use the **Thumbnails** cell style, you will also need to grant **Screen Recording** permission. You can do this from the menubar menu → "Open Screen Recording Permissions".
 <details><summary>Accessibility Permissions Screenshot</summary>
 <img width="722" height="844" alt="Screenshot 2026-05-10 at 10 58 32 AM" src="https://github.com/user-attachments/assets/b6d90393-2100-44bc-ac6f-00fe1de66a98" />
 </details>
@@ -74,12 +79,16 @@ CELL_STYLE=rects
 
 | Option | Values | Default | Description |
 |--------|--------|---------|-------------|
-| `CELL_STYLE` | `rects`, `icons`, `hybrid` | `rects` | How windows are drawn in each cell |
+| `CELL_STYLE` | `rects`, `icons`, `thumbnails` | `rects` | How windows are drawn in each cell. `thumbnails` requires Screen Recording permission |
 | `THEME` | `default`, `tokyonight`, `catppuccin`, `monokai-dark`, `monokai-light`, `dracula`, `ayu`, `github`, `vscode`, `xcode`, `nord`, `atom-one-dark` | `default` | Color theme. Controls HUD background and focused-space highlight color |
 | `UI_SCALE` | `0.1`–`1.0` | `1.0` | Scale multiplier for HUD size |
 | `BACKGROUND_ALPHA` | `0.0`–`1.0` | `0.3` | HUD background transparency (0=transparent, 1=opaque) |
 | `MODE` | `dark`, `light`, `auto` | `auto` | HUD background appearance. `auto` follows system setting |
 | `ICON_SCALE` | `0.5`–`2.0` | `1.0` | App icon size in icon strip relative to proportional default |
+| `SHOW_ICON_STRIP` | `true`, `false` | `true` | Show app icon strip at bottom of each cell |
+| `SHOW_SPACE_NUMBERS` | `true`, `false` | `true` | Show space number in top-left of each cell |
+| `SHOW_SPACE_NAMES` | `true`, `false` | `true` | Show custom space names in center of each cell |
+| `HIDE_MENUBAR_ICON` | `true`, `false` | `false` | Hide the menubar icon (app runs headless; use hotkey or CLI to toggle) |
 
 ```bash
 UI_SCALE=0.5
@@ -87,6 +96,10 @@ THEME=catppuccin
 BACKGROUND_ALPHA=0.3
 MODE=auto
 ICON_SCALE=1.0
+SHOW_ICON_STRIP=true
+SHOW_SPACE_NUMBERS=true
+SHOW_SPACE_NAMES=true
+HIDE_MENUBAR_ICON=false
 ```
 
 ### Grid options
@@ -122,8 +135,16 @@ AUTO_HIDE_TIMEOUT=5
 
 ```bash
 #HOTKEY=ctrl+pgdn     # default (Page Down)
-#HOTKEY=ctrl+space    # original default (conflicts with Cursor)
+#HOTKEY=ctrl+space    # alternative (conflicts with Cursor)
 #HOTKEY=ctrl+shift+s  # example with multiple modifiers
+```
+
+### Space Names
+
+`SPACE_NAMES` assigns custom names to spaces. Names appear in cell centers when `SHOW_SPACE_NAMES=true`.
+
+```bash
+SPACE_NAMES=1:Desktop,2:Dev,3:Media,4:Music
 ```
  
 ## Example configs
@@ -131,21 +152,21 @@ AUTO_HIDE_TIMEOUT=5
 Get a copy of the example configs and place them in `~/.config/spacemap/config`:
 
 ```bash
-# 4x4 hybrid grid (compact)
+# 4x4 icons grid (compact)
 cp docs/config-examples/spacemap-config-4x4-hybrid ~/.config/spacemap/config
 
 # 8x2 rects grid (classic)
 cp docs/config-examples/spacemap-config-8x2-rects ~/.config/spacemap/config
 ```
 
-## Install ( in 5 steps )
-1. Install Pre-requisites
+## Install (in 5 steps)
+1. Install prerequisites
 2. Install spacemap
-3. Grant Accessibility Permission
+3. Grant Accessibility permission
 4. Configure skhd 
 5. Configure spacemap
 
-**Step 1: Install Pre-requisites**
+**Step 1: Install prerequisites**
 ```
 brew install asmvik/formulae/yabai
 brew install asmvik/formulae/skhd
@@ -166,7 +187,7 @@ Launch spacemap once to trigger the permission prompt:
 open /Applications/spacemap.app
 ```
 
-Then go to **System Settings → Privacy & Security → Accessibility** and enable spacemap. The Ctrl+Space hotkey activates automatically — no restart needed.
+Then go to **System Settings → Privacy & Security → Accessibility** and enable spacemap. The Ctrl+PgDn hotkey activates automatically — no restart needed.
 
 **Step 4: Configure skhd**
 
@@ -188,11 +209,11 @@ mkdir -p ~/.config/spacemap
 cat > ~/.config/spacemap/config << 'EOF'
 GRID_COLS=8
 GRID_ROWS=2
-CELL_STYLE=hybrid
+CELL_STYLE=icons
 EOF
 ```
 
-Press `Ctrl+Space` to open spacemap.
+Press `Ctrl+PgDn` to open spacemap.
 
 
 ## Build Requirements
@@ -228,7 +249,7 @@ spacemap --config     # Open config file in default editor and exit
 spacemap --help       # Print help and exit
 ```
 
-Without any options, spacemap launches and waits for the hotkey (Ctrl+Space) to toggle the HUD.
+Without any options, spacemap launches and waits for the hotkey (Ctrl+PgDn) to toggle the HUD.
 
 Without installing the CLI, you can still run the commands directly:
 ```bash
