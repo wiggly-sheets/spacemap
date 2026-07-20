@@ -74,13 +74,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 healthInterval: config.socketHealthInterval,
                 onRefresh: { [weak self] in
                     self?.hud.refresh()
-                    self?.captureActiveSpaceForThumbnail()
                 },
                 onShow: { [weak self] in self?.hud.show() },
                 onSettings: { [weak self] in self?.showSettingsWindow() }
             )
             YabaiClient.registerSignals(socketPath: self.socketPath)
-            self.captureActiveSpaceForThumbnail()
             
             // Observe settings changes to update hotkey
             self.settingsObserver = NotificationCenter.default.addObserver(
@@ -223,13 +221,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         self.hotkey?.stop()
         self.hotkey = nil
         self.startHotkey(config: config)
-    }
-
-    private func captureActiveSpaceForThumbnail() {
-        guard #available(macOS 14.0, *) else { return }
-        guard let config = currentConfig, config.cellStyle == .thumbnails else { return }
-        guard let focusedIndex = YabaiClient.queryFocusedSpaceIndex() else { return }
-        ThumbnailCache.shared.captureActiveSpace(spaceIndex: focusedIndex)
     }
 
     private func startHotkey(config: GridConfig) {
