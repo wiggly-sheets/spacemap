@@ -251,10 +251,8 @@ Picker("Cell Style", selection: $cellStyle) {
                 .onChange(of: cellStyle) { _ in saveConfig() }
                 Toggle("Show Space Numbers", isOn: $showSpaceNumbers)
                     .onChange(of: showSpaceNumbers) { _ in saveConfig() }
-                if cellStyle == .icons {
-                    Toggle("Show Icon Strip", isOn: $showIconStrip)
-                        .onChange(of: showIconStrip) { _ in saveConfig() }
-                }
+                Toggle("Show Icon Strip", isOn: $showIconStrip)
+                    .onChange(of: showIconStrip) { _ in saveConfig() }
             }
             
             Section(header: Text("Appearance").font(.title).bold()) {
