@@ -3,6 +3,7 @@ import CoreGraphics
 
 enum ConfigReader {
     static var silentMode = false
+    private static var hasLoadedOnce = false
 
     static func load() -> GridConfig {
         let path = NSString(string: "~/.config/spacemap/config").expandingTildeInPath
@@ -153,9 +154,10 @@ case "MODE":
         }
 
         let result = GridConfig(cols: cols, rows: rows, cellStyle: cellStyle, hotkey: hotkey, socketHealthInterval: socketHealthInterval, uiScale: uiScale, autoHideTimeout: autoHideTimeout, theme: theme, showMode: showMode, maxSpaces: maxSpaces, backgroundAlpha: backgroundAlpha, mode: mode, iconScale: iconScale, showSpaceNumbers: showSpaceNumbers, showSpaceNames: showSpaceNames, showIconStrip: showIconStrip, showMultiAppIcons: showMultiAppIcons, hideMenuBarIcon: hideMenuBarIcon, spaceNames: spaceNames, useVimKeys: useVimKeys, useArrowKeys: useArrowKeys)
-        if !silentMode { NSLog("spacemap/ConfigReader: loaded cols=\(cols) rows=\(rows) style=\(cellStyle) scale=\(uiScale) theme=\(theme) autoHide=\(autoHideTimeout) showMode=\(showMode) maxSpaces=\(maxSpaces) bgAlpha=\(backgroundAlpha) mode=\(mode) iconScale=\(iconScale) showSpaceNumbers=\(showSpaceNumbers) showSpaceNames=\(showSpaceNames) spaceNames=\(spaceNames.count) hotkey=\(hotkey)") }
-        // Ensure config file contains all keys (add missing ones with current values)
-        saveConfig(result)
+        if !hasLoadedOnce {
+            saveConfig(result)
+            hasLoadedOnce = true
+        }
         return result
     }
 

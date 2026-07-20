@@ -25,7 +25,7 @@ struct CellView: View {
     private let baseCellWidth: CGFloat = 80
     private let baseCellHeight: CGFloat = 50
     private let uiScale: CGFloat
-    private let theme: String
+    private let resolvedTheme: AppTheme
     private let mode: ThemeMode
     private let iconScale: CGFloat
     private let showSpaceNumbers: Bool
@@ -56,7 +56,7 @@ init(spaceIndex: Int,
              cellStyle: CellStyle,
              onSelect: @escaping (Int) -> Void,
              uiScale: CGFloat = 1.0,
-             theme: String = "default",
+             resolvedTheme: AppTheme = .default,
              mode: ThemeMode = .auto,
              iconScale: CGFloat = 1.0,
              showSpaceNumbers: Bool = true,
@@ -74,7 +74,7 @@ init(spaceIndex: Int,
         self.cellStyle = cellStyle
         self.onSelect = onSelect
         self.uiScale = uiScale
-        self.theme = theme
+        self.resolvedTheme = resolvedTheme
         self.mode = mode
         self.iconScale = iconScale
         self.showSpaceNumbers = showSpaceNumbers
@@ -128,7 +128,7 @@ var body: some View {
     }
     
     private var backgroundColor: Color {
-        let t = AppTheme.named(theme)
+        let t = resolvedTheme
         let baseColor: Color
         if isDropTarget { baseColor = Color(hex: t.dropTarget).opacity(isDarkMode ? 0.35 : 0.5) }
         else if isFocused {
@@ -143,14 +143,14 @@ var body: some View {
     }
     
     private var textColor: Color {
-        let t = AppTheme.named(theme)
+        let t = resolvedTheme
         if isFocused { return Color(hex: t.focused) }
         if isDarkMode { return Color(hex: t.text).opacity(0.4) }
         return Color(hex: 0x333333).opacity(0.7)
     }
     
     private var borderColor: Color {
-        let t = AppTheme.named(theme)
+        let t = resolvedTheme
         if isDropTarget { return Color(hex: t.dropTarget) }
         if isFocused { return Color(hex: t.focused) }
         if isDarkMode { return Color(hex: t.text).opacity(0.15) }
@@ -228,10 +228,9 @@ var body: some View {
     
     private func thumbnailImage(_ spaceIndex: Int) -> some View {
         guard #available(macOS 14.0, *),
-              let cached = ThumbnailCache.shared.thumbnail(forSpace: spaceIndex) else {
+              let nsImage = ThumbnailCache.shared.thumbnailNSImage(forSpace: spaceIndex) else {
             return AnyView(Color.clear)
         }
-        let nsImage = NSImage(cgImage: cached, size: NSSize(width: cached.width, height: cached.height))
         return AnyView(Image(nsImage: nsImage)
             .resizable()
             .aspectRatio(contentMode: .fill)
@@ -240,7 +239,7 @@ var body: some View {
     }
     
     private func appColor(_ name: String) -> Color {
-        let t = AppTheme.named(theme)
+        let t = resolvedTheme
         let rects = [t.rect1, t.rect2, t.rect3]
         let base = rects[abs(name.hashValue) % 3]
         let windowCount = windows.count

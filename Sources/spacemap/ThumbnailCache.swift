@@ -8,7 +8,8 @@ import ScreenCaptureKit
 final class ThumbnailCache {
     static let shared = ThumbnailCache()
 
-    private var cache: [Int: CGImage] = [:]
+    private var cgCache: [Int: CGImage] = [:]
+    private var nsCache: [Int: NSImage] = [:]
     private let queue = DispatchQueue(label: "com.spacemap.thumbnailcache")
 
     /// Capture the currently active display (the current space) and pin it to its cell.
@@ -18,19 +19,30 @@ final class ThumbnailCache {
                 NSLog("spacemap/ThumbnailCache: failed to capture display for space \(spaceIndex)")
                 return
             }
-            queue.sync { cache[spaceIndex] = cgImage }
+            queue.sync {
+                cgCache[spaceIndex] = cgImage
+                nsCache[spaceIndex] = NSImage(cgImage: cgImage, size: NSSize(width: cgImage.width, height: cgImage.height))
+            }
             NSLog("spacemap/ThumbnailCache: captured space \(spaceIndex) (\(cgImage.width)x\(cgImage.height))")
         }
     }
 
     /// Get cached thumbnail for a space. Returns nil if not yet visited.
     func thumbnail(forSpace index: Int) -> CGImage? {
-        queue.sync { cache[index] }
+        queue.sync { cgCache[index] }
+    }
+
+    /// Get cached NSImage for a space. Returns nil if not yet visited.
+    func thumbnailNSImage(forSpace index: Int) -> NSImage? {
+        queue.sync { nsCache[index] }
     }
 
     /// Clear all cached thumbnails.
     func clear() {
-        queue.sync { cache.removeAll() }
+        queue.sync {
+            cgCache.removeAll()
+            nsCache.removeAll()
+        }
     }
 
     private func captureDisplay() async -> CGImage? {

@@ -163,7 +163,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let button = item.button {
             button.image = NSImage(systemSymbolName: "square.grid.3x3", accessibilityDescription: "spacemap")
         }
-        let config = ConfigReader.load()
+        let config = currentConfig ?? ConfigReader.load()
         let menu = NSMenu()
         let hotkeyLabel = hotkeyMenuString(config.hotkey)
         menu.addItem(NSMenuItem(title: "Show/Hide Map (\(hotkeyLabel))", action: #selector(toggleHUD), keyEquivalent: ""))

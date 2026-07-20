@@ -21,6 +21,9 @@ struct GridView: View {
     private let baseGap: CGFloat = 6
     private let basePadding: CGFloat = 12
     
+    // ponytail: precomputed once per GridView init, not per body/idealSize call
+    private let _visibleSpaceIndices: [Int]
+    
     var body: some View {
         let cells = visibleSpaceIndices
         // Chunk into rows of config.cols width
@@ -46,15 +49,7 @@ struct GridView: View {
         state.spaces.first { $0.index == index }?.label
     }
     
-    private var visibleSpaceIndices: [Int] {
-        let maxN = min(state.config.maxSpaces, 16)
-        let all = (1...maxN).map { $0 }
-        if state.config.showMode == .active {
-            let activeSet = Set(state.spaces.map { $0.index })
-            return all.filter { activeSet.contains($0) }
-        }
-        return all
-    }
+    private var visibleSpaceIndices: [Int] { _visibleSpaceIndices }
     
     private func makeCell(for spaceIndex: Int, row: Int) -> some View {
         let cellSpaceIndex = spaceIndex
@@ -66,6 +61,7 @@ struct GridView: View {
         let cellDisplayBounds = state.displayBounds
         let cellStyle = state.config.cellStyle
         let cellIsActive = state.spaces.contains { $0.index == spaceIndex }
+        let resolvedTheme = AppTheme.named(theme)
         
         return CellView(
             spaceIndex: cellSpaceIndex,
@@ -79,7 +75,7 @@ struct GridView: View {
             cellStyle: cellStyle,
             onSelect: onSelect,
             uiScale: uiScale,
-            theme: theme,
+            resolvedTheme: resolvedTheme,
             mode: state.config.mode,
             iconScale: state.config.iconScale,
             showSpaceNumbers: state.config.showSpaceNumbers,
@@ -109,5 +105,14 @@ struct GridView: View {
         self.onSelect = onSelect
         self.uiScale = uiScale
         self.theme = theme
+        // Precompute once
+        let maxN = min(state.config.maxSpaces, 16)
+        let all = (1...maxN).map { $0 }
+        if state.config.showMode == .active {
+            let activeSet = Set(state.spaces.map { $0.index })
+            self._visibleSpaceIndices = all.filter { activeSet.contains($0) }
+        } else {
+            self._visibleSpaceIndices = all
+        }
     }
 }

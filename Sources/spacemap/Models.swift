@@ -166,9 +166,24 @@ struct GridState: Equatable {
     let windows: [YabaiWindow]
     let displayBounds: CGRect
     let focusedIndex: Int?
+    // ponytail: pre-grouped windows by space for O(1) per-cell lookup
+    private let windowsBySpace: [Int: [YabaiWindow]]
+
+    init(config: GridConfig, spaces: [YabaiSpace], windows: [YabaiWindow], displayBounds: CGRect, focusedIndex: Int?) {
+        self.config = config
+        self.spaces = spaces
+        self.windows = windows
+        self.displayBounds = displayBounds
+        self.focusedIndex = focusedIndex
+        var grouped: [Int: [YabaiWindow]] = [:]
+        for w in windows {
+            grouped[w.space, default: []].append(w)
+        }
+        self.windowsBySpace = grouped
+    }
 
     func windows(forSpace index: Int) -> [YabaiWindow] {
-        return self.windows.filter { $0.space == index }
+        return windowsBySpace[index] ?? []
     }
 
     static func == (lhs: GridState, rhs: GridState) -> Bool {
