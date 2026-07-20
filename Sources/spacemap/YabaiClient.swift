@@ -3,17 +3,11 @@ import AppKit
 
 enum YabaiClient {
     private static let yabaiPath: String = {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/bin/zsh")
-        process.arguments = ["-c", "which yabai"]
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        process.standardError = Pipe()
-        try? process.run()
-        process.waitUntilExit()
-        let data = pipe.fileHandleForReading.readDataToEndOfFile()
-        let path = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        return path.isEmpty ? "/opt/homebrew/bin/yabai" : path
+        let arm = "/opt/homebrew/bin/yabai"
+        let intel = "/usr/local/bin/yabai"
+        if FileManager.default.isExecutableFile(atPath: arm) { return arm }
+        if FileManager.default.isExecutableFile(atPath: intel) { return intel }
+        return arm
     }()
 
     static func isYabaiRunning() -> Bool {
