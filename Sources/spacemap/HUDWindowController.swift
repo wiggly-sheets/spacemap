@@ -249,10 +249,10 @@ class HUDWindowController {
 
     private func refreshThumbnailCache(state: GridState) {
         guard config.cellStyle == .thumbnails else { return }
-        let maxSpaces = min(config.maxSpaces, 16)
+        guard let focusedIndex = state.focusedIndex else { return }
         let displayBounds = state.displayBounds
         DispatchQueue.global(qos: .utility).async {
-            ThumbnailCache.shared.refreshAll(maxSpaces: maxSpaces, displayBounds: displayBounds)
+            ThumbnailCache.shared.captureActiveSpace(spaceIndex: focusedIndex, displayBounds: displayBounds)
         }
     }
 

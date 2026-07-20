@@ -1,29 +1,31 @@
 import Foundation
 import CoreGraphics
 
-/// Caches CGImage thumbnails for all spaces, captured via SLS on space-change signals.
-/// Refreshed on every space_changed signal; served synchronously to CellView.
+/// Caches CGImage thumbnails per space. Only captures the active space on each visit.
+/// Until a space is visited, its cell shows empty.
 final class ThumbnailCache {
     static let shared = ThumbnailCache()
-    
+
     private var cache: [Int: CGImage] = [:]
     private let queue = DispatchQueue(label: "com.spacemap.thumbnailcache")
-    
-    /// Capture all spaces up to maxSpaces and cache the results.
-    /// Called on every space_changed signal (background queue).
-    func refreshAll(maxSpaces: Int, displayBounds: CGRect) {
-        var newCache: [Int: CGImage] = [:]
-        for i in 1...maxSpaces {
-            if let img = SLSCapture.capture(spaceIndex: i, displayBounds: displayBounds) {
-                newCache[i] = img
-            }
+
+    /// Capture the currently active space and pin its thumbnail to its cell.
+    func captureActiveSpace(spaceIndex: Int, displayBounds: CGRect) {
+        guard let img = SLSCapture.capture(spaceIndex: spaceIndex, displayBounds: displayBounds) else {
+            NSLog("spacemap/ThumbnailCache: failed to capture space \(spaceIndex)")
+            return
         }
-        queue.sync { cache = newCache }
-        NSLog("spacemap/ThumbnailCache: refreshed \(newCache.count)/\(maxSpaces) spaces")
+        queue.sync { cache[spaceIndex] = img }
+        NSLog("spacemap/ThumbnailCache: captured space \(spaceIndex) (\(img.width)x\(img.height))")
     }
-    
-    /// Get cached thumbnail for a space. Returns nil if not yet captured.
+
+    /// Get cached thumbnail for a space. Returns nil if not yet visited.
     func thumbnail(forSpace index: Int) -> CGImage? {
         queue.sync { cache[index] }
+    }
+
+    /// Clear all cached thumbnails (e.g. on config change).
+    func clear() {
+        queue.sync { cache.removeAll() }
     }
 }
