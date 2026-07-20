@@ -49,6 +49,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         ensureSymlink()
         
         setupMenubar()
+        // Check yabai before doing anything else
+        if !YabaiClient.isYabaiRunning() {
+            DispatchQueue.main.async {
+                self.showYabaiAlert()
+            }
+        }
+        
         // Delay slightly so TCC/LaunchServices finishes registering the app
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             ConfigReader.silentMode = true
@@ -282,6 +289,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if response == .alertFirstButtonReturn {
             setLoginAtLogin(enabled: true)
         }
+    }
+
+    private func showYabaiAlert() {
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = "yabai is not running"
+        alert.informativeText = "spacemap requires yabai to be running. Please start yabai and relaunch spacemap."
+        alert.addButton(withTitle: "Quit")
+        alert.addButton(withTitle: "Open yabai")
+        
+        let response = alert.runModal()
+        if response == .alertSecondButtonReturn {
+            NSWorkspace.shared.open(URL(string: "https://github.com/koekeishiya/yabai")!)
+        }
+        NSApp.terminate(nil)
     }
 
     private func printVersionAndExit() {
