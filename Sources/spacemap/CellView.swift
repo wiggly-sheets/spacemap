@@ -83,7 +83,7 @@ var body: some View {
             // Show space number at top-left when showNames is enabled
             if showNames {
                 Text("\(spaceIndex)")
-                    .font(.system(size: 12 * uiScale * 10, weight: .bold, design: .monospaced))
+                    .font(.system(size: 12 * uiScale * 10, weight: .bold))
                     .foregroundColor(textColor.opacity(0.7))
                     .position(x: 8, y: 12)
             }
@@ -91,7 +91,7 @@ var body: some View {
             // Show space name (if exists) in center
             if let name = spaceName, !name.isEmpty {
                 Text(name)
-                    .font(.system(size: 14 * uiScale * 10, weight: .medium, design: .rounded))
+                    .font(.system(size: 14 * uiScale * 10, weight: .medium))
                     .foregroundColor(textColor)
                     .position(x: cellSize.width / 2, y: cellSize.height / 2)
                     .multilineTextAlignment(.center)

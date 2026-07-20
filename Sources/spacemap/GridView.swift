@@ -38,12 +38,7 @@ struct GridView: View {
         }
         .padding(effectivePadding)
         .background(
-            RoundedRectangle(cornerRadius: 10)
-                .fill(backgroundColor)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .strokeBorder(Color.white.opacity(0.1), lineWidth: 0.5)
-                )
+            LiquidGlassBackground(cornerRadius: 10, alpha: state.config.backgroundAlpha, isDarkMode: isDarkMode, theme: theme)
         )
     }
     
@@ -101,16 +96,6 @@ struct GridView: View {
         let w = CGFloat(colCount) * (effectiveCellWidth + effectiveGap) - effectiveGap + effectivePadding * 2
         let h = CGFloat(rowCount) * (effectiveCellHeight + effectiveGap) - effectiveGap + effectivePadding * 2
         return CGSize(width: w, height: h)
-    }
-    
-    private var backgroundColor: Color {
-        let alpha = state.config.backgroundAlpha
-        if !isDarkMode {
-            return Color.white.opacity(alpha)
-        } else {
-            let t = AppTheme.named(theme)
-            return Color(hex: t.background).opacity(alpha)
-        }
     }
     
     init(state: GridState, hoveredCell: Int?, onSelect: @escaping (Int) -> Void, uiScale: Double = 1.0, theme: String = "default") {
