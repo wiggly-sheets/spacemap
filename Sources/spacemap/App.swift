@@ -133,17 +133,44 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    private func hotkeyMenuString(_ hotkey: HotkeyConfig) -> String {
+        var parts: [String] = []
+        if hotkey.modifiers.contains(.maskControl) { parts.append("⌃") }
+        if hotkey.modifiers.contains(.maskCommand) { parts.append("⌘") }
+        if hotkey.modifiers.contains(.maskAlternate) { parts.append("⌥") }
+        if hotkey.modifiers.contains(.maskShift) { parts.append("⇧") }
+        switch hotkey.keyCode {
+        case 121: parts.append("PgDn")
+        case 116: parts.append("PgUp")
+        case 49:  parts.append("Space")
+        case 48:  parts.append("Tab")
+        case 36:  parts.append("Return")
+        case 53:  parts.append("Esc")
+        case 51:  parts.append("Del")
+        case 123: parts.append("←")
+        case 124: parts.append("→")
+        case 125: parts.append("↓")
+        case 126: parts.append("↑")
+        default:  parts.append("?")
+        }
+        return parts.joined()
+    }
+
     private func setupMenubar() {
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         if let button = item.button {
             button.image = NSImage(systemSymbolName: "square.grid.3x3", accessibilityDescription: "spacemap")
         }
+        let config = ConfigReader.load()
         let menu = NSMenu()
-        menu.addItem(NSMenuItem(title: "Show/Hide Map", action: #selector(toggleHUD), keyEquivalent: ""))
+        let hotkeyLabel = hotkeyMenuString(config.hotkey)
+        menu.addItem(NSMenuItem(title: "Show/Hide Map (\(hotkeyLabel))", action: #selector(toggleHUD), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: "Open Accessibility Permissions", action: #selector(openAccessibility), keyEquivalent: ""))
-        menu.addItem(NSMenuItem(title: "Open Screen Recording Permissions", action: #selector(openScreenRecording), keyEquivalent: ""))
-        menu.addItem(NSMenuItem(title: "Restart spacemap", action: #selector(restartApp), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Open Accessibility Permissions (for hotkey)", action: #selector(openAccessibility), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Open Screen Recording Permissions (for thumbnails)", action: #selector(openScreenRecording), keyEquivalent: ""))
+        let restartItem = NSMenuItem(title: "Restart spacemap", action: #selector(restartApp), keyEquivalent: "r")
+        restartItem.keyEquivalentModifierMask = .command
+        menu.addItem(restartItem)
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Settings...", action: #selector(showSettingsWindow), keyEquivalent: ","))
         menu.addItem(NSMenuItem.separator())
