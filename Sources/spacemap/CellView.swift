@@ -39,7 +39,8 @@ init(spaceIndex: Int,
             spaceLabel: String? = nil,
             spaceName: String? = nil,
             isFocused: Bool,
-             isActive: Bool,
+            isDropTarget: Bool,
+            isActive: Bool,
              windows: [YabaiWindow],
              displayBounds: CGRect,
              cellStyle: CellStyle,
@@ -64,7 +65,8 @@ init(spaceIndex: Int,
         self.theme = theme
         self.mode = mode
         self.iconScale = iconScale
-        self.showNames = showNames
+        self.showSpaceNumbers = showSpaceNumbers
+        self.showSpaceNames = showSpaceNames
     }
     
 var body: some View {
@@ -85,7 +87,7 @@ var body: some View {
             }
 
             // Show space number at top-left when showNames is enabled
-            if showNames {
+            if showSpaceNumbers {
                 Text("\(spaceIndex)")
                     .font(.system(size: 12 * uiScale * 10, weight: .bold))
                     .foregroundColor(textColor.opacity(0.7))
@@ -93,7 +95,7 @@ var body: some View {
             }
 
             // Show space name (if exists) in center
-            if let name = spaceName, !name.isEmpty {
+            if showSpaceNames, let name = spaceName, !name.isEmpty {
                 Text(name)
                     .font(.system(size: 14 * uiScale * 10, weight: .medium))
                     .foregroundColor(textColor)

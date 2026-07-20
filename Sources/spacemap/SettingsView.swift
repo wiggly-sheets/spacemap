@@ -245,6 +245,8 @@ struct SettingsView: View {
                     Text("Hybrid").tag(CellStyle.hybrid)
                 }
                 .onChange(of: cellStyle) { _ in saveConfig() }
+                Toggle("Show Space Numbers", isOn: $showSpaceNumbers)
+                    .onChange(of: showSpaceNumbers) { _ in saveConfig() }
             }
             
             Section(header: Text("Appearance").font(.title).bold()) {
