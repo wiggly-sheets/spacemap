@@ -27,6 +27,8 @@ class HUDWindowController {
     private let dragHandler = WindowDragHandler()
     private var lastFocusedSpaceIndex: Int? = nil
     private var isToggling = false   // prevents re-entry during toggle animations
+    var onShowSettings: (() -> Void)?
+    private var settingsKeyMonitor: Any?
     
     // Tokyo Night colors (approximate)
     private struct ThemeColors {
@@ -94,6 +96,7 @@ class HUDWindowController {
         isVisible = true
         resetAutoHideTimer()
         startPollTimer()
+        startSettingsKeyMonitor()
     }
     
     private func startPollTimer() {
@@ -131,6 +134,7 @@ class HUDWindowController {
         dragHandler.cellFrames = []
         dragHandler.cachedWindows = []
         dragHandler.focusedWindowIDAtOpen = nil
+        stopSettingsKeyMonitor()
     }
     
     // Called by SocketListener — also handles full content refresh (windows moved etc.)
@@ -239,6 +243,25 @@ class HUDWindowController {
     
     func reloadConfig() {
         _config = nil
+    }
+
+    private func startSettingsKeyMonitor() {
+        settingsKeyMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard let self, self.isVisible else { return }
+            if event.modifierFlags.contains(.command) && event.charactersIgnoringModifiers == "," {
+                DispatchQueue.main.async {
+                    self.hide()
+                    self.onShowSettings?()
+                }
+            }
+        }
+    }
+
+    private func stopSettingsKeyMonitor() {
+        if let monitor = settingsKeyMonitor {
+            NSEvent.removeMonitor(monitor)
+            settingsKeyMonitor = nil
+        }
     }
     
     private var screenHeight: CGFloat {

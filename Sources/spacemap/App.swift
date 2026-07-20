@@ -8,6 +8,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let socketPath = "/tmp/spacemap_\(NSUserName()).socket"
     private var statusItem: NSStatusItem?
     private var settingsObserver: NSObjectProtocol?
+    private var currentConfig: GridConfig?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let args = ProcessInfo.processInfo.arguments
@@ -63,8 +64,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             ConfigReader.silentMode = true
             let config = ConfigReader.load()
+            self.currentConfig = config
             self.hud.reloadConfig()
             self.restartHotkey(config: config)
+            self.applyMenubarVisibility(config: config)
+            self.hud.onShowSettings = { [weak self] in self?.showSettingsWindow() }
             self.socketListener = SocketListener(
                 socketPath: self.socketPath,
                 healthInterval: config.socketHealthInterval,
@@ -83,8 +87,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 guard let self = self else { return }
                 ConfigReader.silentMode = true
                 let config = ConfigReader.load()
+                self.currentConfig = config
                 self.hud.reloadConfig()
                 self.restartHotkey(config: config)
+                self.applyMenubarVisibility(config: config)
             }
         }
         
@@ -108,6 +114,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         socketListener?.stop()
         if let observer = settingsObserver {
             NotificationCenter.default.removeObserver(observer)
+        }
+    }
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        showSettingsWindow()
+        return false
+    }
+
+    private func applyMenubarVisibility(config: GridConfig) {
+        if config.hideMenuBarIcon {
+            if let item = statusItem {
+                item.isVisible = false
+            }
+            statusItem = nil
+        } else if statusItem == nil {
+            setupMenubar()
         }
     }
 

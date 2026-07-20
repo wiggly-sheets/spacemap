@@ -34,6 +34,7 @@ enum ConfigReader {
         var showSpaceNumbers = GridConfig.default.showSpaceNumbers
         var showSpaceNames = GridConfig.default.showSpaceNames
         var showIconStrip = GridConfig.default.showIconStrip
+        var hideMenuBarIcon = GridConfig.default.hideMenuBarIcon
         var spaceNames: [Int: String] = [:]
 
         for line in contents.components(separatedBy: .newlines) {
@@ -127,6 +128,8 @@ case "MODE":
                    showSpaceNames = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
              case "SHOW_ICON_STRIP":
                    showIconStrip = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
+             case "HIDE_MENUBAR_ICON":
+                   hideMenuBarIcon = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
              case "SPACE_NAMES":
                   // Parse format: "1:Name,2:Name,3:Name"
                   let pairs = value.components(separatedBy: ",")
@@ -140,7 +143,7 @@ case "MODE":
               }
         }
 
-        let result = GridConfig(cols: cols, rows: rows, cellStyle: cellStyle, hotkey: hotkey, socketHealthInterval: socketHealthInterval, uiScale: uiScale, autoHideTimeout: autoHideTimeout, theme: theme, showMode: showMode, maxSpaces: maxSpaces, backgroundAlpha: backgroundAlpha, mode: mode, iconScale: iconScale, showSpaceNumbers: showSpaceNumbers, showSpaceNames: showSpaceNames, showIconStrip: showIconStrip, spaceNames: spaceNames)
+        let result = GridConfig(cols: cols, rows: rows, cellStyle: cellStyle, hotkey: hotkey, socketHealthInterval: socketHealthInterval, uiScale: uiScale, autoHideTimeout: autoHideTimeout, theme: theme, showMode: showMode, maxSpaces: maxSpaces, backgroundAlpha: backgroundAlpha, mode: mode, iconScale: iconScale, showSpaceNumbers: showSpaceNumbers, showSpaceNames: showSpaceNames, showIconStrip: showIconStrip, hideMenuBarIcon: hideMenuBarIcon, spaceNames: spaceNames)
         if !silentMode { NSLog("spacemap/ConfigReader: loaded cols=\(cols) rows=\(rows) style=\(cellStyle) scale=\(uiScale) theme=\(theme) autoHide=\(autoHideTimeout) showMode=\(showMode) maxSpaces=\(maxSpaces) bgAlpha=\(backgroundAlpha) mode=\(mode) iconScale=\(iconScale) showSpaceNumbers=\(showSpaceNumbers) showSpaceNames=\(showSpaceNames) spaceNames=\(spaceNames.count) hotkey=\(hotkey)") }
         // Ensure config file contains all keys (add missing ones with current values)
         saveConfig(result)
@@ -232,6 +235,7 @@ case "MODE":
         SHOW_SPACE_NUMBERS=\(d.showSpaceNumbers ? "true" : "false")              # true | false
         SHOW_SPACE_NAMES=\(d.showSpaceNames ? "true" : "false")              # true | false
         SHOW_ICON_STRIP=\(d.showIconStrip ? "true" : "false")              # true | false
+        HIDE_MENUBAR_ICON=\(d.hideMenuBarIcon ? "true" : "false")           # true | false
         SPACE_NAMES=\(d.spaceNames.map { "\($0.key):\($0.value)" }.joined(separator: ","))                  # comma-separated, e.g. "1:Term,2:Code"
         """
         do {
@@ -266,6 +270,7 @@ case "MODE":
         SHOW_SPACE_NUMBERS=\(config.showSpaceNumbers ? "true" : "false")              # true | false
         SHOW_SPACE_NAMES=\(config.showSpaceNames ? "true" : "false")              # true | false
         SHOW_ICON_STRIP=\(config.showIconStrip ? "true" : "false")              # true | false
+        HIDE_MENUBAR_ICON=\(config.hideMenuBarIcon ? "true" : "false")           # true | false
         SPACE_NAMES=\(config.spaceNames.map { "\($0.key):\($0.value)" }.joined(separator: ","))                  # comma-separated, e.g. "1:Term,2:Code"
         """
         do {

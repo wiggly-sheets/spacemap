@@ -71,6 +71,7 @@ struct SettingsView: View {
     @State private var showSpaceNumbers: Bool = true
     @State private var showSpaceNames: Bool = true
     @State private var showIconStrip: Bool = true
+    @State private var hideMenuBarIcon: Bool = false
     @State private var spaceNameInputs: [Int: String] = [:]
     @State private var isRecording = false
     @State private var monitor: Any?
@@ -146,6 +147,7 @@ struct SettingsView: View {
         _showSpaceNumbers = State(initialValue: config.showSpaceNumbers)
         _showSpaceNames = State(initialValue: config.showSpaceNames)
         _showIconStrip = State(initialValue: config.showIconStrip)
+        _hideMenuBarIcon = State(initialValue: config.hideMenuBarIcon)
         _spaceNameInputs = State(initialValue: config.spaceNames)
         _gridLayoutIndex = State(initialValue: findBestGridLayoutIndexFor(cols: config.cols, rows: config.rows, maxSpaces: config.maxSpaces))
     }
@@ -166,6 +168,7 @@ struct SettingsView: View {
         let spaceNumbersStr = showSpaceNumbers ? "true" : "false"
         let spaceNamesStr = showSpaceNames ? "true" : "false"
         let iconStripStr = showIconStrip ? "true" : "false"
+        let hideMenuBarIconStr = hideMenuBarIcon ? "true" : "false"
         let launchAtLogin = SMAppService.mainApp.status == .enabled
         let lines = [
             "GRID_COLS=\(cols)",
@@ -184,6 +187,7 @@ struct SettingsView: View {
             "SHOW_SPACE_NUMBERS=\(spaceNumbersStr)",
             "SHOW_SPACE_NAMES=\(spaceNamesStr)",
             "SHOW_ICON_STRIP=\(iconStripStr)",
+            "HIDE_MENUBAR_ICON=\(hideMenuBarIconStr)",
             "SPACE_NAMES=\(formatSpaceNames())",
             "LAUNCH_AT_LOGIN=\(launchAtLogin ? "true" : "false")"
         ]
@@ -318,6 +322,13 @@ Picker("Cell Style", selection: $cellStyle) {
                         .onChange(of: autoHideTimeout) { _ in saveConfig() }
                     Spacer()
                 }
+                Toggle("Hide Menu Bar Icon", isOn: $hideMenuBarIcon)
+                    .onChange(of: hideMenuBarIcon) { _ in saveConfig() }
+                if hideMenuBarIcon {
+                    Text("Access settings by relaunching the app or pressing ⌘, while the HUD is open.")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                }
             }
             
             Section {
@@ -357,6 +368,7 @@ Picker("Cell Style", selection: $cellStyle) {
             if showSpaceNumbers != config.showSpaceNumbers { showSpaceNumbers = config.showSpaceNumbers }
             if showSpaceNames != config.showSpaceNames { showSpaceNames = config.showSpaceNames }
             if showIconStrip != config.showIconStrip { showIconStrip = config.showIconStrip }
+            if hideMenuBarIcon != config.hideMenuBarIcon { hideMenuBarIcon = config.hideMenuBarIcon }
             if autoHideTimeout != config.autoHideTimeout { autoHideTimeout = config.autoHideTimeout }
             let computedSpaceNames = config.spaceNames
             if spaceNameInputs != computedSpaceNames { spaceNameInputs = computedSpaceNames }
