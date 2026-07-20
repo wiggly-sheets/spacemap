@@ -13,6 +13,11 @@ let package = Package(
                 .process("AppIcon.icns"),
                 .process("spacemap.icns"),
                 .process("Assets.xcassets"),
+            ],
+            linkerSettings: [
+                .linkedFramework("CoreGraphics"),
+                .linkedFramework("ApplicationServices"),
+                .linkedLibrary("c++")
             ]
         )
     ]

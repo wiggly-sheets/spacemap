@@ -2,7 +2,7 @@ import Foundation
 import CoreGraphics
 
 enum CellStyle: Int, CaseIterable, Identifiable {
-    case rects, icons, hybrid
+    case rects, icons, thumbnails
     var id: Int { rawValue }
 }
 enum ShowMode: String, CaseIterable, Identifiable { case all, active; var id: String { rawValue } }
@@ -30,11 +30,12 @@ struct GridConfig {
     var backgroundAlpha: Double // 0.0 to 1.0, 0=transparent 1=opaque
     var mode: ThemeMode // light, dark, or auto (follow system)
     var iconScale: Double // 0.5 to 2.0, app icon size multiplier
-    var showSpaceNumbers: Bool
-    var showSpaceNames: Bool
+    var showSpaceNumbers: Bool // show space index numbers in cells
+    var showSpaceNames: Bool // show configured space name text in cells
+    var showIconStrip: Bool // show icon strip at the bottom of each cell
     var spaceNames: [Int: String] // space id to name mapping
 
-    static let `default` = GridConfig(cols: 8, rows: 2, cellStyle: .rects, hotkey: .default, socketHealthInterval: 60, uiScale: 1.0, autoHideTimeout: 5, theme: "default", showMode: .all, maxSpaces: 16, backgroundAlpha: 0.3, mode: .auto, iconScale: 1.0, showSpaceNumbers: true, showSpaceNames: true, spaceNames: [:])
+    static let `default` = GridConfig(cols: 8, rows: 2, cellStyle: .rects, hotkey: .default, socketHealthInterval: 60, uiScale: 1.0, autoHideTimeout: 5, theme: "default", showMode: .all, maxSpaces: 16, backgroundAlpha: 0.3, mode: .auto, iconScale: 1.0, showSpaceNumbers: true, showSpaceNames: true, showIconStrip: true, spaceNames: [:])
 }
 
 struct AppTheme {

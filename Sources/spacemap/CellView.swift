@@ -1,6 +1,14 @@
 import SwiftUI
 import AppKit
 
+/// CellView displays a single space/cell in the grid.
+///
+/// Supported cell styles:
+/// - .rects:      Colored rectangles representing window positions/sizes
+/// - .icons:      Window icons positioned at their actual locations
+/// - .thumbnails: Live window content thumbnails (requires screen recording permission)
+///
+/// Icon strip at the bottom is controlled separately by `showIconStrip`.
 struct CellView: View {
     let spaceIndex: Int
     let spaceLabel: String?
@@ -22,6 +30,7 @@ struct CellView: View {
     private let iconScale: CGFloat
     private let showSpaceNumbers: Bool
     private let showSpaceNames: Bool
+    private let showIconStrip: Bool
     
     private var isDarkMode: Bool {
         switch mode {
@@ -50,7 +59,8 @@ init(spaceIndex: Int,
              mode: ThemeMode = .auto,
              iconScale: CGFloat = 1.0,
              showSpaceNumbers: Bool = true,
-             showSpaceNames: Bool = true) {
+             showSpaceNames: Bool = true,
+             showIconStrip: Bool = true) {
         self.spaceIndex = spaceIndex
         self.spaceLabel = spaceLabel
         self.spaceName = spaceName
@@ -67,7 +77,9 @@ init(spaceIndex: Int,
         self.iconScale = iconScale
         self.showSpaceNumbers = showSpaceNumbers
         self.showSpaceNames = showSpaceNames
+        self.showIconStrip = showIconStrip
     }
+
     
 var body: some View {
         ZStack(alignment: .topLeading) {
@@ -76,13 +88,13 @@ var body: some View {
 
             ForEach(windows, id: \.id) { window in
                 switch cellStyle {
-                case .rects:  windowRect(window)
-                case .icons:  windowIcon(window)
-                case .hybrid: windowRect(window)
+                case .rects:    windowRect(window)
+                case .icons:    windowIcon(window)
+                case .thumbnails: thumbnailImage(spaceIndex)
                 }
             }
 
-            if cellStyle == .icons || cellStyle == .hybrid {
+            if showIconStrip {
                 iconStrip()
             }
 
@@ -212,6 +224,17 @@ var body: some View {
             .first { $0.localizedName == appName }
             .flatMap { $0.bundleURL }
             .map { NSWorkspace.shared.icon(forFile: $0.path) }
+    }
+    
+    private func thumbnailImage(_ spaceIndex: Int) -> some View {
+        if let img = SpaceThumbnailCapture.capture(spaceIndex: spaceIndex, displayBounds: displayBounds, cellSize: cellSize, windows: windows) {
+            AnyView(Image(nsImage: img)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .clipped())
+        } else {
+            AnyView(EmptyView())
+        }
     }
     
     private func appColor(_ name: String) -> Color {

@@ -70,6 +70,7 @@ struct SettingsView: View {
     @State private var iconScale: Double = 1.0
     @State private var showSpaceNumbers: Bool = true
     @State private var showSpaceNames: Bool = true
+    @State private var showIconStrip: Bool = true
     @State private var spaceNameInputs: [Int: String] = [:]
     @State private var isRecording = false
     @State private var monitor: Any?
@@ -144,6 +145,7 @@ struct SettingsView: View {
         _iconScale = State(initialValue: nearest(to: config.iconScale, from: iconScaleSteps))
         _showSpaceNumbers = State(initialValue: config.showSpaceNumbers)
         _showSpaceNames = State(initialValue: config.showSpaceNames)
+        _showIconStrip = State(initialValue: config.showIconStrip)
         _spaceNameInputs = State(initialValue: config.spaceNames)
         _gridLayoutIndex = State(initialValue: findBestGridLayoutIndexFor(cols: config.cols, rows: config.rows, maxSpaces: config.maxSpaces))
     }
@@ -163,6 +165,7 @@ struct SettingsView: View {
     private func saveConfig() {
         let spaceNumbersStr = showSpaceNumbers ? "true" : "false"
         let spaceNamesStr = showSpaceNames ? "true" : "false"
+        let iconStripStr = showIconStrip ? "true" : "false"
         let launchAtLogin = SMAppService.mainApp.status == .enabled
         let lines = [
             "GRID_COLS=\(cols)",
@@ -180,6 +183,7 @@ struct SettingsView: View {
             "ICON_SCALE=\(iconScale)",
             "SHOW_SPACE_NUMBERS=\(spaceNumbersStr)",
             "SHOW_SPACE_NAMES=\(spaceNamesStr)",
+            "SHOW_ICON_STRIP=\(iconStripStr)",
             "SPACE_NAMES=\(formatSpaceNames())",
             "LAUNCH_AT_LOGIN=\(launchAtLogin ? "true" : "false")"
         ]
@@ -239,14 +243,18 @@ struct SettingsView: View {
                     Text("Active Spaces").tag(ShowMode.active)
                 }
                 .onChange(of: showMode) { _ in saveConfig() }
-                Picker("Cell Style", selection: $cellStyle) {
+Picker("Cell Style", selection: $cellStyle) {
                     Text("Rectangles").tag(CellStyle.rects)
                     Text("Icons").tag(CellStyle.icons)
-                    Text("Hybrid").tag(CellStyle.hybrid)
+                    Text("Thumbnails").tag(CellStyle.thumbnails)
                 }
                 .onChange(of: cellStyle) { _ in saveConfig() }
                 Toggle("Show Space Numbers", isOn: $showSpaceNumbers)
                     .onChange(of: showSpaceNumbers) { _ in saveConfig() }
+                if cellStyle == .icons {
+                    Toggle("Show Icon Strip", isOn: $showIconStrip)
+                        .onChange(of: showIconStrip) { _ in saveConfig() }
+                }
             }
             
             Section(header: Text("Appearance").font(.title).bold()) {
@@ -350,6 +358,7 @@ struct SettingsView: View {
             if iconScale != nearest(to: config.iconScale, from: iconScaleSteps) { iconScale = nearest(to: config.iconScale, from: iconScaleSteps) }
             if showSpaceNumbers != config.showSpaceNumbers { showSpaceNumbers = config.showSpaceNumbers }
             if showSpaceNames != config.showSpaceNames { showSpaceNames = config.showSpaceNames }
+            if showIconStrip != config.showIconStrip { showIconStrip = config.showIconStrip }
             if autoHideTimeout != config.autoHideTimeout { autoHideTimeout = config.autoHideTimeout }
             let computedSpaceNames = config.spaceNames
             if spaceNameInputs != computedSpaceNames { spaceNameInputs = computedSpaceNames }
@@ -363,11 +372,11 @@ struct SettingsView: View {
         NSWorkspace.shared.open(url)
     }
     
-    private var cellStyleString: String {
+private var cellStyleString: String {
         switch cellStyle {
         case .rects: return "rects"
         case .icons: return "icons"
-        case .hybrid: return "hybrid"
+        case .thumbnails: return "thumbnails"
         }
     }
     

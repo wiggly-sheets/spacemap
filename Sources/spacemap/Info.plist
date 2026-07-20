@@ -26,5 +26,7 @@
     <true/>
     <key>CFBundleIconFile</key>
     <string>spacemap.icns</string>
+    <key>NSScreenCaptureUsageDescription</key>
+    <string>spacemap needs screen recording permission to show window thumbnails of each yabai space.</string>
 </dict>
 </plist>
