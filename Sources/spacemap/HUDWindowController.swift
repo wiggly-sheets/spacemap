@@ -89,6 +89,7 @@ class HUDWindowController {
         if let focusedWindowID = (try? YabaiClient.queryFocusedWindow()) {
             dragHandler.focusedWindowIDAtOpen = focusedWindowID
         }
+        refreshThumbnailCache(state: state)
         renderState(state, panel: panel)
         updateCellFrames(state: state, panel: panel)
         dragHandler.start()
@@ -150,6 +151,7 @@ class HUDWindowController {
         let state = YabaiClient.buildGridState(config: config, focusedIndex: focused)
         currentState = state
         dragHandler.cachedWindows = state.windows
+        refreshThumbnailCache(state: state)
         renderState(state, panel: panel)
         updateCellFrames(state: state, panel: panel)
         lastFocusedSpaceIndex = focused
@@ -243,6 +245,15 @@ class HUDWindowController {
     
     func reloadConfig() {
         _config = nil
+    }
+
+    private func refreshThumbnailCache(state: GridState) {
+        guard config.cellStyle == .thumbnails else { return }
+        let maxSpaces = min(config.maxSpaces, 16)
+        let displayBounds = state.displayBounds
+        DispatchQueue.global(qos: .utility).async {
+            ThumbnailCache.shared.refreshAll(maxSpaces: maxSpaces, displayBounds: displayBounds)
+        }
     }
 
     private func startSettingsKeyMonitor() {
