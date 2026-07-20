@@ -248,12 +248,10 @@ class HUDWindowController {
     }
 
     private func refreshThumbnailCache(state: GridState) {
+        guard #available(macOS 14.0, *) else { return }
         guard config.cellStyle == .thumbnails else { return }
         guard let focusedIndex = state.focusedIndex else { return }
-        let displayBounds = state.displayBounds
-        DispatchQueue.global(qos: .utility).async {
-            ThumbnailCache.shared.captureActiveSpace(spaceIndex: focusedIndex, displayBounds: displayBounds)
-        }
+        ThumbnailCache.shared.captureActiveSpace(spaceIndex: focusedIndex)
     }
 
     private func startSettingsKeyMonitor() {
