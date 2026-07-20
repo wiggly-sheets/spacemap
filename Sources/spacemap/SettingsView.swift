@@ -68,7 +68,8 @@ struct SettingsView: View {
     @State private var backgroundAlpha: Double = 0.3
     @State private var mode: ThemeMode = .auto
     @State private var iconScale: Double = 1.0
-    @State private var showNames: Bool = true
+    @State private var showSpaceNumbers: Bool = true
+    @State private var showSpaceNames: Bool = true
     @State private var spaceNameInputs: [Int: String] = [:]
     @State private var isRecording = false
     @State private var monitor: Any?
@@ -141,7 +142,8 @@ struct SettingsView: View {
         _backgroundAlpha = State(initialValue: nearest(to: config.backgroundAlpha, from: backgroundTransparencySteps))
         _mode = State(initialValue: config.mode)
         _iconScale = State(initialValue: nearest(to: config.iconScale, from: iconScaleSteps))
-        _showNames = State(initialValue: config.showNames)
+        _showSpaceNumbers = State(initialValue: config.showSpaceNumbers)
+        _showSpaceNames = State(initialValue: config.showSpaceNames)
         _spaceNameInputs = State(initialValue: config.spaceNames)
         _gridLayoutIndex = State(initialValue: findBestGridLayoutIndexFor(cols: config.cols, rows: config.rows, maxSpaces: config.maxSpaces))
     }
@@ -159,7 +161,8 @@ struct SettingsView: View {
     }
     
     private func saveConfig() {
-        let showNamesStr = showNames ? "true" : "false"
+        let spaceNumbersStr = showSpaceNumbers ? "true" : "false"
+        let spaceNamesStr = showSpaceNames ? "true" : "false"
         let launchAtLogin = SMAppService.mainApp.status == .enabled
         let lines = [
             "GRID_COLS=\(cols)",
@@ -175,7 +178,8 @@ struct SettingsView: View {
             "BACKGROUND_ALPHA=\(backgroundAlpha)",
             "MODE=\(modeString)",
             "ICON_SCALE=\(iconScale)",
-            "SHOW_NAMES=\(showNamesStr)",
+            "SHOW_SPACE_NUMBERS=\(spaceNumbersStr)",
+            "SHOW_SPACE_NAMES=\(spaceNamesStr)",
             "SPACE_NAMES=\(formatSpaceNames())",
             "LAUNCH_AT_LOGIN=\(launchAtLogin ? "true" : "false")"
         ]
@@ -239,8 +243,11 @@ struct SettingsView: View {
                     Text("Rectangles").tag(CellStyle.rects)
                     Text("Icons").tag(CellStyle.icons)
                     Text("Hybrid").tag(CellStyle.hybrid)
+                    Text("Thumbnails").tag(CellStyle.thumbnails)
                 }
                 .onChange(of: cellStyle) { _ in saveConfig() }
+                Toggle("Show Space Numbers", isOn: $showSpaceNumbers)
+                    .onChange(of: showSpaceNumbers) { _ in saveConfig() }
             }
             
             Section(header: Text("Appearance").font(.title).bold()) {
@@ -312,9 +319,9 @@ struct SettingsView: View {
                 Text("Space Names")
                     .font(.title)
                     .bold()
-                Toggle("Show Space Names", isOn: $showNames)
-                    .onChange(of: showNames) { _ in saveConfig() }
-                if showNames {
+                Toggle("Show Space Names", isOn: $showSpaceNames)
+                    .onChange(of: showSpaceNames) { _ in saveConfig() }
+                if showSpaceNames {
                     Text("(Each input below corresponds to each space number, up to Max Spaces)")
                         .font(.footnote)
                         .foregroundColor(.secondary)
@@ -336,12 +343,12 @@ struct SettingsView: View {
             }
         }
         }
-        .formStyle(.grouped)
         .frame(minWidth: 500)
         .onAppear {
             let config = ConfigReader.load()
             if iconScale != nearest(to: config.iconScale, from: iconScaleSteps) { iconScale = nearest(to: config.iconScale, from: iconScaleSteps) }
-            if showNames != config.showNames { showNames = config.showNames }
+            if showSpaceNumbers != config.showSpaceNumbers { showSpaceNumbers = config.showSpaceNumbers }
+            if showSpaceNames != config.showSpaceNames { showSpaceNames = config.showSpaceNames }
             if autoHideTimeout != config.autoHideTimeout { autoHideTimeout = config.autoHideTimeout }
             let computedSpaceNames = config.spaceNames
             if spaceNameInputs != computedSpaceNames { spaceNameInputs = computedSpaceNames }
@@ -360,6 +367,7 @@ struct SettingsView: View {
         case .rects: return "rects"
         case .icons: return "icons"
         case .hybrid: return "hybrid"
+        case .thumbnails: return "thumbnails"
         }
     }
     

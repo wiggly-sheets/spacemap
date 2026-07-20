@@ -72,8 +72,7 @@ struct GridView: View {
             spaceLabel: cellSpaceLabel,
             spaceName: cellSpaceName,
             isFocused: cellIsFocused,
-            isDropTarget: cellIsDropTarget,
-            isActive: cellIsActive,
+            isDropTarget: cellIsDropTarget, isActive: cellIsActive,
             windows: cellWindows,
             displayBounds: cellDisplayBounds,
             cellStyle: cellStyle,
@@ -82,9 +81,11 @@ struct GridView: View {
             theme: theme,
             mode: state.config.mode,
             iconScale: state.config.iconScale,
-            showNames: state.config.showNames
+            showSpaceNumbers: state.config.showSpaceNumbers,
+            showSpaceNames: state.config.showSpaceNames
         )
     }
+
     
     var effectiveCellWidth: CGFloat { baseCellWidth * uiScale * 10 }
     var effectiveCellHeight: CGFloat { baseCellHeight * uiScale * 10 }
