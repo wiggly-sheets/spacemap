@@ -168,13 +168,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let hotkeyLabel = hotkeyMenuString(config.hotkey)
         menu.addItem(NSMenuItem(title: "Show/Hide Map (\(hotkeyLabel))", action: #selector(toggleHUD), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
+        menu.addItem(NSMenuItem(title: "Settings...", action: #selector(showSettingsWindow), keyEquivalent: ","))
+        menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Open Accessibility Permissions (for hotkey)", action: #selector(openAccessibility), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Open Screen Recording Permissions (for thumbnails)", action: #selector(openScreenRecording), keyEquivalent: ""))
-        let restartItem = NSMenuItem(title: "Restart spacemap", action: #selector(restartApp), keyEquivalent: "r")
-        restartItem.keyEquivalentModifierMask = .command
-        menu.addItem(restartItem)
-        menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: "Settings...", action: #selector(showSettingsWindow), keyEquivalent: ","))
         menu.addItem(NSMenuItem.separator())
         // Launch at Login
         let launchAtLoginItem = NSMenuItem(title: "Launch at Login", action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
@@ -189,6 +186,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         menu.addItem(launchAtLoginItem)
         menu.addItem(NSMenuItem.separator())
+        let restartItem = NSMenuItem(title: "Restart spacemap", action: #selector(restartApp), keyEquivalent: "r")
+        restartItem.keyEquivalentModifierMask = .command
+        menu.addItem(restartItem)
         menu.addItem(NSMenuItem(title: "Quit spacemap", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
         item.menu = menu
         statusItem = item

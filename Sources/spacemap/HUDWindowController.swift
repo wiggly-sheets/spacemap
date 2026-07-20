@@ -30,14 +30,6 @@ class HUDWindowController {
     var onShowSettings: (() -> Void)?
     private var settingsKeyMonitor: Any?
     
-    // Tokyo Night colors (approximate)
-    private struct ThemeColors {
-        static let background = Color(hex: 0x1a1b26)
-        static let foreground = Color(hex: 0xa9b1d6)
-        static let focused = Color(hex: 0x7aa2f7)
-        static let dropTarget = Color(hex: 0xbb9af7)
-    }
-    
     init() {
         dragHandler.onHoverCell = { [weak self] cell in
             guard let self, isVisible, let state = currentState else { return }

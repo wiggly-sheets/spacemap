@@ -240,8 +240,44 @@ var body: some View {
     }
     
     private func appColor(_ name: String) -> Color {
-        let hue = Double(abs(name.hashValue) % 360) / 360.0
-        return Color(hue: hue, saturation: 0.7, brightness: 0.9)
+        let t = AppTheme.named(theme)
+        let rects = [t.rect1, t.rect2, t.rect3]
+        let base = rects[abs(name.hashValue) % 3]
+        let windowCount = windows.count
+        if windowCount <= 3 {
+            return Color(hex: base)
+        }
+        // HSL variation: keep hue from base, vary sat/lightness for overflow windows
+        let r = Double((base >> 16) & 0xFF) / 255.0
+        let g = Double((base >> 8) & 0xFF) / 255.0
+        let b = Double(base & 0xFF) / 255.0
+        let maxC = max(r, g, b)
+        let minC = min(r, g, b)
+        let d = maxC - minC
+        var h: Double = 0
+        if d != 0 {
+            if maxC == r { h = ((g - b) / d).truncatingRemainder(dividingBy: 6) }
+            else if maxC == g { h = (b - r) / d + 2 }
+            else { h = (r - g) / d + 4 }
+            h /= 6
+            if h < 0 { h += 1 }
+        }
+        let hash = abs(name.hashValue)
+        let sat = 0.35 + Double(hash % 35) / 100.0
+        let lit = 0.50 + Double((hash / 35) % 35) / 100.0
+        let c = (1 - abs(2 * lit - 1)) * sat
+        let x = c * (1 - abs((h * 6).truncatingRemainder(dividingBy: 2) - 1))
+        let m = lit - c / 2
+        var rr: Double = 0, gg: Double = 0, bb: Double = 0
+        switch Int(h * 6) % 6 {
+        case 0: (rr, gg, bb) = (c, x, 0)
+        case 1: (rr, gg, bb) = (x, c, 0)
+        case 2: (rr, gg, bb) = (0, c, x)
+        case 3: (rr, gg, bb) = (0, x, c)
+        case 4: (rr, gg, bb) = (x, 0, c)
+        default: (rr, gg, bb) = (c, 0, x)
+        }
+        return Color(red: rr + m, green: gg + m, blue: bb + m)
     }
 }
 

@@ -275,20 +275,20 @@ Picker("Cell Style", selection: $cellStyle) {
             
             Section(header: Text("Appearance").font(.title).bold()) {
                 Picker("Theme", selection: $theme) {
-                    Text("Default").tag("default")
-                    Text("Tokyo Night").tag("tokyonight")
-                    Text("Catppuccin").tag("catppuccin")
-                    Text("Monokai Dark").tag("monokai-dark")
-                    Text("Monokai Light").tag("monokai-light")
-                    Text("Dracula").tag("dracula")
-                    Text("AYU").tag("ayu")
-                    Text("GitHub").tag("github")
-                    Text("VS Code").tag("vscode")
-                    Text("Xcode").tag("xcode")
-                    Text("Nord").tag("nord")
-                    Text("Atom One Dark").tag("atom-one-dark")
+                    ForEach(ThemeManager.shared.allNames(), id: \.self) { name in
+                        Text(name.capitalized).tag(name)
+                    }
                 }
                 .onChange(of: theme) { _ in saveConfig() }
+                HStack {
+                    Button("Open Config File") {
+                        let url = URL(fileURLWithPath: NSString(string: "~/.config/spacemap/config").expandingTildeInPath)
+                        NSWorkspace.shared.open(url)
+                    }
+                    Button("Open Themes Folder") {
+                        NSWorkspace.shared.open(ThemeManager.themesDir())
+                    }
+                }
                 Picker("Background Color", selection: $mode) {
                     Text("Light").tag(ThemeMode.light)
                     Text("Dark").tag(ThemeMode.dark)
@@ -396,14 +396,7 @@ Picker("Cell Style", selection: $cellStyle) {
         }
     }
         
-    let url = URL(fileURLWithPath: NSString(string: "~/.config/spacemap/config").expandingTildeInPath)
-    
-    private func openConfigFolder() {
-        let url = URL(fileURLWithPath: NSString(string: "~/.config/spacemap/config").expandingTildeInPath)
-        NSWorkspace.shared.open(url)
-    }
-    
-private var cellStyleString: String {
+    private var cellStyleString: String {
         switch cellStyle {
         case .rects: return "rects"
         case .icons: return "icons"
