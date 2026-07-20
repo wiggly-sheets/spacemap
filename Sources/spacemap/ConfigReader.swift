@@ -37,6 +37,8 @@ enum ConfigReader {
         var showMultiAppIcons = GridConfig.default.showMultiAppIcons
         var hideMenuBarIcon = GridConfig.default.hideMenuBarIcon
         var spaceNames: [Int: String] = [:]
+        var useVimKeys = GridConfig.default.useVimKeys
+        var useArrowKeys = GridConfig.default.useArrowKeys
 
         for line in contents.components(separatedBy: .newlines) {
             let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -131,9 +133,13 @@ case "MODE":
                    showIconStrip = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
              case "SHOW_MULTI_APP_ICONS":
                    showMultiAppIcons = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
-             case "HIDE_MENUBAR_ICON":
-                   hideMenuBarIcon = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
-             case "SPACE_NAMES":
+              case "HIDE_MENUBAR_ICON":
+                    hideMenuBarIcon = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
+              case "VIM_KEYS":
+                    useVimKeys = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
+              case "ARROW_KEYS":
+                    useArrowKeys = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
+              case "SPACE_NAMES":
                   // Parse format: "1:Name,2:Name,3:Name"
                   let pairs = value.components(separatedBy: ",")
                   for pair in pairs {
@@ -146,7 +152,7 @@ case "MODE":
               }
         }
 
-        let result = GridConfig(cols: cols, rows: rows, cellStyle: cellStyle, hotkey: hotkey, socketHealthInterval: socketHealthInterval, uiScale: uiScale, autoHideTimeout: autoHideTimeout, theme: theme, showMode: showMode, maxSpaces: maxSpaces, backgroundAlpha: backgroundAlpha, mode: mode, iconScale: iconScale, showSpaceNumbers: showSpaceNumbers, showSpaceNames: showSpaceNames, showIconStrip: showIconStrip, showMultiAppIcons: showMultiAppIcons, hideMenuBarIcon: hideMenuBarIcon, spaceNames: spaceNames)
+        let result = GridConfig(cols: cols, rows: rows, cellStyle: cellStyle, hotkey: hotkey, socketHealthInterval: socketHealthInterval, uiScale: uiScale, autoHideTimeout: autoHideTimeout, theme: theme, showMode: showMode, maxSpaces: maxSpaces, backgroundAlpha: backgroundAlpha, mode: mode, iconScale: iconScale, showSpaceNumbers: showSpaceNumbers, showSpaceNames: showSpaceNames, showIconStrip: showIconStrip, showMultiAppIcons: showMultiAppIcons, hideMenuBarIcon: hideMenuBarIcon, spaceNames: spaceNames, useVimKeys: useVimKeys, useArrowKeys: useArrowKeys)
         if !silentMode { NSLog("spacemap/ConfigReader: loaded cols=\(cols) rows=\(rows) style=\(cellStyle) scale=\(uiScale) theme=\(theme) autoHide=\(autoHideTimeout) showMode=\(showMode) maxSpaces=\(maxSpaces) bgAlpha=\(backgroundAlpha) mode=\(mode) iconScale=\(iconScale) showSpaceNumbers=\(showSpaceNumbers) showSpaceNames=\(showSpaceNames) spaceNames=\(spaceNames.count) hotkey=\(hotkey)") }
         // Ensure config file contains all keys (add missing ones with current values)
         saveConfig(result)
@@ -276,6 +282,8 @@ case "MODE":
         SHOW_ICON_STRIP=\(config.showIconStrip ? "true" : "false")              # true | false
         SHOW_MULTI_APP_ICONS=\(config.showMultiAppIcons ? "true" : "false")       # true | false
         HIDE_MENUBAR_ICON=\(config.hideMenuBarIcon ? "true" : "false")           # true | false
+        VIM_KEYS=\(config.useVimKeys ? "true" : "false")                          # true | false
+        ARROW_KEYS=\(config.useArrowKeys ? "true" : "false")                      # true | false
         SPACE_NAMES=\(config.spaceNames.map { "\($0.key):\($0.value)" }.joined(separator: ","))                  # comma-separated, e.g. "1:Term,2:Code"
         """
         do {

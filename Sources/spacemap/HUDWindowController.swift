@@ -262,6 +262,32 @@ class HUDWindowController {
                     self.hide()
                     self.onShowSettings?()
                 }
+                return
+            }
+            let code = UInt16(event.keyCode)
+            let mods = event.modifierFlags
+            let noModifiers = !mods.contains(.control) && !mods.contains(.command) && !mods.contains(.option)
+            var direction: Int? = nil
+            if config.useArrowKeys && noModifiers {
+                switch code {
+                case 123: direction = -1  // left
+                case 124: direction = 1   // right
+                case 125: direction = config.cols   // down
+                case 126: direction = -config.cols  // up
+                default: break
+                }
+            }
+            if direction == nil && config.useVimKeys && noModifiers {
+                switch code {
+                case 38: direction = config.cols   // j = down
+                case 40: direction = -config.cols  // k = up
+                case 37: direction = 1             // l = right
+                case 4:  direction = -1            // h = left
+                default: break
+                }
+            }
+            if let dir = direction {
+                self.navigateSpace(by: dir)
             }
         }
     }
@@ -271,6 +297,14 @@ class HUDWindowController {
             NSEvent.removeMonitor(monitor)
             settingsKeyMonitor = nil
         }
+    }
+
+    private func navigateSpace(by offset: Int) {
+        guard let current = lastFocusedSpaceIndex else { return }
+        let target = current + offset
+        guard target >= 1, target <= config.maxSpaces else { return }
+        YabaiClient.focusSpace(target)
+        hide()
     }
     
     private var screenHeight: CGFloat {

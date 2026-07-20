@@ -36,8 +36,10 @@ struct GridConfig {
     var showMultiAppIcons: Bool // show one icon per window (true) or one per unique app (false)
     var hideMenuBarIcon: Bool // hide the menu bar icon (settings accessible via re-launch or Cmd+, in HUD)
     var spaceNames: [Int: String] // space id to name mapping
+    var useVimKeys: Bool // navigate spaces with hjkl when HUD is visible
+    var useArrowKeys: Bool // navigate spaces with arrow keys when HUD is visible
 
-    static let `default` = GridConfig(cols: 8, rows: 2, cellStyle: .rects, hotkey: .default, socketHealthInterval: 60, uiScale: 1.0, autoHideTimeout: 5, theme: "default", showMode: .all, maxSpaces: 16, backgroundAlpha: 0.3, mode: .auto, iconScale: 1.0, showSpaceNumbers: true, showSpaceNames: true, showIconStrip: true, showMultiAppIcons: false, hideMenuBarIcon: false, spaceNames: [:])
+    static let `default` = GridConfig(cols: 8, rows: 2, cellStyle: .rects, hotkey: .default, socketHealthInterval: 60, uiScale: 1.0, autoHideTimeout: 5, theme: "default", showMode: .all, maxSpaces: 16, backgroundAlpha: 0.3, mode: .auto, iconScale: 1.0, showSpaceNumbers: true, showSpaceNames: true, showIconStrip: true, showMultiAppIcons: false, hideMenuBarIcon: false, spaceNames: [:], useVimKeys: false, useArrowKeys: false)
 }
 
 struct AppTheme {
