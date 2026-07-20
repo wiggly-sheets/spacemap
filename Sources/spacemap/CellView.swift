@@ -7,6 +7,7 @@ struct CellView: View {
     let spaceName: String? // config-based name
     let isFocused: Bool
     let isDropTarget: Bool
+    let isActive: Bool
     let windows: [YabaiWindow]
     let displayBounds: CGRect
     let cellStyle: CellStyle
@@ -38,6 +39,7 @@ init(spaceIndex: Int,
             spaceName: String? = nil,
             isFocused: Bool,
             isDropTarget: Bool,
+            isActive: Bool,
             windows: [YabaiWindow],
             displayBounds: CGRect,
             cellStyle: CellStyle,
@@ -52,6 +54,7 @@ init(spaceIndex: Int,
         self.spaceName = spaceName
         self.isFocused = isFocused
         self.isDropTarget = isDropTarget
+        self.isActive = isActive
         self.windows = windows
         self.displayBounds = displayBounds
         self.cellStyle = cellStyle
@@ -108,13 +111,17 @@ var body: some View {
     
     private var backgroundColor: Color {
         let t = AppTheme.named(theme)
-        if isDropTarget { return Color(hex: t.dropTarget).opacity(isDarkMode ? 0.35 : 0.5) }
-        if isFocused {
-            if isDarkMode { return Color(hex: t.cellBgFocused).opacity(0.55) }
-            return Color(hex: t.focused).opacity(0.2)
+        let baseColor: Color
+        if isDropTarget { baseColor = Color(hex: t.dropTarget).opacity(isDarkMode ? 0.35 : 0.5) }
+        else if isFocused {
+            if isDarkMode { baseColor = Color(hex: t.cellBgFocused).opacity(0.55) }
+            else { baseColor = Color(hex: t.focused).opacity(0.2) }
         }
-        if isDarkMode { return Color(hex: t.cellBg).opacity(0.25) }
-        return Color.white.opacity(0.8)
+        else if isDarkMode { baseColor = Color(hex: t.cellBg).opacity(0.25) }
+        else { baseColor = Color.white.opacity(0.8) }
+        
+        if !isActive { return baseColor.opacity(0.35) }
+        return baseColor
     }
     
     private var textColor: Color {

@@ -65,6 +65,7 @@ struct GridView: View {
         let cellWindows = state.windows(forSpace: spaceIndex)
         let cellDisplayBounds = state.displayBounds
         let cellStyle = state.config.cellStyle
+        let cellIsActive = state.spaces.contains { $0.index == spaceIndex }
         
         return CellView(
             spaceIndex: cellSpaceIndex,
@@ -72,6 +73,7 @@ struct GridView: View {
             spaceName: cellSpaceName,
             isFocused: cellIsFocused,
             isDropTarget: cellIsDropTarget,
+            isActive: cellIsActive,
             windows: cellWindows,
             displayBounds: cellDisplayBounds,
             cellStyle: cellStyle,
