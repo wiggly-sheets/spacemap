@@ -23,6 +23,7 @@ class HUDWindowController {
     // the thumbnail layout doesn't flicker during a drag and cachedWindows stays stable.
     private var currentState: GridState? = nil
     private var autoHideTimer: Timer?
+    private var pollTimer: Timer?
     private let dragHandler = WindowDragHandler()
     private var lastFocusedSpaceIndex: Int? = nil
     private var isToggling = false   // prevents re-entry during toggle animations
@@ -92,6 +93,18 @@ class HUDWindowController {
         lastFocusedSpaceIndex = focused
         isVisible = true
         resetAutoHideTimer()
+        startPollTimer()
+    }
+    
+    private func startPollTimer() {
+        pollTimer?.invalidate()
+        pollTimer = Timer.scheduledTimer(withTimeInterval: 0.2, repeats: true) { [weak self] _ in
+            guard let self, self.isVisible else { return }
+            if let focused = YabaiClient.queryFocusedSpaceIndex(), focused != self.lastFocusedSpaceIndex {
+                self.refreshState()
+                self.resetAutoHideTimer() // active switching — keep HUD up
+            }
+        }
     }
     
     func hide() {
@@ -103,6 +116,8 @@ class HUDWindowController {
         dragHandler.stop()
         autoHideTimer?.invalidate()
         autoHideTimer = nil
+        pollTimer?.invalidate()
+        pollTimer = nil
         
         if let p = panel {
             p.orderOut(nil)
@@ -118,9 +133,10 @@ class HUDWindowController {
         dragHandler.focusedWindowIDAtOpen = nil
     }
     
-    // Called by SocketListener on space_changed. Only updates if HUD is already visible.
+    // Called by SocketListener — also handles full content refresh (windows moved etc.)
     func refresh() {
         guard isVisible, panel != nil else { return }
+        resetAutoHideTimer()
         refreshState()
     }
     
@@ -143,14 +159,9 @@ class HUDWindowController {
         }, uiScale: config.uiScale, theme: config.theme)
         let size = gridView.idealSize
         
-        if let existingHostingView = panel.contentView as? NSHostingView<GridView> {
-            existingHostingView.rootView = gridView
-            existingHostingView.frame.size = size
-        } else {
-            let hostingView = NSHostingView(rootView: gridView)
-            hostingView.frame = NSRect(origin: .zero, size: size)
-            panel.contentView = hostingView
-        }
+        let hostingView = NSHostingView(rootView: gridView)
+        hostingView.frame = NSRect(origin: .zero, size: size)
+        panel.contentView = hostingView
         
         panel.setContentSize(size)
         

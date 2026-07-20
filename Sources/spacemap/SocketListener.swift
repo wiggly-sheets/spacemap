@@ -99,7 +99,6 @@ final class SocketListener {
             return
         }
         
-        // Read command byte to determine action
         var buf = [UInt8](repeating: 0, count: 1)
         read(clientFd, &buf, buf.count)
         close(clientFd)
@@ -110,7 +109,6 @@ final class SocketListener {
             } else if buf.first == 3 {
                 self.onSettings()
             } else {
-                // Default to refresh for backward compatibility (value 1 or anything else)
                 self.onRefresh()
             }
         }

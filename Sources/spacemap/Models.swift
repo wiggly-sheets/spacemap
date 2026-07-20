@@ -151,7 +151,7 @@ struct YabaiWindow: Decodable {
     }
 }
 
-struct GridState {
+struct GridState: Equatable {
 
     let config: GridConfig
     let spaces: [YabaiSpace]
@@ -161,5 +161,9 @@ struct GridState {
 
     func windows(forSpace index: Int) -> [YabaiWindow] {
         return self.windows.filter { $0.space == index }
+    }
+
+    static func == (lhs: GridState, rhs: GridState) -> Bool {
+        lhs.focusedIndex == rhs.focusedIndex
     }
 }

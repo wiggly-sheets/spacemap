@@ -31,10 +31,14 @@ enum YabaiClient {
     
     static func queryFocusedSpaceIndex() -> Int? {
         guard isYabaiRunning() else { return nil }
-        let output = (try? shell(yabaiPath, "-m", "query", "--spaces", "--space")) ?? ""
-        guard let data = output.data(using: .utf8),
-              let json = try? JSONDecoder().decode(YabaiSpace.self, from: data) else { return nil }
-        return json.index
+        do {
+            let output = try shell(yabaiPath, "-m", "query", "--spaces")
+            guard let data = output.data(using: .utf8),
+                  let spaces = try? JSONDecoder().decode([YabaiSpace].self, from: data) else { return nil }
+            return spaces.first { $0.hasFocus }?.index
+        } catch {
+            return nil
+        }
     }
     
     static func registerSignals(socketPath: String) {
@@ -78,7 +82,6 @@ enum YabaiClient {
     
     static func buildGridState(config: GridConfig, focusedIndex: Int?) -> GridState {
         guard isYabaiRunning() else {
-            print("Yabai not running. Spacemap will not function.")
             let displayBounds = NSScreen.main?.frame ?? CGRect(x: 0, y: 0, width: 2560, height: 1440)
             return GridState(config: config, spaces: [], windows: [], displayBounds: displayBounds, focusedIndex: nil)
         }
@@ -87,7 +90,7 @@ enum YabaiClient {
         let displayBounds = NSScreen.main?.frame ?? CGRect(x: 0, y: 0, width: 2560, height: 1440)
         return GridState(config: config, spaces: spaces, windows: windows, displayBounds: displayBounds, focusedIndex: focusedIndex)
     }
-    
+
     private static func shell(_ args: String...) throws -> String {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: args[0])
