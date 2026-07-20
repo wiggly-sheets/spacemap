@@ -31,8 +31,7 @@ enum ConfigReader {
         var backgroundAlpha = GridConfig.default.backgroundAlpha
         var mode = GridConfig.default.mode
         var iconScale = GridConfig.default.iconScale
-        var showSpaceNumbers = GridConfig.default.showSpaceNumbers
-        var showSpaceNames = GridConfig.default.showSpaceNames
+        var showNames = GridConfig.default.showNames
         var spaceNames: [Int: String] = [:]
 
         for line in contents.components(separatedBy: .newlines) {
@@ -55,7 +54,6 @@ enum ConfigReader {
                 switch value {
                 case "icons":  cellStyle = .icons
                 case "hybrid": cellStyle = .hybrid
-                case "thumbnails": cellStyle = .thumbnails
                 default:       cellStyle = .rects
                 }
             case "HOTKEY":
@@ -115,14 +113,9 @@ case "MODE":
                  } else {
                      print("spacemap: invalid ICON_SCALE '\(value)', using default")
                  }
-             case "SHOW_SPACE_NUMBERS":
-                  showSpaceNumbers = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
              case "SHOW_NAMES":
-                  // Backward compat: treat old SHOW_NAMES as SHOW_SPACE_NUMBERS
-                  showSpaceNumbers = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
-             case "SHOW_SPACE_NAMES":
-                  showSpaceNames = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
-             case "SPACE_NAMES":
+                  showNames = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
+case "SPACE_NAMES":
                   // Parse format: "1:Name,2:Name,3:Name"
                   let pairs = value.components(separatedBy: ",")
                   for pair in pairs {
@@ -135,8 +128,8 @@ case "MODE":
               }
         }
 
-        let result = GridConfig(cols: cols, rows: rows, cellStyle: cellStyle, hotkey: hotkey, socketHealthInterval: socketHealthInterval, uiScale: uiScale, autoHideTimeout: autoHideTimeout, theme: theme, showMode: showMode, maxSpaces: maxSpaces, backgroundAlpha: backgroundAlpha, mode: mode, iconScale: iconScale, showSpaceNumbers: showSpaceNumbers, showSpaceNames: showSpaceNames, spaceNames: spaceNames)
-        if !silentMode { NSLog("spacemap/ConfigReader: loaded cols=\(cols) rows=\(rows) style=\(cellStyle) scale=\(uiScale) theme=\(theme) autoHide=\(autoHideTimeout) showMode=\(showMode) maxSpaces=\(maxSpaces) bgAlpha=\(backgroundAlpha) mode=\(mode) iconScale=\(iconScale) showSpaceNumbers=\(showSpaceNumbers) showSpaceNames=\(showSpaceNames) spaceNames=\(spaceNames.count) hotkey=\(hotkey)") }
+        let result = GridConfig(cols: cols, rows: rows, cellStyle: cellStyle, hotkey: hotkey, socketHealthInterval: socketHealthInterval, uiScale: uiScale, autoHideTimeout: autoHideTimeout, theme: theme, showMode: showMode, maxSpaces: maxSpaces, backgroundAlpha: backgroundAlpha, mode: mode, iconScale: iconScale, showNames: showNames, spaceNames: spaceNames)
+        if !silentMode { NSLog("spacemap/ConfigReader: loaded cols=\(cols) rows=\(rows) style=\(cellStyle) scale=\(uiScale) theme=\(theme) autoHide=\(autoHideTimeout) showMode=\(showMode) maxSpaces=\(maxSpaces) bgAlpha=\(backgroundAlpha) mode=\(mode) iconScale=\(iconScale) showNames=\(showNames) spaceNames=\(spaceNames.count) hotkey=\(hotkey)") }
         // Ensure config file contains all keys (add missing ones with current values)
         saveConfig(result)
         return result
@@ -224,8 +217,7 @@ case "MODE":
         BACKGROUND_ALPHA=\(d.backgroundAlpha)          # 0.0–1.0
         MODE=\(modeStr)                     # light | dark | auto
         ICON_SCALE=\(d.iconScale)                # 0.5–2.0
-        SHOW_SPACE_NUMBERS=\(d.showSpaceNumbers ? "true" : "false")              # true | false
-        SHOW_SPACE_NAMES=\(d.showSpaceNames ? "true" : "false")              # true | false
+        SHOW_NAMES=\(d.showNames ? "true" : "false")              # true | false
         SPACE_NAMES=\(d.spaceNames.map { "\($0.key):\($0.value)" }.joined(separator: ","))                  # comma-separated, e.g. "1:Term,2:Code"
         """
         do {
@@ -257,8 +249,7 @@ case "MODE":
         BACKGROUND_ALPHA=\(config.backgroundAlpha)          # 0.0–1.0
         MODE=\(config.mode.rawValue)                     # light | dark | auto
         ICON_SCALE=\(config.iconScale)                # 0.5–2.0
-        SHOW_SPACE_NUMBERS=\(config.showSpaceNumbers ? "true" : "false")              # true | false
-        SHOW_SPACE_NAMES=\(config.showSpaceNames ? "true" : "false")              # true | false
+        SHOW_NAMES=\(config.showNames ? "true" : "false")              # true | false
         SPACE_NAMES=\(config.spaceNames.map { "\($0.key):\($0.value)" }.joined(separator: ","))                  # comma-separated, e.g. "1:Term,2:Code"
         """
         do {
@@ -329,7 +320,6 @@ case "MODE":
         case .rects: return "rects"
         case .icons: return "icons"
         case .hybrid: return "hybrid"
-        case .thumbnails: return "thumbnails"
         }
     }
 }

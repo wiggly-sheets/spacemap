@@ -20,10 +20,7 @@ struct CellView: View {
     private let theme: String
     private let mode: ThemeMode
     private let iconScale: CGFloat
-    private let showSpaceNumbers: Bool
-    private let showSpaceNames: Bool
-    
-    private static var thumbnailCache: [Int: NSImage] = [:]
+    private let showNames: Bool
     
     private var isDarkMode: Bool {
         switch mode {
@@ -51,8 +48,7 @@ init(spaceIndex: Int,
             theme: String = "default",
             mode: ThemeMode = .auto,
             iconScale: CGFloat = 1.0,
-             showSpaceNumbers: Bool = true,
-             showSpaceNames: Bool = true) {
+            showNames: Bool = true) {
         self.spaceIndex = spaceIndex
         self.spaceLabel = spaceLabel
         self.spaceName = spaceName
@@ -67,8 +63,7 @@ init(spaceIndex: Int,
         self.theme = theme
         self.mode = mode
         self.iconScale = iconScale
-        self.showSpaceNumbers = showSpaceNumbers
-        self.showSpaceNames = showSpaceNames
+        self.showNames = showNames
     }
     
 var body: some View {
@@ -81,7 +76,6 @@ var body: some View {
                 case .rects:  windowRect(window)
                 case .icons:  windowIcon(window)
                 case .hybrid: windowRect(window)
-                case .thumbnails: thumbnailImage(spaceIndex)
                 }
             }
 
@@ -89,12 +83,8 @@ var body: some View {
                 iconStrip()
             }
 
-            if cellStyle == .thumbnails {
-                thumbnailImage(spaceIndex)
-            }
-
-            // Show space number at top-left when showSpaceNumbers is enabled
-            if showSpaceNumbers {
+            // Show space number at top-left when showNames is enabled
+            if showNames {
                 Text("\(spaceIndex)")
                     .font(.system(size: 12 * uiScale * 10, weight: .bold))
                     .foregroundColor(textColor.opacity(0.7))
@@ -102,7 +92,7 @@ var body: some View {
             }
 
             // Show space name (if exists) in center
-            if showSpaceNames, let name = spaceName, !name.isEmpty {
+            if let name = spaceName, !name.isEmpty {
                 Text(name)
                     .font(.system(size: 14 * uiScale * 10, weight: .medium))
                     .foregroundColor(textColor)
@@ -224,32 +214,6 @@ var body: some View {
     private func appColor(_ name: String) -> Color {
         let hue = Double(abs(name.hashValue) % 360) / 360.0
         return Color(hue: hue, saturation: 0.7, brightness: 0.9)
-    }
-    
-    @ViewBuilder
-    private func thumbnailImage(_ spaceIndex: Int) -> some View {
-        if let img = cachedThumbnail(spaceIndex) {
-            Image(nsImage: img)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .clipped()
-        }
-    }
-    
-    private func cachedThumbnail(_ spaceIndex: Int) -> NSImage? {
-        if let img = Self.thumbnailCache[spaceIndex] {
-            return img
-        }
-        let img = SpaceThumbnailCapture.capture(
-            spaceIndex: spaceIndex,
-            displayBounds: displayBounds,
-            cellSize: cellSize,
-            windows: windows
-        )
-        if let img {
-            Self.thumbnailCache[spaceIndex] = img
-        }
-        return img
     }
 }
 
