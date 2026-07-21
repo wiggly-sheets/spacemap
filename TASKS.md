@@ -94,6 +94,7 @@ A living list of planned features, known bugs, and future improvements for the p
 |------|-------------|--------|
 | **Native Spaces Support** | Drop yabai dependency for native macOS Spaces | 🔄 Planned |
 | **Other WM Support** | Add support for aerospace/rectangle/etc. | 🔄 Planned |
+| **Raycast Extension** | Raycast extension to toggle HUD, change config (cell style, theme, grid size, etc.) from Raycast UI | 🔄 Planned |
 
 ### Build & CI
 
