@@ -80,6 +80,7 @@ struct SettingsView: View {
     @State private var hideMenuBarIcon: Bool = false
     @State private var useVimKeys: Bool = false
     @State private var useArrowKeys: Bool = false
+    @State private var hudPosition: HUDPosition = .center
     @State private var spaceNameInputs: [Int: String] = [:]
     @State private var isRecording = false
     @State private var monitor: Any?
@@ -159,6 +160,7 @@ struct SettingsView: View {
         _hideMenuBarIcon = State(initialValue: config.hideMenuBarIcon)
         _useVimKeys = State(initialValue: config.useVimKeys)
         _useArrowKeys = State(initialValue: config.useArrowKeys)
+        _hudPosition = State(initialValue: config.hudPosition)
         _spaceNameInputs = State(initialValue: config.spaceNames)
         _gridLayoutIndex = State(initialValue: findBestGridLayoutIndexFor(cols: config.cols, rows: config.rows, maxSpaces: config.maxSpaces))
     }
@@ -203,6 +205,7 @@ struct SettingsView: View {
             "HIDE_MENUBAR_ICON=\(hideMenuBarIconStr)",
             "VIM_KEYS=\(useVimKeys ? "true" : "false")",
             "ARROW_KEYS=\(useArrowKeys ? "true" : "false")",
+            "HUD_POSITION=\(ConfigReader.hudPositionString(hudPosition))",
             "SPACE_NAMES=\(formatSpaceNames())",
             "LAUNCH_AT_LOGIN=\(launchAtLogin ? "true" : "false")"
         ]
@@ -353,6 +356,47 @@ Picker("Cell Style", selection: $cellStyle) {
                     .onChange(of: useArrowKeys) { _ in saveConfig() }
                 Toggle("Navigate with Vim Keys (hjkl)", isOn: $useVimKeys)
                     .onChange(of: useVimKeys) { _ in saveConfig() }
+                Picker("HUD Position", selection: $hudPosition) {
+                    Text("Center").tag(HUDPosition.center)
+                    Text("Top").tag(HUDPosition.top)
+                    Text("Bottom").tag(HUDPosition.bottom)
+                    Text("Custom").tag(HUDPosition.custom(x: 0.5, y: 0.5))
+                }
+                .onChange(of: hudPosition) { _ in saveConfig() }
+                if case .custom = hudPosition {
+                    HStack {
+                        Text("X:")
+                        TextField("0.5", text: Binding(
+                            get: {
+                                if case .custom(let x, _) = hudPosition { return String(format: "%.2f", x) }
+                                return "0.50"
+                            },
+                            set: { newVal in
+                                if let x = Double(newVal), let y = customY() {
+                                    hudPosition = .custom(x: min(1, max(0, x)), y: y)
+                                    saveConfig()
+                                }
+                            }
+                        ))
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: 60)
+                        Text("Y:")
+                        TextField("0.5", text: Binding(
+                            get: {
+                                if case .custom(_, let y) = hudPosition { return String(format: "%.2f", y) }
+                                return "0.50"
+                            },
+                            set: { newVal in
+                                if let y = Double(newVal), let x = customX() {
+                                    hudPosition = .custom(x: x, y: min(1, max(0, y)))
+                                    saveConfig()
+                                }
+                            }
+                        ))
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: 60)
+                    }
+                }
             }
             
             Section {
@@ -396,6 +440,7 @@ Picker("Cell Style", selection: $cellStyle) {
             if hideMenuBarIcon != config.hideMenuBarIcon { hideMenuBarIcon = config.hideMenuBarIcon }
             if useVimKeys != config.useVimKeys { useVimKeys = config.useVimKeys }
             if useArrowKeys != config.useArrowKeys { useArrowKeys = config.useArrowKeys }
+            if hudPosition != config.hudPosition { hudPosition = config.hudPosition }
             if autoHideTimeout != config.autoHideTimeout { autoHideTimeout = config.autoHideTimeout }
             let computedSpaceNames = config.spaceNames
             if spaceNameInputs != computedSpaceNames { spaceNameInputs = computedSpaceNames }
@@ -433,6 +478,16 @@ Picker("Cell Style", selection: $cellStyle) {
         )
     }
     
+    private func customX() -> Double? {
+        if case .custom(let x, _) = hudPosition { return x }
+        return nil
+    }
+
+    private func customY() -> Double? {
+        if case .custom(_, let y) = hudPosition { return y }
+        return nil
+    }
+
     static func hotkeyStringFrom(_ hotkey: HotkeyConfig) -> String {
         var parts: [String] = []
         if hotkey.modifiers.contains(.maskControl) { parts.append("ctrl") }

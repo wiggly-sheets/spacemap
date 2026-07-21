@@ -284,4 +284,45 @@ final class ConfigTests: XCTestCase {
         let c = ConfigReader.parseConfig("SHOW_NAMES=true")
         XCTAssertTrue(c.showSpaceNumbers)
     }
+
+    // MARK: - parseConfig: HUD_POSITION
+
+    func testParseHudPositionCenter() {
+        let c = ConfigReader.parseConfig("HUD_POSITION=center")
+        XCTAssertEqual(c.hudPosition, .center)
+    }
+
+    func testParseHudPositionTop() {
+        let c = ConfigReader.parseConfig("HUD_POSITION=top")
+        XCTAssertEqual(c.hudPosition, .top)
+    }
+
+    func testParseHudPositionBottom() {
+        let c = ConfigReader.parseConfig("HUD_POSITION=bottom")
+        XCTAssertEqual(c.hudPosition, .bottom)
+    }
+
+    func testParseHudPositionCustom() {
+        let c = ConfigReader.parseConfig("HUD_POSITION=0.3,0.7")
+        XCTAssertEqual(c.hudPosition, .custom(x: 0.3, y: 0.7))
+    }
+
+    func testParseHudPositionDefault() {
+        let c = ConfigReader.parseConfig("")
+        XCTAssertEqual(c.hudPosition, .center)
+    }
+
+    func testParseHudPositionInvalidCustom() {
+        let c = ConfigReader.parseConfig("HUD_POSITION=2.0,0.5")
+        XCTAssertEqual(c.hudPosition, .center)
+    }
+
+    func testHudPositionStringRoundtrip() {
+        let cases: [HUDPosition] = [.center, .top, .bottom, .custom(x: 0.25, y: 0.75)]
+        for pos in cases {
+            let str = ConfigReader.hudPositionString(pos)
+            let c = ConfigReader.parseConfig("HUD_POSITION=\(str)")
+            XCTAssertEqual(c.hudPosition, pos)
+        }
+    }
 }

@@ -49,6 +49,7 @@ enum ConfigReader {
         var spaceNames: [Int: String] = [:]
         var useVimKeys = GridConfig.default.useVimKeys
         var useArrowKeys = GridConfig.default.useArrowKeys
+        var hudPosition = GridConfig.default.hudPosition
 
         for line in text.components(separatedBy: .newlines) {
             let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -147,6 +148,17 @@ enum ConfigReader {
                 useVimKeys = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
             case "ARROW_KEYS":
                 useArrowKeys = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
+            case "HUD_POSITION":
+                switch value.lowercased() {
+                case "center": hudPosition = .center
+                case "top": hudPosition = .top
+                case "bottom": hudPosition = .bottom
+                default:
+                    let parts = value.split(separator: ",").compactMap { Double($0.trimmingCharacters(in: .whitespaces)) }
+                    if parts.count == 2, parts[0] >= 0, parts[0] <= 1, parts[1] >= 0, parts[1] <= 1 {
+                        hudPosition = .custom(x: parts[0], y: parts[1])
+                    }
+                }
             case "SPACE_NAMES":
                 let pairs = value.components(separatedBy: ",")
                 for pair in pairs {
@@ -159,7 +171,7 @@ enum ConfigReader {
             }
         }
 
-        return GridConfig(cols: cols, rows: rows, cellStyle: cellStyle, hotkey: hotkey, socketHealthInterval: socketHealthInterval, uiScale: uiScale, autoHideTimeout: autoHideTimeout, theme: theme, showMode: showMode, maxSpaces: maxSpaces, backgroundAlpha: backgroundAlpha, mode: mode, iconScale: iconScale, showSpaceNumbers: showSpaceNumbers, showSpaceNames: showSpaceNames, showIconStrip: showIconStrip, showMultiAppIcons: showMultiAppIcons, hideMenuBarIcon: hideMenuBarIcon, spaceNames: spaceNames, useVimKeys: useVimKeys, useArrowKeys: useArrowKeys)
+        return GridConfig(cols: cols, rows: rows, cellStyle: cellStyle, hotkey: hotkey, socketHealthInterval: socketHealthInterval, uiScale: uiScale, autoHideTimeout: autoHideTimeout, theme: theme, showMode: showMode, maxSpaces: maxSpaces, backgroundAlpha: backgroundAlpha, mode: mode, iconScale: iconScale, showSpaceNumbers: showSpaceNumbers, showSpaceNames: showSpaceNames, showIconStrip: showIconStrip, showMultiAppIcons: showMultiAppIcons, hideMenuBarIcon: hideMenuBarIcon, spaceNames: spaceNames, useVimKeys: useVimKeys, useArrowKeys: useArrowKeys, hudPosition: hudPosition)
     }
 
     static func hotkeyToString(_ hotkey: HotkeyConfig) -> String {
@@ -267,6 +279,7 @@ enum ConfigReader {
         SHOW_MULTI_APP_ICONS=\(d.showMultiAppIcons ? "true" : "false")       # true | false
         HIDE_MENUBAR_ICON=\(d.hideMenuBarIcon ? "true" : "false")           # true | false
         SPACE_NAMES=\(d.spaceNames.map { "\($0.key):\($0.value)" }.joined(separator: ","))                  # comma-separated, e.g. "1:Term,2:Code"
+        HUD_POSITION=\(hudPositionString(d.hudPosition))        # center | top | bottom | x,y
         """
         do {
             try content.write(toFile: path, atomically: true, encoding: .utf8)
@@ -305,6 +318,7 @@ enum ConfigReader {
         HIDE_MENUBAR_ICON=\(config.hideMenuBarIcon ? "true" : "false")           # true | false
         VIM_KEYS=\(config.useVimKeys ? "true" : "false")                          # true | false
         ARROW_KEYS=\(config.useArrowKeys ? "true" : "false")                      # true | false
+        HUD_POSITION=\(hudPositionString(config.hudPosition))        # center | top | bottom | x,y
         SPACE_NAMES=\(config.spaceNames.map { "\($0.key):\($0.value)" }.joined(separator: ","))                  # comma-separated, e.g. "1:Term,2:Code"
         """
         do {
@@ -381,6 +395,15 @@ enum ConfigReader {
         case .icons: return "icons"
         case .thumbnails: return "thumbnails"
         case .simple: return "simple"
+        }
+    }
+
+    static func hudPositionString(_ position: HUDPosition) -> String {
+        switch position {
+        case .center: return "center"
+        case .top: return "top"
+        case .bottom: return "bottom"
+        case .custom(let x, let y): return "\(x),\(y)"
         }
     }
 }

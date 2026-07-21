@@ -170,9 +170,8 @@ class HUDWindowController {
         panel.setContentSize(size)
         
         if let screen = NSScreen.main {
-            let x = screen.frame.midX - size.width / 2
-            let y = screen.frame.midY - size.height / 2
-            panel.setFrameOrigin(NSPoint(x: x, y: y))
+            let pos = config.hudPosition.point(for: size, screen: screen.frame)
+            panel.setFrameOrigin(pos)
         }
         
         panel.orderFrontRegardless()

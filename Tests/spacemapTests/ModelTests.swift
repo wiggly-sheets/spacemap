@@ -98,6 +98,57 @@ final class ModelTests: XCTestCase {
         XCTAssertEqual(c.maxSpaces, 16)
         XCTAssertFalse(c.useVimKeys)
         XCTAssertFalse(c.useArrowKeys)
+        XCTAssertEqual(c.hudPosition, .center)
+    }
+
+    // MARK: - HUDPosition
+
+    func testHUDPositionCenterLabel() {
+        XCTAssertEqual(HUDPosition.center.label, "Center")
+    }
+
+    func testHUDPositionTopLabel() {
+        XCTAssertEqual(HUDPosition.top.label, "Top")
+    }
+
+    func testHUDPositionBottomLabel() {
+        XCTAssertEqual(HUDPosition.bottom.label, "Bottom")
+    }
+
+    func testHUDPositionCustomLabel() {
+        XCTAssertEqual(HUDPosition.custom(x: 0.3, y: 0.7).label, "Custom")
+    }
+
+    func testHUDPositionCenterPoint() {
+        let screen = CGRect(x: 0, y: 0, width: 1920, height: 1080)
+        let panelSize = CGSize(width: 400, height: 200)
+        let point = HUDPosition.center.point(for: panelSize, screen: screen)
+        XCTAssertEqual(point.x, 760)
+        XCTAssertEqual(point.y, 440)
+    }
+
+    func testHUDPositionTopPoint() {
+        let screen = CGRect(x: 0, y: 0, width: 1920, height: 1080)
+        let panelSize = CGSize(width: 400, height: 200)
+        let point = HUDPosition.top.point(for: panelSize, screen: screen)
+        XCTAssertEqual(point.x, 760)
+        XCTAssertEqual(point.y, 840)
+    }
+
+    func testHUDPositionBottomPoint() {
+        let screen = CGRect(x: 0, y: 0, width: 1920, height: 1080)
+        let panelSize = CGSize(width: 400, height: 200)
+        let point = HUDPosition.bottom.point(for: panelSize, screen: screen)
+        XCTAssertEqual(point.x, 760)
+        XCTAssertEqual(point.y, 40)
+    }
+
+    func testHUDPositionCustomPoint() {
+        let screen = CGRect(x: 0, y: 0, width: 1920, height: 1080)
+        let panelSize = CGSize(width: 400, height: 200)
+        let point = HUDPosition.custom(x: 0.0, y: 1.0).point(for: panelSize, screen: screen)
+        XCTAssertEqual(point.x, 0)
+        XCTAssertEqual(point.y, 880)
     }
 
     // MARK: - AppTheme
