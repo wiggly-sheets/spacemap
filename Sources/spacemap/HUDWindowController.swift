@@ -334,14 +334,13 @@ class HUDWindowController {
         let y = Double((panelFrame.midY - screenFrame.minY) / screenFrame.height)
         let configPath = NSString(string: "~/.config/spacemap/config").expandingTildeInPath
         guard var text = try? String(contentsOfFile: configPath, encoding: .utf8) else { return }
-        let posString = ConfigReader.hudPositionString(.custom(x: x, y: y))
         if let range = text.range(of: "HUD_POSITION=") {
             let lineStart = range.lowerBound
             var lineEnd = text[lineStart...].firstIndex(of: "\n") ?? text.endIndex
             if lineEnd < text.endIndex { lineEnd = text.index(after: lineEnd) }
-            text.replaceSubrange(lineStart..<lineEnd, with: "HUD_POSITION=\(posString)\n")
+            text.replaceSubrange(lineStart..<lineEnd, with: "HUD_POSITION=custom\n")
         } else {
-            text += "\nHUD_POSITION=\(posString)\n"
+            text += "\nHUD_POSITION=custom\n"
         }
         // Also update CUSTOM_HUD_X and CUSTOM_HUD_Y for SettingsView persistence
         let xString = String(x)

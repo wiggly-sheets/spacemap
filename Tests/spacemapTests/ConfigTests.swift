@@ -318,11 +318,25 @@ final class ConfigTests: XCTestCase {
     }
 
     func testHudPositionStringRoundtrip() {
-        let cases: [HUDPosition] = [.center, .top, .bottom, .custom(x: 0.25, y: 0.75)]
-        for pos in cases {
+        let presets: [HUDPosition] = [.center, .top, .bottom]
+        for pos in presets {
             let str = ConfigReader.hudPositionString(pos)
             let c = ConfigReader.parseConfig("HUD_POSITION=\(str)")
             XCTAssertEqual(c.hudPosition, pos)
+        }
+    }
+
+    func testHudPositionCustomUsesCustomXY() {
+        let c = ConfigReader.parseConfig("""
+            HUD_POSITION=custom
+            CUSTOM_HUD_X=0.25
+            CUSTOM_HUD_Y=0.75
+            """)
+        if case .custom(let x, let y) = c.hudPosition {
+            XCTAssertEqual(x, 0.25, accuracy: 0.001)
+            XCTAssertEqual(y, 0.75, accuracy: 0.001)
+        } else {
+            XCTFail("Expected .custom, got \(c.hudPosition)")
         }
     }
 }

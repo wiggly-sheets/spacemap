@@ -167,6 +167,7 @@ enum ConfigReader {
                 case "center": hudPosition = .center
                 case "top": hudPosition = .top
                 case "bottom": hudPosition = .bottom
+                case "custom": hudPosition = .custom(x: 0, y: 0) // sentinel: coordinates set after CUSTOM_HUD_X/Y parsed
                 default:
                     let parts = value.split(separator: ",").compactMap { Double($0.trimmingCharacters(in: .whitespaces)) }
                     if parts.count == 2, parts[0] >= 0, parts[0] <= 1, parts[1] >= 0, parts[1] <= 1 {
@@ -183,6 +184,12 @@ enum ConfigReader {
                 }
             default: break
             }
+        }
+
+        // Resolve .custom sentinel (0,0) after all values are parsed
+        // so that CUSTOM_HUD_X/Y values are available
+        if case .custom(x: 0, y: 0) = hudPosition {
+            hudPosition = .custom(x: customHUDX, y: customHUDY)
         }
 
         return GridConfig(cols: cols, rows: rows, cellStyle: cellStyle, hotkey: hotkey, socketHealthInterval: socketHealthInterval, uiScale: uiScale, autoHideTimeout: autoHideTimeout, theme: theme, showMode: showMode, maxSpaces: maxSpaces, backgroundAlpha: backgroundAlpha, mode: mode, iconScale: iconScale, showSpaceNumbers: showSpaceNumbers, showSpaceNames: showSpaceNames, showIconStrip: showIconStrip, showMultiAppIcons: showMultiAppIcons, hideMenuBarIcon: hideMenuBarIcon, spaceNames: spaceNames, useVimKeys: useVimKeys, useArrowKeys: useArrowKeys, hudPosition: hudPosition, customHUDX: customHUDX, customHUDY: customHUDY)
@@ -296,7 +303,7 @@ let content = """
         ARROW_KEYS=\(d.useArrowKeys ? "true" : "false")                      # true | false
         CUSTOM_HUD_X=\(d.customHUDX)
         CUSTOM_HUD_Y=\(d.customHUDY)
-        HUD_POSITION=\(hudPositionString(d.hudPosition))        # center | top | bottom | x,y
+        HUD_POSITION=\(d.hudPosition == .center ? "center" : d.hudPosition == .top ? "top" : d.hudPosition == .bottom ? "bottom" : "custom")        # center | top | bottom | x,y
         SPACE_NAMES=\(d.spaceNames.map { "\($0.key):\($0.value)" }.joined(separator: ","))                  # comma-separated, e.g. "1:Term,2:Code"
         """
         do {
@@ -338,7 +345,7 @@ let content = """
         ARROW_KEYS=\(config.useArrowKeys ? "true" : "false")                      # true | false
         CUSTOM_HUD_X=\(config.customHUDX)
         CUSTOM_HUD_Y=\(config.customHUDY)
-        HUD_POSITION=\(hudPositionString(config.hudPosition))        # center | top | bottom | x,y
+        HUD_POSITION=\(hudPositionString(config.hudPosition))        # center | top | bottom | custom
         SPACE_NAMES=\(config.spaceNames.map { "\($0.key):\($0.value)" }.joined(separator: ","))                  # comma-separated, e.g. "1:Term,2:Code"
         """
         do {
@@ -423,7 +430,7 @@ let content = """
         case .center: return "center"
         case .top: return "top"
         case .bottom: return "bottom"
-        case .custom(let x, let y): return "\(x),\(y)"
+        case .custom: return "custom"
         }
     }
 }
