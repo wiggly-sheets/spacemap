@@ -57,6 +57,7 @@ enum ConfigReader {
         var hudPosition = GridConfig.default.hudPosition
         var customHUDX = GridConfig.default.customHUDX
         var customHUDY = GridConfig.default.customHUDY
+        var showExtraWindows = GridConfig.default.showExtraWindows
 
         for line in text.components(separatedBy: .newlines) {
             let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -155,6 +156,8 @@ enum ConfigReader {
                 useVimKeys = parseBool(value)
             case "ARROW_KEYS":
                 useArrowKeys = parseBool(value)
+            case "SHOW_EXTRA_WINDOWS":
+                showExtraWindows = parseBool(value)
             case "CUSTOM_HUD_X":
                 if let v = Double(value), v >= 0.0 && v <= 1.0 {
                     customHUDX = v
@@ -197,7 +200,7 @@ enum ConfigReader {
             hudPosition = .custom(x: customHUDX, y: customHUDY)
         }
 
-        return GridConfig(cols: cols, rows: rows, cellStyle: cellStyle, hotkey: hotkey, socketHealthInterval: socketHealthInterval, uiScale: uiScale, autoHideTimeout: autoHideTimeout, theme: theme, showMode: showMode, maxSpaces: maxSpaces, backgroundAlpha: backgroundAlpha, mode: mode, iconScale: iconScale, showSpaceNumbers: showSpaceNumbers, showSpaceNames: showSpaceNames, showIconStrip: showIconStrip, showMultiAppIcons: showMultiAppIcons, hideMenuBarIcon: hideMenuBarIcon, spaceNames: spaceNames, useVimKeys: useVimKeys, useArrowKeys: useArrowKeys, hudPosition: hudPosition, customHUDX: customHUDX, customHUDY: customHUDY)
+        return GridConfig(cols: cols, rows: rows, cellStyle: cellStyle, hotkey: hotkey, socketHealthInterval: socketHealthInterval, uiScale: uiScale, autoHideTimeout: autoHideTimeout, theme: theme, showMode: showMode, maxSpaces: maxSpaces, backgroundAlpha: backgroundAlpha, mode: mode, iconScale: iconScale, showSpaceNumbers: showSpaceNumbers, showSpaceNames: showSpaceNames, showIconStrip: showIconStrip, showMultiAppIcons: showMultiAppIcons, hideMenuBarIcon: hideMenuBarIcon, spaceNames: spaceNames, useVimKeys: useVimKeys, useArrowKeys: useArrowKeys, hudPosition: hudPosition, customHUDX: customHUDX, customHUDY: customHUDY, showExtraWindows: showExtraWindows)
     }
 
     static func hotkeyToString(_ hotkey: HotkeyConfig) -> String {
@@ -306,6 +309,7 @@ let content = """
         HIDE_MENUBAR_ICON=\(d.hideMenuBarIcon ? "on" : "off")           # on | off
         VIM_KEYS=\(d.useVimKeys ? "on" : "off")                          # on | off
         ARROW_KEYS=\(d.useArrowKeys ? "on" : "off")                      # on | off
+        SHOW_EXTRA_WINDOWS=\(d.showExtraWindows ? "on" : "off")        # on | off
         CUSTOM_HUD_X=\(d.customHUDX)
         CUSTOM_HUD_Y=\(d.customHUDY)
         HUD_POSITION=\(d.hudPosition == .center ? "center" : d.hudPosition == .top ? "top" : d.hudPosition == .bottom ? "bottom" : "custom")        # center | top | bottom | x,y
@@ -348,6 +352,7 @@ let content = """
         HIDE_MENUBAR_ICON=\(config.hideMenuBarIcon ? "on" : "off")           # on | off
         VIM_KEYS=\(config.useVimKeys ? "on" : "off")                          # on | off
         ARROW_KEYS=\(config.useArrowKeys ? "on" : "off")                      # on | off
+        SHOW_EXTRA_WINDOWS=\(config.showExtraWindows ? "on" : "off")        # on | off
         CUSTOM_HUD_X=\(config.customHUDX)
         CUSTOM_HUD_Y=\(config.customHUDY)
         HUD_POSITION=\(hudPositionString(config.hudPosition))        # center | top | bottom | custom

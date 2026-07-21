@@ -33,7 +33,9 @@ struct CellView: View {
     private let showSpaceNames: Bool
     private let showIconStrip: Bool
     private let showMultiAppIcons: Bool
-    
+    private let showExtraWindows: Bool
+    private let windowFilter: ([YabaiWindow]) -> [YabaiWindow]
+
     private var isDarkMode: Bool {
         switch mode {
         case .light: return false
@@ -63,7 +65,8 @@ init(spaceIndex: Int,
              showSpaceNumbers: Bool = true,
              showSpaceNames: Bool = true,
              showIconStrip: Bool = true,
-             showMultiAppIcons: Bool = false) {
+             showMultiAppIcons: Bool = false,
+             showExtraWindows: Bool = false) {
         self.spaceIndex = spaceIndex
         self.spaceLabel = spaceLabel
         self.spaceName = spaceName
@@ -82,6 +85,10 @@ init(spaceIndex: Int,
         self.showSpaceNames = showSpaceNames
         self.showIconStrip = showIconStrip
         self.showMultiAppIcons = showMultiAppIcons
+        self.showExtraWindows = showExtraWindows
+        self.windowFilter = showExtraWindows
+            ? { $0.filter { !$0.isHidden && !$0.isMinimized } }
+            : { $0.filter { $0.isRealWindow } }
     }
 
     
@@ -91,7 +98,7 @@ var body: some View {
                 .fill(backgroundColor)
 
             if cellStyle != .simple {
-                let visibleWindows = windows.filter { $0.isRealWindow }
+                let visibleWindows = windowFilter(windows)
                 ForEach(visibleWindows, id: \.id) { window in
                     switch cellStyle {
                     case .rects:      windowRect(window)
@@ -203,7 +210,7 @@ var body: some View {
     
     @ViewBuilder
     private func iconStrip() -> some View {
-        let visible = windows.filter { $0.isRealWindow }
+        let visible = windowFilter(windows)
         let icons = showMultiAppIcons ? visible : Self.uniqueIconWindows(visible)
         let ic = iconScale
         HStack(spacing: 2 * uiScale * ic * 2) {
@@ -226,9 +233,12 @@ var body: some View {
         Self.uniqueIconWindows(windows)
     }
 
-    static func uniqueIconWindows(_ windows: [YabaiWindow]) -> [YabaiWindow] {
+    static func uniqueIconWindows(_ windows: [YabaiWindow], showExtraWindows: Bool = false) -> [YabaiWindow] {
         var seen = Set<String>()
-        return windows.filter { $0.isRealWindow && seen.insert($0.app).inserted }
+        let filter: (YabaiWindow) -> Bool = showExtraWindows
+            ? { !$0.isHidden && !$0.isMinimized }
+            : { $0.isRealWindow }
+        return windows.filter { filter($0) && seen.insert($0.app).inserted }
     }
     
     private func appIcon(for appName: String) -> NSImage? {

@@ -81,7 +81,8 @@ struct GridView: View {
             showSpaceNumbers: state.config.showSpaceNumbers,
             showSpaceNames: state.config.showSpaceNames,
             showIconStrip: state.config.showIconStrip,
-            showMultiAppIcons: state.config.showMultiAppIcons
+            showMultiAppIcons: state.config.showMultiAppIcons,
+            showExtraWindows: state.config.showExtraWindows
         )
     }
     

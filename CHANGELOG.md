@@ -7,8 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased]
+## [1.0.5] - 2026-07-21
 
+### Added
+- **Show Extra Windows toggle**: `SHOW_EXTRA_WINDOWS` config option to display utility/floating windows (sublayer=normal). Default off — only shows sublayer=below windows
+- **Custom HUD position memory**: Custom HUD positions now persist correctly when switching between presets (Center/Top/Bottom/Custom). Last dragged position stored in `CUSTOM_HUD_X`/`CUSTOM_HUD_Y`
+- **Simplified HUD_POSITION config**: Now writes `HUD_POSITION=custom` instead of `HUD_POSITION=x,y` for cleaner config. Custom coordinates stored in separate `CUSTOM_HUD_X`/`CUSTOM_HUD_Y` keys
+- **Debug/Advanced settings section**: Socket Health Interval moved to a new Debug/Advanced section at the bottom of Settings
+- **on/off boolean values**: Config now writes `on`/`off` for boolean values (was `true`/`false`). Parsing accepts all: `true`, `false`, `1`, `0`, `yes`, `no`, `on`, `off`
+
+### Changed
+- **Settings UI reorder**: Behavior section reordered to: Hotkey → HUD Position → Auto-hide Timeout → Navigate with Arrow Keys → Navigate with Vim Keys → Hide Menu Bar Icon → Socket Health Interval (Debug/Advanced)
+- **Space Names section moved**: Now appears directly below Grid section with proper title header
+- **Auto-hide timeout display**: Label format changed to "Auto-hide Timeout (s) (0 = disabled): [value] [+/-]" with aligned mechanism
+- **Grid layout label fix**: Fixed typo showing "4×(r))" instead of "4×2"
+- **Show Icon Per Window**: Renamed from "Show Each Window Icon"
+
+---
+
+## [1.0.4] - 2026-07-21
+
+### Added
 - Info.plist version injection from VERSION file at build time (all app targets)
 - Merged FAQ into README, combined API_SUMMARY + CHEAT_SHEET into REFERENCE.md
 

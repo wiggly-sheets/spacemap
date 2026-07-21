@@ -48,6 +48,12 @@ A living list of planned features, known bugs, and future improvements for the p
 - **CI DMG Verification**: Release workflow mounts each DMG and verifies architecture with `lipo -archs`
 - **Rendering Math Tests**: 8 unit tests for scale mapping (min/max/midpoint/monotonicity)
 - **Info.plist Version Injection**: Makefile sed replaces hardcoded 1.0.0 with VERSION file at build time
+- **Show Extra Windows**: `SHOW_EXTRA_WINDOWS` toggle to display utility/floating windows (sublayer=normal)
+- **Custom HUD Position Memory**: Custom positions persist when switching presets; stored in `CUSTOM_HUD_X`/`CUSTOM_HUD_Y`
+- **Simplified HUD_POSITION Config**: Now writes `HUD_POSITION=custom` with separate coordinate keys
+- **on/off Boolean Config**: Writes `on`/`off` for booleans; accepts all formats (`true`, `false`, `1`, `0`, `yes`, `no`, `on`, `off`)
+- **Debug/Advanced Settings Section**: Socket Health Interval moved to dedicated section
+- **Settings UI Reorganization**: Reordered Behavior section, moved Space Names under Grid, fixed layout labels
 
 ## 🚀 High Priority
 

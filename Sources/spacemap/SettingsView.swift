@@ -82,6 +82,7 @@ struct SettingsView: View {
     @State private var useArrowKeys: Bool = false
     @State private var hudPositionKind: HUDPositionKind = .center
     @State private var spaceNameInputs: [Int: String] = [:]
+    @State private var showExtraWindows: Bool = false
     // Store last known custom HUD position to preserve it when switching between presets and custom
     @State private var lastCustomHUDX: Double = 0.5
     @State private var lastCustomHUDY: Double = 0.5
@@ -109,7 +110,7 @@ struct SettingsView: View {
         for c in 1...maxSpaces {
             if maxSpaces % c == 0 {
                 let r = maxSpaces / c
-                layouts.append((c, r, "\(c)×(r))"))
+                layouts.append((c, r, "\(c)×\(r)"))
             }
         }
         return layouts
@@ -177,6 +178,7 @@ init() {
         _hudPositionKind = State(initialValue: HUDPositionKind(from: config.hudPosition))
         _lastCustomHUDX = State(initialValue: config.customHUDX)
         _lastCustomHUDY = State(initialValue: config.customHUDY)
+        _showExtraWindows = State(initialValue: config.showExtraWindows)
         _spaceNameInputs = State(initialValue: config.spaceNames)
         _gridLayoutIndex = State(initialValue: findBestGridLayoutIndexFor(cols: config.cols, rows: config.rows, maxSpaces: config.maxSpaces))
     }
@@ -221,6 +223,7 @@ init() {
             "HIDE_MENUBAR_ICON=\(hideMenuBarIconStr)",
             "VIM_KEYS=\(useVimKeys ? "on" : "off")",
             "ARROW_KEYS=\(useArrowKeys ? "on" : "off")",
+            "SHOW_EXTRA_WINDOWS=\(showExtraWindows ? "on" : "off")",
             "CUSTOM_HUD_X=\(lastCustomHUDX)",
             "CUSTOM_HUD_Y=\(lastCustomHUDY)",
             "HUD_POSITION=\(ConfigReader.hudPositionString(hudPosition))",
@@ -295,8 +298,40 @@ Picker("Cell Style", selection: $cellStyle) {
                 Toggle("Show Icon Strip", isOn: $showIconStrip)
                     .onChange(of: showIconStrip) { _ in saveConfig() }
                 if showIconStrip {
-                    Toggle("Show Each Window Icon", isOn: $showMultiAppIcons)
+                    Toggle("Show Icon Per Window", isOn: $showMultiAppIcons)
                         .onChange(of: showMultiAppIcons) { _ in saveConfig() }
+                }
+                Toggle("Show Extra Windows", isOn: $showExtraWindows)
+                    .onChange(of: showExtraWindows) { _ in saveConfig() }
+                if showExtraWindows {
+                    Text("Shows utility/floating windows (e.g. System Settings). May show invisible utility windows. Turn off for cleaner display with some missed windows.")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                }
+            }
+            
+            Section(header: Text("Space Names").font(.title).bold()) {
+                Toggle("Show Space Names", isOn: $showSpaceNames)
+                    .onChange(of: showSpaceNames) { _ in saveConfig() }
+                if showSpaceNames {
+                    Text("(Each input below corresponds to each space number, up to Max Spaces)")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                    ForEach(maxSpacesOptions, id: \.self) { spaceIndex in
+                        Group {
+                            if spaceIndex <= maxSpaces {
+                                HStack {
+                                    Text("Space \(spaceIndex):")
+                                        .frame(width: 80, alignment: .leading)
+                                    TextField("", text: binding(for: spaceIndex))
+                                        .textFieldStyle(.roundedBorder)
+                                        .id("spaceName-\(spaceIndex)")
+                                        .onChange(of: binding(for: spaceIndex).wrappedValue) { _ in saveConfig() }
+                                }
+                                .padding(.vertical, 4)
+                            }
+                        }
+}
                 }
             }
             
@@ -351,29 +386,6 @@ Picker("Cell Style", selection: $cellStyle) {
             Section(header: Text("Behavior").font(.title).bold()) {
                 HotkeyRecorder(label: "Hotkey", hotkey: $hotkeyString)
                     .onChange(of: hotkeyString) { _ in saveConfig() }
-                Picker("Socket Health Interval (s)", selection: $socketHealthInterval) {
-                    ForEach(socketHealthOptions, id: \.self) { v in
-                        Text("\(v)").tag(v as Int)
-                    }
-                }
-                .onChange(of: socketHealthInterval) { _ in saveConfig() }
-                HStack {
-                    Spacer()
-                    Stepper("Auto-hide Timeout (s): \(autoHideTimeout) (0 = disabled)", value: $autoHideTimeout, in: 0...60)
-                        .onChange(of: autoHideTimeout) { _ in saveConfig() }
-                    Spacer()
-                }
-                Toggle("Hide Menu Bar Icon", isOn: $hideMenuBarIcon)
-                    .onChange(of: hideMenuBarIcon) { _ in saveConfig() }
-                if hideMenuBarIcon {
-                    Text("Access settings by relaunching the app or pressing ⌘, while the HUD is open.")
-                        .font(.footnote)
-                        .foregroundColor(.secondary)
-                }
-                Toggle("Navigate with Arrow Keys (←↑↓→)", isOn: $useArrowKeys)
-                    .onChange(of: useArrowKeys) { _ in saveConfig() }
-                Toggle("Navigate with Vim Keys (hjkl)", isOn: $useVimKeys)
-                    .onChange(of: useVimKeys) { _ in saveConfig() }
                 Picker("HUD Position", selection: $hudPositionKind) {
                     Text("Center").tag(HUDPositionKind.center)
                     Text("Top").tag(HUDPositionKind.top)
@@ -386,34 +398,34 @@ Picker("Cell Style", selection: $cellStyle) {
                         .font(.footnote)
                         .foregroundColor(.secondary)
                 }
-            }
-            
-            Section {
-                Text("Space Names")
-                    .font(.title)
-                    .bold()
-                Toggle("Show Space Names", isOn: $showSpaceNames)
-                    .onChange(of: showSpaceNames) { _ in saveConfig() }
-                if showSpaceNames {
-                    Text("(Each input below corresponds to each space number, up to Max Spaces)")
+                HStack {
+                    Text("Auto-hide Timeout (s) (0 = disabled):")
+                    Spacer()
+                    Text("\(autoHideTimeout)")
+                    Stepper("", value: $autoHideTimeout, in: 0...60)
+                        .labelsHidden()
+                        .onChange(of: autoHideTimeout) { _ in saveConfig() }
+                }
+                Toggle("Navigate with Arrow Keys (←↑↓→)", isOn: $useArrowKeys)
+                    .onChange(of: useArrowKeys) { _ in saveConfig() }
+                Toggle("Navigate with Vim Keys (hjkl)", isOn: $useVimKeys)
+                    .onChange(of: useVimKeys) { _ in saveConfig() }
+                Toggle("Hide Menu Bar Icon", isOn: $hideMenuBarIcon)
+                    .onChange(of: hideMenuBarIcon) { _ in saveConfig() }
+                if hideMenuBarIcon {
+                    Text("Access settings by relaunching the app or pressing ⌘, while the HUD is open.")
                         .font(.footnote)
                         .foregroundColor(.secondary)
-                    ForEach(maxSpacesOptions, id: \.self) { spaceIndex in
-                        Group {
-                            if spaceIndex <= maxSpaces {
-                                HStack {
-                                    Text("Space \(spaceIndex):")
-                                        .frame(width: 80, alignment: .leading)
-                                    TextField("", text: binding(for: spaceIndex))
-                                        .textFieldStyle(.roundedBorder)
-                                        .id("spaceName-\(spaceIndex)")
-                                        .onChange(of: binding(for: spaceIndex).wrappedValue) { _ in saveConfig() }
-                                }
-                                .padding(.vertical, 4)
-                            }
-                        }
-}
                 }
+            }
+            
+            Section(header: Text("Debug/Advanced").font(.title).bold()) {
+                Picker("Socket Health Interval (s)", selection: $socketHealthInterval) {
+                    ForEach(socketHealthOptions, id: \.self) { v in
+                        Text("\(v)").tag(v as Int)
+                    }
+                }
+                .onChange(of: socketHealthInterval) { _ in saveConfig() }
             }
         }
     }
