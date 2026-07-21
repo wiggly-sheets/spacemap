@@ -85,7 +85,10 @@ struct GridView: View {
         )
     }
     
-    private var effectiveScale: CGFloat { 0.5 + CGFloat(uiScale) * 3.5 }
+    static func effectiveScale(for uiScale: Double) -> CGFloat { 0.5 + CGFloat(uiScale) * 3.5 }
+    static func effectiveIconScale(for iconScale: Double) -> CGFloat { 0.2 + CGFloat(iconScale) * 0.8 }
+    
+    private var effectiveScale: CGFloat { Self.effectiveScale(for: uiScale) }
     var effectiveCellWidth: CGFloat { baseCellWidth * effectiveScale }
     var effectiveCellHeight: CGFloat { baseCellHeight * effectiveScale }
     var effectiveGap: CGFloat { baseGap * effectiveScale }
