@@ -62,9 +62,13 @@ class HUDWindowController {
     }
     
     func show() {
-        guard !isVisible else { 
-            // Already showing; do nothing
-            return
+        guard !isVisible else { return }
+        // Tear down any orphaned panel before creating new one
+        if let existing = panel {
+            existing.orderOut(nil)
+            existing.close()
+            panel = nil
+            hostingView = nil
         }
         NSLog("spacemap/HUD: show() called")
         reloadConfig()
@@ -140,7 +144,7 @@ class HUDWindowController {
     }
     
     private func refreshState() {
-        guard let panel else { return }
+        guard isVisible, let panel else { return }
         let state = YabaiClient.buildGridState(config: config)
         currentState = state
         dragHandler.cachedWindows = state.windows
