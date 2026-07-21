@@ -182,12 +182,25 @@ NSLog("spacemap/ModuleName: message")
 | `make app` | Build and assemble .app bundle |
 | `make install` | Install to /Applications |
 | `make run` | Install and launch |
+| `make test` | Run unit tests via swift test |
 | `make dev1` | Uninstall (remove from /Applications) |
 | `make dev2` | Reinstall and relaunch |
 | `make clean` | Remove build artifacts |
 | `make config` | Create default config |
 | `make distconfig` | Overwrite config with defaults |
-| `make dmg` | Build DMG installer |
+| `make dmg` | Build universal DMG |
+| `make dmg-arm64` | Build ARM64 DMG |
+| `make dmg-x86_64` | Build Intel DMG |
+| `make build-arm64` | Build for Apple Silicon only |
+| `make build-x86_64` | Build for Intel only |
+| `make build-universal` | Build universal binary |
+
+### Xcode Project
+```bash
+python3 scripts/generate-xcodeproj.py   # Generate from SPM
+open spacemap.xcodeproj                 # Open in Xcode
+```
+4 targets: default, arm64, x86_64, universal. Edit `Package.swift`, not the `.xcodeproj`.
 
 ### Development Cycle
 1. `make dev1` — uninstalls app
@@ -204,11 +217,10 @@ NSLog("spacemap/ModuleName: message")
 
 ### Icon Flicker
 **Problem:** `NSWorkspace.shared.icon(forFile:)` re-fetches on every render.
-**Workaround:** None yet — performance optimization planned.
+**Workaround:** `IconCache` singleton caches icons by app name. Flicker reduced but not eliminated.
 
 ### yabai Path
-**Problem:** Hardcoded to `/opt/homebrew/bin/yabai` (Apple Silicon only).
-**Workaround:** Intel users need symlink: `ln -s /usr/local/bin/yabai /opt/homebrew/bin/yabai`.
+ yabai is auto-detected: `/opt/homebrew/bin/yabai` (ARM) or `/usr/local/bin/yabai` (Intel). No manual symlink needed.
 
 ### Config Reloading
 **Problem:** `HOTKEY` requires restart to take effect.

@@ -9,8 +9,8 @@ We're excited to have you contribute to spacemap. This is a native macOS utility
 ### Prerequisites
 - macOS 13+ (Ventura or later)
 - Xcode Command Line Tools: `xcode-select --install`
-- yabai installed at `/opt/homebrew/bin/yabai`: `brew install asmvik/formulae/yabai`
-- skhd installed at `/opt/homebrew/bin/skhd`: `brew install asmvik/formulae/skhd`
+- yabai installed: `brew install asmvik/formulae/yabai`
+- skhd installed: `brew install asmvik/formulae/skhd`
 
 ### Setup
 
@@ -41,10 +41,14 @@ We're excited to have you contribute to spacemap. This is a native macOS utility
 | `make build` | Build release binary |
 | `make app` | Build and assemble `.app` bundle |
 | `make run` | Build, install to `/Applications`, and launch |
+| `make test` | Run unit tests via swift test |
 | `make dev1` | Uninstall from `/Applications` |
 | `make dev2` | Rebuild, reinstall, and launch |
 | `make clean` | Remove build artifacts |
 | `make config` | Create default config file |
+| `make dmg` | Build universal DMG |
+| `make dmg-arm64` | Build ARM64 DMG |
+| `make dmg-x86_64` | Build Intel DMG |
 
 ## Code Style
 
@@ -81,12 +85,21 @@ We're excited to have you contribute to spacemap. This is a native macOS utility
 
 ## Important Constraints
 
-1. **yabai path:** Hardcoded to `/opt/homebrew/bin/yabai` - no auto-discovery
+1. **yabai path:** Auto-detected at `/opt/homebrew/bin/yabai` (ARM) or `/usr/local/bin/yabai` (Intel)
 2. **Accessibility:** Required for hotkeys, handled on launch
 3. **Permissions:** Rebuilds revoke permissions - use `make dev1`/`dev2` workflow
 4. **Config:** Reloaded on every HUD open (except `HOTKEY` which needs restart)
 
 ## Testing
+
+### Unit Tests
+```bash
+make test             # Run all tests
+swift test            # Direct SPM test runner
+swift test --filter ConfigTests   # Run a specific test class
+```
+
+103 tests across 5 files: HotkeyTests (19), ConfigTests (41), ThemeTests (12), ModelTests (11), CellViewGridViewTests (20).
 
 ### Manual Testing Checklist
 - [ ] Launch app with yabai running → HUD opens on hotkey
@@ -107,9 +120,8 @@ We're excited to have you contribute to spacemap. This is a native macOS utility
 ## Known Limitations
 
 - **Homebrew only:** No other package managers supported
-- **Apple Silicon only:** No Intel Mac support (hardcoded `/opt/homebrew`)
-- **No tests:** Unit tests not implemented yet
-- **Icon flicker:** Re-fetching icons causes visual artifacts
+- **Icon flicker:** Re-fetching icons causes visual artifacts (IconCache mitigates)
+- **Drag ambiguity:** Multi-window app drags may fall back to click proximity
 
 ## Getting Help
 
