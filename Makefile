@@ -8,11 +8,30 @@ ARCHIVE   = spacemap-$(VERSION).zip
 STAGE     = spacemap-$(VERSION)
 DMG       = spacemap-$(VERSION).dmg
 DMG_STAGE = dmgstage
+BUILD_ARM64 = .build/arm64-apple-macosx/release
+BUILD_X86_64 = .build/x86_64-apple-macosx/release
 
-.PHONY: build app install run dev uninstall clean config distconfig archive dmg permissions install-cli uninstall-cli
+.PHONY: build app install run dev uninstall clean config distconfig archive dmg permissions install-cli uninstall-cli build-arm64 build-x86_64 build-universal app-arm64 app-x86_64 app-universal generate-xcodeproj
 
 build:
 	swift build -c release
+
+generate-xcodeproj:
+	python3 scripts/generate-xcodeproj.py
+
+build-arm64:
+	swift build -c release --arch arm64
+
+build-x86_64:
+	swift build -c release --arch x86_64
+
+build-universal: build-arm64 build-x86_64
+	mkdir -p .build/universal/release
+	lipo -create -output .build/universal/release/$(APP_NAME) \
+		$(BUILD_ARM64)/$(APP_NAME) \
+		$(BUILD_X86_64)/$(APP_NAME)
+	@echo "Universal binary: .build/universal/release/$(APP_NAME)"
+	@lipo -info .build/universal/release/$(APP_NAME)
 
 app: build
 	mkdir -p $(APP_CONTENTS)/MacOS
@@ -22,6 +41,36 @@ app: build
 	cp Sources/spacemap/spacemap.icns $(APP_CONTENTS)/Resources/spacemap.icns
 	cp Sources/spacemap/AppIcon.icns $(APP_CONTENTS)/Resources/AppIcon.icns
 	cp -R Assets.xcassets $(APP_CONTENTS)/Resources/
+
+app-arm64: build-arm64
+	mkdir -p $(APP_NAME)-arm64.app/Contents/MacOS
+	mkdir -p $(APP_NAME)-arm64.app/Contents/Resources
+	cp $(BUILD_ARM64)/$(APP_NAME) $(APP_NAME)-arm64.app/Contents/MacOS/
+	cp Sources/spacemap/Info.plist $(APP_NAME)-arm64.app/Contents/
+	cp Sources/spacemap/spacemap.icns $(APP_NAME)-arm64.app/Contents/Resources/spacemap.icns
+	cp Sources/spacemap/AppIcon.icns $(APP_NAME)-arm64.app/Contents/Resources/AppIcon.icns
+	cp -R Assets.xcassets $(APP_NAME)-arm64.app/Contents/Resources/
+	@echo "Built $(APP_NAME)-arm64.app (Apple Silicon)"
+
+app-x86_64: build-x86_64
+	mkdir -p $(APP_NAME)-x86_64.app/Contents/MacOS
+	mkdir -p $(APP_NAME)-x86_64.app/Contents/Resources
+	cp $(BUILD_X86_64)/$(APP_NAME) $(APP_NAME)-x86_64.app/Contents/MacOS/
+	cp Sources/spacemap/Info.plist $(APP_NAME)-x86_64.app/Contents/
+	cp Sources/spacemap/spacemap.icns $(APP_NAME)-x86_64.app/Contents/Resources/spacemap.icns
+	cp Sources/spacemap/AppIcon.icns $(APP_NAME)-x86_64.app/Contents/Resources/AppIcon.icns
+	cp -R Assets.xcassets $(APP_NAME)-x86_64.app/Contents/Resources/
+	@echo "Built $(APP_NAME)-x86_64.app (Intel)"
+
+app-universal: build-universal
+	mkdir -p $(APP_NAME).app/Contents/MacOS
+	mkdir -p $(APP_NAME).app/Contents/Resources
+	cp .build/universal/release/$(APP_NAME) $(APP_NAME).app/Contents/MacOS/
+	cp Sources/spacemap/Info.plist $(APP_NAME).app/Contents/
+	cp Sources/spacemap/spacemap.icns $(APP_NAME).app/Contents/Resources/spacemap.icns
+	cp Sources/spacemap/AppIcon.icns $(APP_NAME).app/Contents/Resources/AppIcon.icns
+	cp -R Assets.xcassets $(APP_NAME).app/Contents/Resources/
+	@echo "Built $(APP_NAME).app (Universal: arm64 + x86_64)"
 
 archive: app
 	rm -rf $(STAGE) $(ARCHIVE)

@@ -34,6 +34,9 @@ playground.xcworkspace
 
 .build/
 spacemap.app/
+spacemap-arm64.app/
+spacemap-x86_64.app/
+build-universal/
 
 # CocoaPods
 #
