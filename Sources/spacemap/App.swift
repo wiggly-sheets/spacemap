@@ -166,15 +166,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let config = currentConfig ?? ConfigReader.load()
         let menu = NSMenu()
         let hotkeyLabel = hotkeyMenuString(config.hotkey)
-        menu.addItem(NSMenuItem(title: "Show/Hide Map (\(hotkeyLabel))", action: #selector(toggleHUD), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: String(format: NSLocalizedString("Show/Hide Map (%@)", comment: ""), hotkeyLabel), action: #selector(toggleHUD), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: "Settings...", action: #selector(showSettingsWindow), keyEquivalent: ","))
+        menu.addItem(NSMenuItem(title: NSLocalizedString("Settings...", comment: ""), action: #selector(showSettingsWindow), keyEquivalent: ","))
         menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: "Open Accessibility Permissions (for hotkey)", action: #selector(openAccessibility), keyEquivalent: ""))
-        menu.addItem(NSMenuItem(title: "Open Screen Recording Permissions (for thumbnails)", action: #selector(openScreenRecording), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: NSLocalizedString("Open Accessibility Permissions (for hotkey)", comment: ""), action: #selector(openAccessibility), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: NSLocalizedString("Open Screen Recording Permissions (for thumbnails)", comment: ""), action: #selector(openScreenRecording), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
         // Launch at Login
-        let launchAtLoginItem = NSMenuItem(title: "Launch at Login", action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
+        let launchAtLoginItem = NSMenuItem(title: NSLocalizedString("Launch at Login", comment: ""), action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
+        launchAtLoginItem.tag = 1001
         let isEnabled: Bool
         if #available(macOS 13, *) {
             isEnabled = SMAppService.mainApp.status == .enabled
@@ -186,10 +187,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         menu.addItem(launchAtLoginItem)
         menu.addItem(NSMenuItem.separator())
-        let restartItem = NSMenuItem(title: "Restart spacemap", action: #selector(restartApp), keyEquivalent: "r")
+        let restartItem = NSMenuItem(title: NSLocalizedString("Restart spacemap", comment: ""), action: #selector(restartApp), keyEquivalent: "r")
         restartItem.keyEquivalentModifierMask = .command
         menu.addItem(restartItem)
-        menu.addItem(NSMenuItem(title: "Quit spacemap", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
+        menu.addItem(NSMenuItem(title: NSLocalizedString("Quit spacemap", comment: ""), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
         item.menu = menu
         statusItem = item
     }
@@ -248,7 +249,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             // Update menu item state
             if let menu = statusItem?.menu {
                 for item in menu.items {
-                    if item.title == "Launch at Login" {
+                    if item.tag == 1001 {
                         let newStatus: Bool
                         if #available(macOS 13, *) {
                             newStatus = SMAppService.mainApp.status == .enabled
@@ -303,10 +304,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func showMoveToApplicationsDialog() {
         let alert = NSAlert()
         alert.alertStyle = .informational
-        alert.messageText = "Move spacemap to Applications?"
-        alert.informativeText = "spacemap should be run from the Applications folder for best performance. Would you like to move it there now?"
-        alert.addButton(withTitle: "Move to Applications")
-        alert.addButton(withTitle: "Cancel")
+        alert.messageText = NSLocalizedString("Move spacemap to Applications?", comment: "")
+        alert.informativeText = NSLocalizedString("spacemap should be run from the Applications folder for best performance. Would you like to move it there now?", comment: "")
+        alert.addButton(withTitle: NSLocalizedString("Move to Applications", comment: ""))
+        alert.addButton(withTitle: NSLocalizedString("Cancel", comment: ""))
         
         let response = alert.runModal()
         if response == .alertFirstButtonReturn {
@@ -326,14 +327,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             
             let alert = NSAlert()
             alert.alertStyle = .informational
-            alert.messageText = "Moved to Applications"
-            alert.informativeText = "spacemap has been copied to the Applications folder. Please quit and relaunch from there."
+            alert.messageText = NSLocalizedString("Moved to Applications", comment: "")
+            alert.informativeText = NSLocalizedString("spacemap has been copied to the Applications folder. Please quit and relaunch from there.", comment: "")
             alert.runModal()
         } catch {
             let alert = NSAlert()
             alert.alertStyle = .critical
-            alert.messageText = "Failed to move"
-            alert.informativeText = "Could not move spacemap to Applications: \(error.localizedDescription)"
+            alert.messageText = NSLocalizedString("Failed to move", comment: "")
+            alert.informativeText = String(format: NSLocalizedString("Could not move spacemap to Applications: %@", comment: ""), error.localizedDescription)
             alert.runModal()
         }
     }
@@ -341,10 +342,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func showFirstLaunchLaunchAtLoginPrompt() {
         let alert = NSAlert()
         alert.alertStyle = .informational
-        alert.messageText = "Launch at Login?"
-        alert.informativeText = "Would you like spacemap to start automatically when you log in?"
-        alert.addButton(withTitle: "Yes")
-        alert.addButton(withTitle: "No")
+        alert.messageText = NSLocalizedString("Launch at Login?", comment: "")
+        alert.informativeText = NSLocalizedString("Would you like spacemap to start automatically when you log in?", comment: "")
+        alert.addButton(withTitle: NSLocalizedString("Yes", comment: ""))
+        alert.addButton(withTitle: NSLocalizedString("No", comment: ""))
         
         let response = alert.runModal()
         if response == .alertFirstButtonReturn {
@@ -357,10 +358,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.activate(ignoringOtherApps: true)
         let alert = NSAlert()
         alert.alertStyle = .warning
-        alert.messageText = "yabai is not running"
-        alert.informativeText = "spacemap requires yabai to be running. Please start yabai and relaunch spacemap."
-        alert.addButton(withTitle: "Quit")
-        alert.addButton(withTitle: "Open yabai")
+        alert.messageText = NSLocalizedString("yabai is not running", comment: "")
+        alert.informativeText = NSLocalizedString("spacemap requires yabai to be running. Please start yabai and relaunch spacemap.", comment: "")
+        alert.addButton(withTitle: NSLocalizedString("Quit", comment: ""))
+        alert.addButton(withTitle: NSLocalizedString("Open yabai", comment: ""))
         
         let response = alert.runModal()
         if response == .alertSecondButtonReturn {
@@ -392,10 +393,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.activate(ignoringOtherApps: true)
         let alert = NSAlert()
         alert.alertStyle = .warning
-        alert.messageText = "Spaces Auto-Rearrange Enabled"
-        alert.informativeText = "spacemap needs this disabled for stable grid layout. Spaces must stay in a fixed order or the grid becomes unreliable."
-        alert.addButton(withTitle: "Leave as Is")
-        alert.addButton(withTitle: "Fix It")
+        alert.messageText = NSLocalizedString("Spaces Auto-Rearrange Enabled", comment: "")
+        alert.informativeText = NSLocalizedString("spacemap needs this disabled for stable grid layout. Spaces must stay in a fixed order or the grid becomes unreliable.", comment: "")
+        alert.addButton(withTitle: NSLocalizedString("Leave as Is", comment: ""))
+        alert.addButton(withTitle: NSLocalizedString("Fix It", comment: ""))
         
         let response = alert.runModal()
         if response == .alertSecondButtonReturn {

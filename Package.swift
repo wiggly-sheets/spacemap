@@ -3,6 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "spacemap",
+    defaultLocalization: "en",
     platforms: [.macOS(.v13)],
     targets: [
         .executableTarget(
@@ -13,6 +14,7 @@ let package = Package(
                 .process("AppIcon.icns"),
                 .process("spacemap.icns"),
                 .process("Assets.xcassets"),
+                .process("Resources"),
             ],
             linkerSettings: [
                 .linkedFramework("CoreGraphics"),
