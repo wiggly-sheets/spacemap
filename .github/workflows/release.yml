@@ -18,6 +18,9 @@ jobs:
         with:
           swift-version: "5.9"
 
+      - name: Install create-dmg
+        run: brew install create-dmg
+
       - name: Read version
         id: version
         run: echo "tag=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
@@ -25,14 +28,22 @@ jobs:
       - name: Build universal binary
         run: make build-universal
 
-      - name: Assemble app bundle
-        run: make app-universal
-
-      - name: Create archive
+      - name: Build all app bundles
         run: |
-          cd ..
-          zip -r spacemap-${{ steps.version.outputs.tag }}.zip spacemap.app
-          shasum -a 256 spacemap-${{ steps.version.outputs.tag }}.zip
+          make app-arm64
+          make app-x86_64
+          make app-universal
+
+      - name: Create DMGs
+        run: |
+          make dmg-arm64
+          make dmg-x86_64
+          make dmg-universal
+
+      - name: Generate checksums
+        run: |
+          shasum -a 256 spacemap-*-arm64.dmg spacemap-*-x86_64.dmg spacemap-*-universal.dmg > checksums.txt
+          cat checksums.txt
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -40,4 +51,7 @@ jobs:
           name: spacemap ${{ steps.version.outputs.tag }}
           generate_release_notes: true
           files: |
-            ../spacemap-${{ steps.version.outputs.tag }}.zip
+            spacemap-*-arm64.dmg
+            spacemap-*-x86_64.dmg
+            spacemap-*-universal.dmg
+            checksums.txt
