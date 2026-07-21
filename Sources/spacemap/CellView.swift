@@ -124,6 +124,7 @@ var body: some View {
                     .lineLimit(2)
             }
         }
+        .clipShape(RoundedRectangle(cornerRadius: 4))
         .overlay(
             RoundedRectangle(cornerRadius: 4)
                 .strokeBorder(borderColor, lineWidth: borderWidth)
