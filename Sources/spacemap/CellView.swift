@@ -218,6 +218,10 @@ var body: some View {
     }
     
     private func uniqueIconWindows() -> [YabaiWindow] {
+        Self.uniqueIconWindows(windows)
+    }
+
+    static func uniqueIconWindows(_ windows: [YabaiWindow]) -> [YabaiWindow] {
         var seen = Set<String>()
         return windows.filter { seen.insert($0.app).inserted }
     }
@@ -239,10 +243,13 @@ var body: some View {
     }
     
     private func appColor(_ name: String) -> Color {
-        let t = resolvedTheme
+        Self.appColor(name, theme: resolvedTheme, windowCount: windows.count)
+    }
+
+    static func appColor(_ name: String, theme: AppTheme, windowCount: Int) -> Color {
+        let t = theme
         let rects = [t.rect1, t.rect2, t.rect3]
         let base = rects[abs(name.hashValue) % 3]
-        let windowCount = windows.count
         if windowCount <= 3 {
             return Color(hex: base)
         }

@@ -91,28 +91,44 @@ struct GridView: View {
     var effectivePadding: CGFloat { basePadding * uiScale * 10 }
     
     var idealSize: CGSize {
-        let cells = visibleSpaceIndices
-        let rowCount = Int((cells.count + state.config.cols - 1) / state.config.cols)
-        let colCount = min(state.config.cols, cells.count)
-        let w = CGFloat(colCount) * (effectiveCellWidth + effectiveGap) - effectiveGap + effectivePadding * 2
-        let h = CGFloat(rowCount) * (effectiveCellHeight + effectiveGap) - effectiveGap + effectivePadding * 2
+        Self.computeIdealSize(
+            cellCount: visibleSpaceIndices.count,
+            cols: state.config.cols,
+            cellWidth: effectiveCellWidth,
+            cellHeight: effectiveCellHeight,
+            gap: effectiveGap,
+            padding: effectivePadding
+        )
+    }
+
+    static func computeIdealSize(cellCount: Int, cols: Int, cellWidth: CGFloat, cellHeight: CGFloat, gap: CGFloat, padding: CGFloat) -> CGSize {
+        let rowCount = Int((cellCount + cols - 1) / cols)
+        let colCount = min(cols, cellCount)
+        let w = CGFloat(colCount) * (cellWidth + gap) - gap + padding * 2
+        let h = CGFloat(rowCount) * (cellHeight + gap) - gap + padding * 2
         return CGSize(width: w, height: h)
     }
-    
+
+    static func computeVisibleSpaceIndices(maxSpaces: Int, showMode: ShowMode, activeIndices: Set<Int>) -> [Int] {
+        let maxN = min(maxSpaces, 16)
+        let all = (1...maxN).map { $0 }
+        if showMode == .active {
+            return all.filter { activeIndices.contains($0) }
+        }
+        return all
+    }
+
     init(state: GridState, hoveredCell: Int?, onSelect: @escaping (Int) -> Void, uiScale: Double = 1.0, theme: String = "default") {
         self.state = state
         self.hoveredCell = hoveredCell
         self.onSelect = onSelect
         self.uiScale = uiScale
         self.theme = theme
-        // Precompute once
-        let maxN = min(state.config.maxSpaces, 16)
-        let all = (1...maxN).map { $0 }
-        if state.config.showMode == .active {
-            let activeSet = Set(state.spaces.map { $0.index })
-            self._visibleSpaceIndices = all.filter { activeSet.contains($0) }
-        } else {
-            self._visibleSpaceIndices = all
-        }
+        let activeSet = Set(state.spaces.map { $0.index })
+        self._visibleSpaceIndices = Self.computeVisibleSpaceIndices(
+            maxSpaces: state.config.maxSpaces,
+            showMode: state.config.showMode,
+            activeIndices: activeSet
+        )
     }
 }
