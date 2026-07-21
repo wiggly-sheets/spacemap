@@ -82,12 +82,9 @@ jobs:
 
       - name: Create DMGs
         run: |
-          swift package clean
-          make dmg-arm64
-          swift package clean
-          make dmg-x86_64
-          swift package clean
-          make dmg-universal
+          make _dmg INPUT=spacemap-arm64.app OUTPUT=spacemap-${{ steps.version.outputs.tag }}-arm64.dmg
+          make _dmg INPUT=spacemap-x86_64.app OUTPUT=spacemap-${{ steps.version.outputs.tag }}-x86_64.dmg
+          make _dmg INPUT=spacemap.app OUTPUT=spacemap-${{ steps.version.outputs.tag }}-universal.dmg
 
       - name: Code sign DMGs
         if: env.CODESIGN_IDENTITY != ''
