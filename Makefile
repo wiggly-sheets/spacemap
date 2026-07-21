@@ -11,10 +11,13 @@ DMG_STAGE = dmgstage
 BUILD_ARM64 = .build/arm64-apple-macosx/release
 BUILD_X86_64 = .build/x86_64-apple-macosx/release
 
-.PHONY: build app install run dev uninstall clean config distconfig archive dmg permissions install-cli uninstall-cli build-arm64 build-x86_64 build-universal app-arm64 app-x86_64 app-universal generate-xcodeproj
+.PHONY: build app install run dev uninstall clean config distconfig archive dmg permissions install-cli uninstall-cli build-arm64 build-x86_64 build-universal app-arm64 app-x86_64 app-universal generate-xcodeproj test
 
 build:
 	swift build -c release
+
+test:
+	swift test
 
 generate-xcodeproj:
 	python3 scripts/generate-xcodeproj.py

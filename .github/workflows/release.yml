@@ -1,0 +1,43 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & Release
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: "5.9"
+
+      - name: Read version
+        id: version
+        run: echo "tag=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+
+      - name: Build universal binary
+        run: make build-universal
+
+      - name: Assemble app bundle
+        run: make app-universal
+
+      - name: Create archive
+        run: |
+          cd ..
+          zip -r spacemap-${{ steps.version.outputs.tag }}.zip spacemap.app
+          shasum -a 256 spacemap-${{ steps.version.outputs.tag }}.zip
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: spacemap ${{ steps.version.outputs.tag }}
+          generate_release_notes: true
+          files: |
+            ../spacemap-${{ steps.version.outputs.tag }}.zip
