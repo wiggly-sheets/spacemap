@@ -82,8 +82,11 @@ jobs:
 
       - name: Create DMGs
         run: |
+          swift package clean
           make dmg-arm64
+          swift package clean
           make dmg-x86_64
+          swift package clean
           make dmg-universal
 
       - name: Code sign DMGs
