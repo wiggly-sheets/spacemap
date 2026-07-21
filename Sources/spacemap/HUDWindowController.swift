@@ -275,6 +275,12 @@ class HUDWindowController {
                 self.panelDragOrigin = panel.frame.origin
                 self.panelDragDidMove = false
                 self.isPanelDragging = true
+                // Cancel any timer already ticking — resetAutoHideTimer() only
+                // prevents *new* timers from being scheduled while dragging;
+                // it doesn't touch one already in flight from before the drag
+                // started, which is what let the HUD hide itself mid-drag.
+                self.autoHideTimer?.invalidate()
+                self.autoHideTimer = nil
             case .leftMouseDragged:
                 guard let start = self.panelDragStart,
                       let origin = self.panelDragOrigin else { break }
@@ -298,6 +304,11 @@ class HUDWindowController {
                 self.panelDragStart = nil
                 self.panelDragOrigin = nil
                 self.panelDragDidMove = false
+                // Drag has ended — allow the auto-hide timer to run again and
+                // start it fresh now, rather than leaving it suppressed for
+                // the rest of the HUD session.
+                self.isPanelDragging = false
+                self.resetAutoHideTimer()
             default: break
             }
             return event
