@@ -3,7 +3,7 @@ BUILD_DIR = .build/release
 APP_BUNDLE = $(APP_NAME).app
 APP_CONTENTS = $(APP_BUNDLE)/Contents
 INSTALL_PATH = /Applications/$(APP_BUNDLE)
-VERSION  := $(shell git describe --tags 2>/dev/null | sed 's/^v//' || (cat VERSION 2>/dev/null) || echo "0.0.0")
+VERSION  := $(shell git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || (cat VERSION 2>/dev/null) || echo "0.0.0")
 ARCHIVE   = spacemap-$(VERSION).zip
 STAGE     = spacemap-$(VERSION)
 DMG       = spacemap-$(VERSION).dmg
@@ -41,7 +41,7 @@ app: build
 	mkdir -p $(APP_CONTENTS)/Resources
 	cp $(BUILD_DIR)/$(APP_NAME) $(APP_CONTENTS)/MacOS/
 	cp Sources/spacemap/Info.plist $(APP_CONTENTS)/
-	sed -i '' 's/1.0.0/$(VERSION)/g' $(APP_CONTENTS)/Info.plist
+	sed -i '' "s/$$(grep -A1 CFBundleShortVersionString Sources/spacemap/Info.plist | tail -1 | sed 's/.*<string>\(.*\)<\/string>.*/\1/')/$(VERSION)/g" $(APP_CONTENTS)/Info.plist
 	cp Sources/spacemap/spacemap.icns $(APP_CONTENTS)/Resources/spacemap.icns
 	cp Sources/spacemap/AppIcon.icns $(APP_CONTENTS)/Resources/AppIcon.icns
 	cp -R Assets.xcassets $(APP_CONTENTS)/Resources/
@@ -51,7 +51,7 @@ app-arm64: build-arm64
 	mkdir -p $(APP_NAME)-arm64.app/Contents/Resources
 	cp $(BUILD_ARM64)/$(APP_NAME) $(APP_NAME)-arm64.app/Contents/MacOS/
 	cp Sources/spacemap/Info.plist $(APP_NAME)-arm64.app/Contents/
-	sed -i '' 's/1.0.0/$(VERSION)/g' $(APP_NAME)-arm64.app/Contents/Info.plist
+	CURRENT_VERSION=$$(grep -A1 CFBundleShortVersionString Sources/spacemap/Info.plist | tail -1 | sed 's/.*<string>\(.*\)<\/string>.*/\1/') && sed -i '' "s/$$CURRENT_VERSION/$(VERSION)/g" $(APP_NAME)-arm64.app/Contents/Info.plist
 	cp Sources/spacemap/spacemap.icns $(APP_NAME)-arm64.app/Contents/Resources/spacemap.icns
 	cp Sources/spacemap/AppIcon.icns $(APP_NAME)-arm64.app/Contents/Resources/AppIcon.icns
 	cp -R Assets.xcassets $(APP_NAME)-arm64.app/Contents/Resources/
@@ -62,7 +62,7 @@ app-x86_64: build-x86_64
 	mkdir -p $(APP_NAME)-x86_64.app/Contents/Resources
 	cp $(BUILD_X86_64)/$(APP_NAME) $(APP_NAME)-x86_64.app/Contents/MacOS/
 	cp Sources/spacemap/Info.plist $(APP_NAME)-x86_64.app/Contents/
-	sed -i '' 's/1.0.0/$(VERSION)/g' $(APP_NAME)-x86_64.app/Contents/Info.plist
+	CURRENT_VERSION=$$(grep -A1 CFBundleShortVersionString Sources/spacemap/Info.plist | tail -1 | sed 's/.*<string>\(.*\)<\/string>.*/\1/') && sed -i '' "s/$$CURRENT_VERSION/$(VERSION)/g" $(APP_NAME)-x86_64.app/Contents/Info.plist
 	cp Sources/spacemap/spacemap.icns $(APP_NAME)-x86_64.app/Contents/Resources/spacemap.icns
 	cp Sources/spacemap/AppIcon.icns $(APP_NAME)-x86_64.app/Contents/Resources/AppIcon.icns
 	cp -R Assets.xcassets $(APP_NAME)-x86_64.app/Contents/Resources/
@@ -73,7 +73,7 @@ app-universal: build-universal
 	mkdir -p $(APP_NAME).app/Contents/Resources
 	cp .build/universal/release/$(APP_NAME) $(APP_NAME).app/Contents/MacOS/
 	cp Sources/spacemap/Info.plist $(APP_NAME).app/Contents/
-	sed -i '' 's/1.0.0/$(VERSION)/g' $(APP_NAME).app/Contents/Info.plist
+	CURRENT_VERSION=$$(grep -A1 CFBundleShortVersionString Sources/spacemap/Info.plist | tail -1 | sed 's/.*<string>\(.*\)<\/string>.*/\1/') && sed -i '' "s/$$CURRENT_VERSION/$(VERSION)/g" $(APP_NAME).app/Contents/Info.plist
 	cp Sources/spacemap/spacemap.icns $(APP_NAME).app/Contents/Resources/spacemap.icns
 	cp Sources/spacemap/AppIcon.icns $(APP_NAME).app/Contents/Resources/AppIcon.icns
 	cp -R Assets.xcassets $(APP_NAME).app/Contents/Resources/
