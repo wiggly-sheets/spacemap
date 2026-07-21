@@ -19,6 +19,15 @@ enum ConfigReader {
             return .default
         }
 
+        let result = parseConfig(contents)
+        if !hasLoadedOnce {
+            saveConfig(result)
+            hasLoadedOnce = true
+        }
+        return result
+    }
+
+    static func parseConfig(_ text: String) -> GridConfig {
         var cols = GridConfig.default.cols
         var rows = GridConfig.default.rows
         var cellStyle = GridConfig.default.cellStyle
@@ -41,10 +50,9 @@ enum ConfigReader {
         var useVimKeys = GridConfig.default.useVimKeys
         var useArrowKeys = GridConfig.default.useArrowKeys
 
-        for line in contents.components(separatedBy: .newlines) {
+        for line in text.components(separatedBy: .newlines) {
             let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !trimmed.hasPrefix("#"), !trimmed.isEmpty else { continue }
-            // Strip inline comment: " #" marks start of comment
             let stripped: String
             if let commentRange = trimmed.range(of: " #") {
                 stripped = String(trimmed[..<commentRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
@@ -87,7 +95,6 @@ enum ConfigReader {
             case "AUTO_HIDE_TIMEOUT":
                 if let v = Int(value), v >= 0 {
                     autoHideTimeout = v
-                    print("spacemap/ConfigReader: PARSED autoHideTimeout=\(v) from value='\(value)'")
                 } else {
                     print("spacemap/ConfigReader: FAILED to parse AUTO_HIDE_TIMEOUT value='\(value)'")
                 }
@@ -110,58 +117,51 @@ enum ConfigReader {
                 } else {
                     print("spacemap: invalid BACKGROUND_ALPHA '\(value)', using default")
                 }
-case "MODE":
-                 switch value.lowercased() {
-              case "light": mode = .light
-              case "dark":  mode = .dark
-              case "auto", "automatic": mode = .auto
-              default:     mode = .auto
-                 }
-             case "ICON_SCALE":
-                 if let v = Double(value), v >= 0.5 && v <= 2.0 {
-                     iconScale = v
-                 } else {
-                     print("spacemap: invalid ICON_SCALE '\(value)', using default")
-                 }
-             case "SHOW_SPACE_NUMBERS":
-                  showSpaceNumbers = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
-             case "SHOW_NAMES":
-                  // backward compat: treat old SHOW_NAMES as SHOW_SPACE_NUMBERS
-                  showSpaceNumbers = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
-             case "SHOW_SPACE_NAMES":
-                   showSpaceNames = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
-             case "SHOW_ICON_STRIP":
-                   showIconStrip = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
-             case "SHOW_MULTI_APP_ICONS":
-                   showMultiAppIcons = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
-              case "HIDE_MENUBAR_ICON":
-                    hideMenuBarIcon = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
-              case "VIM_KEYS":
-                    useVimKeys = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
-              case "ARROW_KEYS":
-                    useArrowKeys = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
-              case "SPACE_NAMES":
-                  // Parse format: "1:Name,2:Name,3:Name"
-                  let pairs = value.components(separatedBy: ",")
-                  for pair in pairs {
-                      let parts = pair.components(separatedBy: ":")
-                      if parts.count == 2, let id = Int(parts[0].trimmingCharacters(in: .whitespaces)) {
-                          spaceNames[id] = parts[1].trimmingCharacters(in: .whitespaces)
-                      }
-                  }
-              default: break
-              }
+            case "MODE":
+                switch value.lowercased() {
+                case "light": mode = .light
+                case "dark":  mode = .dark
+                case "auto", "automatic": mode = .auto
+                default:     mode = .auto
+                }
+            case "ICON_SCALE":
+                if let v = Double(value), v >= 0.5 && v <= 2.0 {
+                    iconScale = v
+                } else {
+                    print("spacemap: invalid ICON_SCALE '\(value)', using default")
+                }
+            case "SHOW_SPACE_NUMBERS":
+                showSpaceNumbers = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
+            case "SHOW_NAMES":
+                showSpaceNumbers = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
+            case "SHOW_SPACE_NAMES":
+                showSpaceNames = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
+            case "SHOW_ICON_STRIP":
+                showIconStrip = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
+            case "SHOW_MULTI_APP_ICONS":
+                showMultiAppIcons = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
+            case "HIDE_MENUBAR_ICON":
+                hideMenuBarIcon = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
+            case "VIM_KEYS":
+                useVimKeys = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
+            case "ARROW_KEYS":
+                useArrowKeys = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
+            case "SPACE_NAMES":
+                let pairs = value.components(separatedBy: ",")
+                for pair in pairs {
+                    let parts = pair.components(separatedBy: ":")
+                    if parts.count == 2, let id = Int(parts[0].trimmingCharacters(in: .whitespaces)) {
+                        spaceNames[id] = parts[1].trimmingCharacters(in: .whitespaces)
+                    }
+                }
+            default: break
+            }
         }
 
-        let result = GridConfig(cols: cols, rows: rows, cellStyle: cellStyle, hotkey: hotkey, socketHealthInterval: socketHealthInterval, uiScale: uiScale, autoHideTimeout: autoHideTimeout, theme: theme, showMode: showMode, maxSpaces: maxSpaces, backgroundAlpha: backgroundAlpha, mode: mode, iconScale: iconScale, showSpaceNumbers: showSpaceNumbers, showSpaceNames: showSpaceNames, showIconStrip: showIconStrip, showMultiAppIcons: showMultiAppIcons, hideMenuBarIcon: hideMenuBarIcon, spaceNames: spaceNames, useVimKeys: useVimKeys, useArrowKeys: useArrowKeys)
-        if !hasLoadedOnce {
-            saveConfig(result)
-            hasLoadedOnce = true
-        }
-        return result
+        return GridConfig(cols: cols, rows: rows, cellStyle: cellStyle, hotkey: hotkey, socketHealthInterval: socketHealthInterval, uiScale: uiScale, autoHideTimeout: autoHideTimeout, theme: theme, showMode: showMode, maxSpaces: maxSpaces, backgroundAlpha: backgroundAlpha, mode: mode, iconScale: iconScale, showSpaceNumbers: showSpaceNumbers, showSpaceNames: showSpaceNames, showIconStrip: showIconStrip, showMultiAppIcons: showMultiAppIcons, hideMenuBarIcon: hideMenuBarIcon, spaceNames: spaceNames, useVimKeys: useVimKeys, useArrowKeys: useArrowKeys)
     }
 
-    private static func hotkeyToString(_ hotkey: HotkeyConfig) -> String {
+    static func hotkeyToString(_ hotkey: HotkeyConfig) -> String {
         let modifiers = hotkey.modifiers
         let keyCode = hotkey.keyCode
         var modString = ""
@@ -257,14 +257,14 @@ case "MODE":
             print("spacemap: failed to create default config at \(path): \(error)")
         }
     }
-    
+
     private static func saveConfig(_ config: GridConfig) {
         let path = NSString(string: "~/.config/spacemap/config").expandingTildeInPath
         let dir = (path as NSString).deletingLastPathComponent
         try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
-        
+
         let hotkeyString = hotkeyToString(config.hotkey)
-        
+
         let content = """
         GRID_COLS=\(config.cols)
         GRID_ROWS=\(config.rows)
@@ -296,7 +296,7 @@ case "MODE":
         }
     }
 
-    private static func parseHotkey(_ value: String) -> HotkeyConfig? {
+    static func parseHotkey(_ value: String) -> HotkeyConfig? {
         let tokens = value.lowercased().components(separatedBy: "+").map {
             $0.trimmingCharacters(in: .whitespaces)
         }
@@ -326,7 +326,7 @@ case "MODE":
         return HotkeyConfig(keyCode: keyCode, modifiers: modifiers)
     }
 
-    private static func keyCodeFor(_ token: String) -> CGKeyCode? {
+    static func keyCodeFor(_ token: String) -> CGKeyCode? {
         let named: [String: CGKeyCode] = [
             "space": 49, "tab": 48, "return": 36, "enter": 36,
             "escape": 53, "delete": 51, "backspace": 51,
@@ -350,8 +350,8 @@ case "MODE":
         ]
         return alphanum[token]
     }
-    
-    private static func cellStyleName(_ style: CellStyle) -> String {
+
+    static func cellStyleName(_ style: CellStyle) -> String {
         switch style {
         case .rects: return "rects"
         case .icons: return "icons"

@@ -55,6 +55,10 @@ class ThemeManager {
 
     private func parseTheme(from url: URL) -> AppTheme? {
         guard let content = try? String(contentsOf: url, encoding: .utf8) else { return nil }
+        return Self.parseThemeContent(content)
+    }
+
+    static func parseThemeContent(_ content: String) -> AppTheme? {
         var vals: [String: UInt32] = [:]
         for line in content.components(separatedBy: .newlines) {
             let trimmed = line.trimmingCharacters(in: .whitespaces)
@@ -70,7 +74,7 @@ class ThemeManager {
         guard let bg = vals["background"],
               let focused = vals["focused"],
               let text = vals["text"],
-              let drop = vals["dropTarget"],
+              let drop = vals["droptarget"],
               let cellBg = vals["cellbg"],
               let cellBgFocused = vals["cellbgfocused"] else { return nil }
         let r1 = vals["rect1"] ?? focused
@@ -127,7 +131,7 @@ class ThemeManager {
         ]
     }
 
-    private func hex(_ value: UInt32) -> String {
+    func hex(_ value: UInt32) -> String {
         let s = String(value, radix: 16)
         return String(repeating: "0", count: max(0, 6 - s.count)) + s
     }

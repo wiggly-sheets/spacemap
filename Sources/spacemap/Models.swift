@@ -42,7 +42,7 @@ struct GridConfig {
     static let `default` = GridConfig(cols: 8, rows: 2, cellStyle: .rects, hotkey: .default, socketHealthInterval: 60, uiScale: 1.0, autoHideTimeout: 5, theme: "default", showMode: .all, maxSpaces: 16, backgroundAlpha: 0.3, mode: .auto, iconScale: 1.0, showSpaceNumbers: true, showSpaceNames: true, showIconStrip: true, showMultiAppIcons: false, hideMenuBarIcon: false, spaceNames: [:], useVimKeys: false, useArrowKeys: false)
 }
 
-struct AppTheme {
+struct AppTheme: Equatable {
     let background: UInt32      // HUD grid background
     let focused: UInt32         // Focused space border/highlight
     let text: UInt32            // Text color

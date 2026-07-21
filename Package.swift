@@ -19,6 +19,11 @@ let package = Package(
                 .linkedFramework("ApplicationServices"),
                 .linkedLibrary("c++")
             ]
+        ),
+        .testTarget(
+            name: "spacemapTests",
+            dependencies: ["spacemap"],
+            path: "Tests/spacemapTests"
         )
     ]
 )
