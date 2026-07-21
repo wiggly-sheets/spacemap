@@ -9,7 +9,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_Nothing yet._
+- Info.plist version injection from VERSION file at build time (all app targets)
+- Merged FAQ into README, combined API_SUMMARY + CHEAT_SHEET into REFERENCE.md
+
+---
+
+## [1.0.3] - 2026-07-20
+
+### Added
+- **Settings normalization**: UI_SCALE and ICON_SCALE normalized to 0.0–1.0; effective scale mapping in GridView (`0.5 + uiScale × 3.5` for UI, `0.2 + iconScale × 0.8` for icons)
+- **CI DMG architecture verification**: Release workflow mounts each DMG and checks `lipo -archs`
+- **Rendering math tests**: 8 unit tests for scale mapping (min/max/midpoint/monotonicity)
+
+### Fixed
+- CustomStepper `currentIndex` fallback uses closest match instead of 0 on floating-point mismatch
+- Default config values updated: `uiScale: 0.5`, `iconScale: 0.5` (midpoint)
+- UI_SCALE and ICON_SCALE validation now accepts 0.0–1.0
+
+---
+
+## [1.0.2] - 2026-07-18
+
+### Fixed
+- DMG app name unified: all arch DMGs contain `spacemap.app` regardless of architecture
+- Release workflow calls `make _dmg` directly instead of depending on intermediate targets
+
+---
+
+## [1.0.1] - 2026-07-17
+
+### Added
+- **Config backup**: Backs up to `.bak` before any config overwrite (self-heal or first-load normalize)
+- **i18n localization**: 14 languages (en, es, de, it, fr, zh-Hans, hi, ar, pt, bn, ru, ja, ko, tr)
+- **Homebrew tap**: `wiggly-sheets/homebrew-spacemap` with arch-conditional cask, auto-updated on release
+- **F13-F20 hotkeys + Hyper/Capslock/Fn modifiers**: Full keyboard support in config parser
+
+### Fixed
+- HUD dual-layering: `show()` tears down orphaned panel; `refreshState()` guards on `isVisible`
+- Launch at Login menu item matching uses `tag: 1001` instead of string comparison (localization-safe)
 
 ---
 

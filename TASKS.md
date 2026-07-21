@@ -32,7 +32,7 @@ A living list of planned features, known bugs, and future improvements for the p
 - **Grid-aware Keyboard Navigation**: Arrow keys + vim keys (hjkl) with row/column wrapping
 - **Dynamic yabai Path**: Auto-detects ARM (`/opt/homebrew/bin/yabai`) or Intel (`/usr/local/bin/yabai`) via FileManager
 - **Xcode Project Generation**: `scripts/generate-xcodeproj.py` with 4 architecture targets
-- **Unit Test Suite**: 103 tests across 5 files
+- **Unit Test Suite**: 112 tests across 5 files
 - **GitHub Actions CI/CD**: CI (swift test + build), Release (3 DMGs + checksums), Dependabot
 - **Architecture-specific Builds**: ARM64, x86_64, universal DMGs via `create-dmg`
 - **Theme Bug Fix**: `dropTarget` case-insensitive matching in `.smthemes` parsing
@@ -44,6 +44,10 @@ A living list of planned features, known bugs, and future improvements for the p
 - **HUD Dual-Layering Fix**: `show()` tears down orphaned panel; `refreshState()` guards on `isVisible`
 - **Simple Cell Style**: Plain empty cells with no window rendering
 - **Config Backup**: Backs up to `.bak` before any config overwrite (self-heal or first-load normalize)
+- **Settings Normalization**: UI_SCALE and ICON_SCALE normalized to 0.0–1.0 with effective scale mapping (GridView)
+- **CI DMG Verification**: Release workflow mounts each DMG and verifies architecture with `lipo -archs`
+- **Rendering Math Tests**: 8 unit tests for scale mapping (min/max/midpoint/monotonicity)
+- **Info.plist Version Injection**: Makefile sed replaces hardcoded 1.0.0 with VERSION file at build time
 
 ## 🚀 High Priority
 

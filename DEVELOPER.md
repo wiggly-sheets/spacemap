@@ -40,14 +40,14 @@ Technical deep-dive, debugging, and configuration details for contributors.
 | `GRID_ROWS` | Int | 2 | 1–10 | Grid rows |
 | `CELL_STYLE` | String | `rects` | `rects\|icons\|thumbnails` | Window display style. `thumbnails` requires macOS 14+ and Screen Recording permission |
 | `HOTKEY` | String | `ctrl+pgdn` | modifiers+key | Toggle hotkey (requires restart) |
-| `UI_SCALE` | Double | 1.0 | 0.1–1.0 | HUD scale multiplier (0.1=1×, 1.0=10×) |
+| `UI_SCALE` | Double | 0.5 | 0.0–1.0 | HUD scale (effective: 0.5×–4.0×) |
 | `THEME` | String | `default` | theme names | Color theme |
 | `AUTO_HIDE_TIMEOUT` | Int | 5 | 0–60 | Seconds before HUD hides (0=never) |
 | `SHOW_MODE` | String | `all` | `all\|active` | Show all or active-only spaces |
 | `MAX_SPACES` | Int | 16 | 1–16 | Max spaces to display |
 | `BACKGROUND_ALPHA` | Double | 0.3 | 0.0–1.0 | HUD background transparency |
 | `MODE` | String | `auto` | `light\|dark\|auto` | Light/dark appearance |
-| `ICON_SCALE` | Double | 1.0 | 0.5–2.0 | App icon size multiplier |
+| `ICON_SCALE` | Double | 0.5 | 0.0–1.0 | App icon size (effective: 0.2×–1.0×) |
 | `SHOW_SPACE_NUMBERS` | Bool | `true` | `true\|false` | Show space number in top-left of each cell |
 | `SHOW_SPACE_NAMES` | Bool | `true` | `true\|false` | Show custom space names in center of each cell |
 | `SHOW_ICON_STRIP` | Bool | `true` | `true\|false` | Show app icon strip at bottom of each cell |
@@ -149,10 +149,10 @@ space_change:
 ## UI Scaling
 
 ### Calculation
-- Config `UI_SCALE` range: 0.1–1.0
-- Internal multiplier: `uiScale * 10`
-- `UI_SCALE=0.1` → 1× scale (original size)
-- `UI_SCALE=1.0` → 10× scale
+- Config `UI_SCALE` range: 0.0–1.0 (default: 0.5)
+- Effective scale: `0.5 + uiScale * 3.5` → 0.5× at 0.0, 4.0× at 1.0
+- Config `ICON_SCALE` range: 0.0–1.0 (default: 0.5)
+- Effective icon scale: `0.2 + iconScale * 0.8` → 0.2× at 0.0, 1.0× at 1.0
 - Applied to: cell size, gap, padding, fonts, icon sizes
 
 ## Debug Logging

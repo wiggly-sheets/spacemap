@@ -87,10 +87,10 @@ CELL_STYLE=rects
 | `THEME` | theme name | `default` | Color theme. Edit `.smthemes` files in `~/.config/spacemap/themes/` to customize or add new themes |
 | `VIM_KEYS` | `true`, `false` | `false` | Navigate spaces with hjkl when HUD is visible |
 | `ARROW_KEYS` | `true`, `false` | `false` | Navigate spaces with arrow keys when HUD is visible |
-| `UI_SCALE` | `0.1`–`1.0` | `1.0` | Scale multiplier for HUD size |
+| `UI_SCALE` | `0.0`–`1.0` | `0.5` | Scale multiplier for HUD size (effective: 0.5×–4.0×) |
 | `BACKGROUND_ALPHA` | `0.0`–`1.0` | `0.3` | HUD background transparency (0=transparent, 1=opaque) |
 | `MODE` | `dark`, `light`, `auto` | `auto` | HUD background appearance. `auto` follows system setting |
-| `ICON_SCALE` | `0.5`–`2.0` | `1.0` | App icon size in icon strip relative to proportional default |
+| `ICON_SCALE` | `0.0`–`1.0` | `0.5` | App icon size (effective: 0.2×–1.0×) |
 | `SHOW_ICON_STRIP` | `true`, `false` | `true` | Show app icon strip at bottom of each cell |
 | `SHOW_MULTI_APP_ICONS` | `true`, `false` | `false` | Show one icon per window (true) or one per unique app (false) in icon strip |
 | `SHOW_SPACE_NUMBERS` | `true`, `false` | `true` | Show space number in top-left of each cell |
@@ -259,7 +259,7 @@ swift test            # Direct SPM test runner
 swift test --filter ConfigTests   # Run a specific test class
 ```
 
-103 tests across 5 files covering hotkey parsing, config parsing, theme loading, model encoding, grid computation, and cell view logic.
+112 tests across 5 files covering hotkey parsing, config parsing, theme loading, model encoding, grid computation, and cell view logic.
 
 ## CI/CD
 
@@ -318,11 +318,9 @@ Without installing the CLI, you can still run the commands directly:
 |------|---------|
 | [AGENTS.md](./AGENTS.md) | Project overview, architecture, development workflow |
 | [DEVELOPER.md](./DEVELOPER.md) | Technical deep-dive, debugging, configuration details |
+| [REFERENCE.md](./REFERENCE.md) | Quick commands, config keys, API docs, class reference |
 | [TASKS.md](./TASKS.md) | Roadmap, planned features, bug fixes, known issues |
 | [CONTRIBUTING.md](./CONTRIBUTING.md) | Guidelines for external contributors |
-| [CHEAT_SHEET.md](./CHEAT_SHEET.md) | Quick reference for commands, files, classes, common issues |
-| [FAQ.md](./FAQ.md) | Frequently asked questions and troubleshooting |
-| [API_SUMMARY.md](./API_SUMMARY.md) | Details of structs, classes, methods, and module responsibilities |
 
 ## Developer notes
 
@@ -340,4 +338,41 @@ Every time you rebuild and reinstall, macOS revokes the Accessibility permission
 ### The permission flow
 
 On launch, spacemap calls `AXIsProcessTrustedWithOptions(prompt: true)` if not trusted, which opens System Settings to the Accessibility page. After you toggle it on, the app polls every second and registers the hotkey automatically — no restart needed.
+
+## Troubleshooting
+
+### HUD doesn't appear on hotkey
+1. Verify Accessibility permission is granted (System Settings → Privacy & Security → Accessibility)
+2. Check Console.app for "permission not granted" logs
+3. Restart the app
+
+### yabai not found error
+yabai is auto-detected at `/opt/homebrew/bin/yabai` (ARM) or `/usr/local/bin/yabai` (Intel). Ensure yabai is installed: `which yabai`.
+
+### Config not taking effect
+Most config keys reload on HUD open. Close and re-open the HUD (`Ctrl+PgDn` twice). If it's `HOTKEY`, restart the app.
+
+### Space names not showing
+Verify `SPACE_NAMES` format: `SPACE_NAMES=1:Desktop,2:Dev,3:Media` (comma-separated, no spaces around `:`).
+
+### App won't launch
+Check Console.app for crash logs. Ensure yabai is running (the app checks on launch and shows an alert if not). Reinstall with `make dev1` → `make dev2`.
+
+### How do I view logs?
+Open Console.app, filter by process "spacemap" or subsystem "spacemap".
+
+### How do I send a test signal to the HUD?
+```bash
+yabai -m signal --add label=test event=space_changed action="echo 'test' | nc -U /tmp/spacemap_$(whoami).socket"
+```
+Or connect to the socket and send `0` (refresh), `1` (show), `2` (hide).
+
+### Can I use inline comments in config?
+Yes: `KEY=VALUE # comment` works. The parser strips everything after `#`.
+
+## Known Limitations
+
+- **Homebrew only:** No other package managers supported.
+- **Icon flicker:** Icons re-fetched on every render; IconCache mitigates.
+- **Drag ambiguity:** Multi-window app drags may fall back to click proximity.
 
