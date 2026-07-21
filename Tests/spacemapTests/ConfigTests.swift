@@ -67,6 +67,16 @@ final class ConfigTests: XCTestCase {
         XCTAssertTrue(c.showSpaceNumbers)
     }
 
+    func testBoolParsingOn() {
+        let c = ConfigReader.parseConfig("SHOW_SPACE_NUMBERS=on")
+        XCTAssertTrue(c.showSpaceNumbers)
+    }
+
+    func testBoolParsingOff() {
+        let c = ConfigReader.parseConfig("SHOW_SPACE_NUMBERS=off")
+        XCTAssertFalse(c.showSpaceNumbers)
+    }
+
     func testBoolParsingFalse() {
         let c = ConfigReader.parseConfig("SHOW_SPACE_NUMBERS=false")
         XCTAssertFalse(c.showSpaceNumbers)
