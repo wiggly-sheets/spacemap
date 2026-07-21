@@ -90,8 +90,10 @@ struct GridConfig {
     var useVimKeys: Bool // navigate spaces with hjkl when HUD is visible
     var useArrowKeys: Bool // navigate spaces with arrow keys when HUD is visible
     var hudPosition: HUDPosition // where to show the HUD on screen
+    var customHUDX: Double = 0.5 // last custom HUD X position (0-1)
+    var customHUDY: Double = 0.5 // last custom HUD Y position (0-1)
 
-    static let `default` = GridConfig(cols: 8, rows: 2, cellStyle: .rects, hotkey: .default, socketHealthInterval: 60, uiScale: 0.5, autoHideTimeout: 5, theme: "default", showMode: .all, maxSpaces: 16, backgroundAlpha: 0.3, mode: .auto, iconScale: 0.5, showSpaceNumbers: true, showSpaceNames: true, showIconStrip: true, showMultiAppIcons: false, hideMenuBarIcon: false, spaceNames: [:], useVimKeys: false, useArrowKeys: false, hudPosition: .center)
+    static let `default` = GridConfig(cols: 8, rows: 2, cellStyle: .rects, hotkey: .default, socketHealthInterval: 60, uiScale: 0.5, autoHideTimeout: 5, theme: "default", showMode: .all, maxSpaces: 16, backgroundAlpha: 0.3, mode: .auto, iconScale: 0.5, showSpaceNumbers: true, showSpaceNames: true, showIconStrip: true, showMultiAppIcons: false, hideMenuBarIcon: false, spaceNames: [:], useVimKeys: false, useArrowKeys: false, hudPosition: .center, customHUDX: 0.5, customHUDY: 0.5)
 }
 
 struct AppTheme: Equatable {

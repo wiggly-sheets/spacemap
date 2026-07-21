@@ -50,6 +50,8 @@ enum ConfigReader {
         var useVimKeys = GridConfig.default.useVimKeys
         var useArrowKeys = GridConfig.default.useArrowKeys
         var hudPosition = GridConfig.default.hudPosition
+        var customHUDX = GridConfig.default.customHUDX
+        var customHUDY = GridConfig.default.customHUDY
 
         for line in text.components(separatedBy: .newlines) {
             let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -148,6 +150,18 @@ enum ConfigReader {
                 useVimKeys = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
             case "ARROW_KEYS":
                 useArrowKeys = (value.lowercased() == "true" || value.lowercased() == "1" || value.lowercased() == "yes")
+            case "CUSTOM_HUD_X":
+                if let v = Double(value), v >= 0.0 && v <= 1.0 {
+                    customHUDX = v
+                } else {
+                    print("spacemap: invalid CUSTOM_HUD_X '\(value)', using default")
+                }
+            case "CUSTOM_HUD_Y":
+                if let v = Double(value), v >= 0.0 && v <= 1.0 {
+                    customHUDY = v
+                } else {
+                    print("spacemap: invalid CUSTOM_HUD_Y '\(value)', using default")
+                }
             case "HUD_POSITION":
                 switch value.lowercased() {
                 case "center": hudPosition = .center
@@ -171,7 +185,7 @@ enum ConfigReader {
             }
         }
 
-        return GridConfig(cols: cols, rows: rows, cellStyle: cellStyle, hotkey: hotkey, socketHealthInterval: socketHealthInterval, uiScale: uiScale, autoHideTimeout: autoHideTimeout, theme: theme, showMode: showMode, maxSpaces: maxSpaces, backgroundAlpha: backgroundAlpha, mode: mode, iconScale: iconScale, showSpaceNumbers: showSpaceNumbers, showSpaceNames: showSpaceNames, showIconStrip: showIconStrip, showMultiAppIcons: showMultiAppIcons, hideMenuBarIcon: hideMenuBarIcon, spaceNames: spaceNames, useVimKeys: useVimKeys, useArrowKeys: useArrowKeys, hudPosition: hudPosition)
+        return GridConfig(cols: cols, rows: rows, cellStyle: cellStyle, hotkey: hotkey, socketHealthInterval: socketHealthInterval, uiScale: uiScale, autoHideTimeout: autoHideTimeout, theme: theme, showMode: showMode, maxSpaces: maxSpaces, backgroundAlpha: backgroundAlpha, mode: mode, iconScale: iconScale, showSpaceNumbers: showSpaceNumbers, showSpaceNames: showSpaceNames, showIconStrip: showIconStrip, showMultiAppIcons: showMultiAppIcons, hideMenuBarIcon: hideMenuBarIcon, spaceNames: spaceNames, useVimKeys: useVimKeys, useArrowKeys: useArrowKeys, hudPosition: hudPosition, customHUDX: customHUDX, customHUDY: customHUDY)
     }
 
     static func hotkeyToString(_ hotkey: HotkeyConfig) -> String {
@@ -259,7 +273,7 @@ enum ConfigReader {
         let d = GridConfig.default
         let hotkeyStr = hotkeyToString(d.hotkey)
         let modeStr = d.mode == .auto ? "auto" : d.mode.rawValue
-        let content = """
+let content = """
         GRID_COLS=\(d.cols)
         GRID_ROWS=\(d.rows)
         CELL_STYLE=\(cellStyleName(d.cellStyle))              # rects | icons | thumbnails | simple
@@ -278,8 +292,12 @@ enum ConfigReader {
         SHOW_ICON_STRIP=\(d.showIconStrip ? "true" : "false")              # true | false
         SHOW_MULTI_APP_ICONS=\(d.showMultiAppIcons ? "true" : "false")       # true | false
         HIDE_MENUBAR_ICON=\(d.hideMenuBarIcon ? "true" : "false")           # true | false
-        SPACE_NAMES=\(d.spaceNames.map { "\($0.key):\($0.value)" }.joined(separator: ","))                  # comma-separated, e.g. "1:Term,2:Code"
+        VIM_KEYS=\(d.useVimKeys ? "true" : "false")                          # true | false
+        ARROW_KEYS=\(d.useArrowKeys ? "true" : "false")                      # true | false
+        CUSTOM_HUD_X=\(d.customHUDX)
+        CUSTOM_HUD_Y=\(d.customHUDY)
         HUD_POSITION=\(hudPositionString(d.hudPosition))        # center | top | bottom | x,y
+        SPACE_NAMES=\(d.spaceNames.map { "\($0.key):\($0.value)" }.joined(separator: ","))                  # comma-separated, e.g. "1:Term,2:Code"
         """
         do {
             try content.write(toFile: path, atomically: true, encoding: .utf8)
@@ -318,6 +336,8 @@ enum ConfigReader {
         HIDE_MENUBAR_ICON=\(config.hideMenuBarIcon ? "true" : "false")           # true | false
         VIM_KEYS=\(config.useVimKeys ? "true" : "false")                          # true | false
         ARROW_KEYS=\(config.useArrowKeys ? "true" : "false")                      # true | false
+        CUSTOM_HUD_X=\(config.customHUDX)
+        CUSTOM_HUD_Y=\(config.customHUDY)
         HUD_POSITION=\(hudPositionString(config.hudPosition))        # center | top | bottom | x,y
         SPACE_NAMES=\(config.spaceNames.map { "\($0.key):\($0.value)" }.joined(separator: ","))                  # comma-separated, e.g. "1:Term,2:Code"
         """

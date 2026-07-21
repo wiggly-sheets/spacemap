@@ -80,10 +80,31 @@ struct SettingsView: View {
     @State private var hideMenuBarIcon: Bool = false
     @State private var useVimKeys: Bool = false
     @State private var useArrowKeys: Bool = false
-    @State private var hudPosition: HUDPosition = .center
+    @State private var hudPositionKind: HUDPositionKind = .center
+    @State private var lastCustomHUDPosition: (x: Double, y: Double) = (0.5, 0.5)
     @State private var spaceNameInputs: [Int: String] = [:]
+    
+    private var hudPosition: HUDPosition {
+        switch hudPositionKind {
+        case .center: return .center
+        case .top: return .top
+        case .bottom: return .bottom
+        case .custom: 
+            return .custom(x: lastCustomHUDPosition.x, y: lastCustomHUDPosition.y)
+        }
+    }
     @State private var isRecording = false
     @State private var monitor: Any?
+    
+    private var actualHUDPosition: HUDPosition {
+        switch hudPositionKind {
+        case .center: return .center
+        case .top: return .top
+        case .bottom: return .bottom
+        case .custom: 
+            return .custom(x: lastCustomHUDPosition.x, y: lastCustomHUDPosition.y)
+        }
+    }
     
     private let socketHealthOptions = [15, 30, 45, 60]
     
@@ -160,7 +181,13 @@ struct SettingsView: View {
         _hideMenuBarIcon = State(initialValue: config.hideMenuBarIcon)
         _useVimKeys = State(initialValue: config.useVimKeys)
         _useArrowKeys = State(initialValue: config.useArrowKeys)
-        _hudPosition = State(initialValue: config.hudPosition)
+        // Initialize HUD position state
+        _hudPositionKind = State(initialValue: HUDPositionKind(from: config.hudPosition))
+        if case .custom(let x, let y) = config.hudPosition {
+            _lastCustomHUDPosition = State(initialValue: (x: x, y: y))
+        } else {
+            _lastCustomHUDPosition = State(initialValue: (x: config.customHUDX, y: config.customHUDY))
+        }
         _spaceNameInputs = State(initialValue: config.spaceNames)
         _gridLayoutIndex = State(initialValue: findBestGridLayoutIndexFor(cols: config.cols, rows: config.rows, maxSpaces: config.maxSpaces))
     }
@@ -356,13 +383,13 @@ Picker("Cell Style", selection: $cellStyle) {
                     .onChange(of: useArrowKeys) { _ in saveConfig() }
                 Toggle("Navigate with Vim Keys (hjkl)", isOn: $useVimKeys)
                     .onChange(of: useVimKeys) { _ in saveConfig() }
-                Picker("HUD Position", selection: $hudPosition) {
-                    Text("Center").tag(HUDPosition.center)
-                    Text("Top").tag(HUDPosition.top)
-                    Text("Bottom").tag(HUDPosition.bottom)
-                    Text("Custom").tag(HUDPosition.custom(x: 0.5, y: 0.5))
+                Picker("HUD Position", selection: $hudPositionKind) {
+                    Text("Center").tag(HUDPositionKind.center)
+                    Text("Top").tag(HUDPositionKind.top)
+                    Text("Bottom").tag(HUDPositionKind.bottom)
+                    Text("Custom").tag(HUDPositionKind.custom)
                 }
-                .onChange(of: hudPosition) { _ in saveConfig() }
+                .onChange(of: hudPositionKind) { _ in saveConfig() }
                 if case .custom = hudPosition {
                     Text("Drag the HUD to reposition. Position is saved automatically.")
                         .font(.footnote)
@@ -411,7 +438,13 @@ Picker("Cell Style", selection: $cellStyle) {
             if hideMenuBarIcon != config.hideMenuBarIcon { hideMenuBarIcon = config.hideMenuBarIcon }
             if useVimKeys != config.useVimKeys { useVimKeys = config.useVimKeys }
             if useArrowKeys != config.useArrowKeys { useArrowKeys = config.useArrowKeys }
-            if hudPosition != config.hudPosition { hudPosition = config.hudPosition }
+            // Set HUD position based on config
+            hudPositionKind = HUDPositionKind(from: config.hudPosition)
+            if case .custom(let x, let y) = config.hudPosition {
+                lastCustomHUDPosition = (x: x, y: y)
+            } else {
+                lastCustomHUDPosition = (x: config.customHUDX, y: config.customHUDY)
+            }
             if autoHideTimeout != config.autoHideTimeout { autoHideTimeout = config.autoHideTimeout }
             let computedSpaceNames = config.spaceNames
             if spaceNameInputs != computedSpaceNames { spaceNameInputs = computedSpaceNames }
