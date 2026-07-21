@@ -31,7 +31,12 @@ struct CustomStepper: View {
     }
     
     private var currentIndex: Int {
-        steps.firstIndex(of: value) ?? 0
+        if let idx = steps.firstIndex(of: value) { return idx }
+        var closest = 0
+        for i in 1..<steps.count {
+            if abs(steps[i] - value) < abs(steps[closest] - value) { closest = i }
+        }
+        return closest
     }
     
     private func stepDown() {
@@ -97,15 +102,15 @@ struct SettingsView: View {
     }
 
     private var backgroundTransparencySteps: [Double] {
-        [0.00, 0.11, 0.22, 0.33, 0.44, 0.55, 0.66, 0.77, 0.88, 1.00]
+        [0.00, 0.05, 0.12, 0.22, 0.35, 0.50, 0.65, 0.80, 0.92, 1.00]
     }
     
     private var uiScaleSteps: [Double] {
-        [0.05, 0.08, 0.11, 0.14, 0.17, 0.2, 0.3, 0.4, 0.5, 0.6]
+        [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
     }
     
     private var iconScaleSteps: [Double] {
-        [0.3, 0.38, 0.46, 0.54, 0.62, 0.7, 0.9, 1.1, 1.3, 1.5]
+        [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
     }
     
     private func nearest<T: FixedWidthInteger>(to value: T, from sorted: [T]) -> T {

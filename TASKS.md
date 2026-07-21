@@ -37,6 +37,13 @@ A living list of planned features, known bugs, and future improvements for the p
 - **Architecture-specific Builds**: ARM64, x86_64, universal DMGs via `create-dmg`
 - **Theme Bug Fix**: `dropTarget` case-insensitive matching in `.smthemes` parsing
 - **Extracted Pure Functions**: `parseConfig()`, `parseThemeContent()`, `CellView.appColor()`, etc.
+- **i18n Localization**: 14 languages (en, es, de, it, fr, zh-Hans, hi, ar, pt, bn, ru, ja, ko, tr)
+- **Homebrew Tap**: `wiggly-sheets/homebrew-spacemap` with arch-conditional cask, auto-updated on release
+- **DMG Fix**: Arch DMGs always contain `spacemap.app` regardless of arch
+- **F13-F20 Hotkeys + Hyper/Capslock/Fn Modifiers**: Full keyboard support in config parser
+- **HUD Dual-Layering Fix**: `show()` tears down orphaned panel; `refreshState()` guards on `isVisible`
+- **Simple Cell Style**: Plain empty cells with no window rendering
+- **Config Backup**: Backs up to `.bak` before any config overwrite (self-heal or first-load normalize)
 
 ## 🚀 High Priority
 
@@ -53,7 +60,7 @@ A living list of planned features, known bugs, and future improvements for the p
 |------|-------------|--------|
 | **Drag-and-Drop Ambiguity** | Falls back to click proximity for multi-window apps | 🔄 Open |
 | **Icon Strip Flicker** | Re-fetching icons via `NSWorkspace` causes flicker on space change | ✅ Fixed (IconCache) |
-| **Hotkey Limited Key Support** | Missing support for F13-F20/media keys in config parser | 🔄 Open |
+| **Hotkey Limited Key Support** | Missing support for F13-F20/media keys in config parser | ✅ Fixed |
 
 ---
 
@@ -84,7 +91,7 @@ A living list of planned features, known bugs, and future improvements for the p
 
 | Task | Description | Status |
 |------|-------------|--------|
-| **i18n Localization** | Spanish, German, Italian, French, and other major languages | 🔄 Planned |
+| **i18n Localization** | Spanish, German, Italian, French, and other major languages | ✅ Done (14 languages) |
 | **Hotkey Conflicts UI** | Show menubar conflicts with other apps | 🔄 Planned |
 | **Keyboard Navigation** | Arrow-key and vim-key navigation within HUD (currently handled via skhd) | ✅ Done |
 
@@ -104,7 +111,7 @@ A living list of planned features, known bugs, and future improvements for the p
 | **GitHub Actions / CI** | `ci.yml` (swift test + build on push/PR), `release.yml` (3 DMGs + checksums on tag), Dependabot | ✅ Done |
 | **Xcode Project** | Generated from SPM, 4 targets (default, arm64, x86_64, universal) via `scripts/generate-xcodeproj.py` | ✅ Done |
 | **Architecture Builds** | ARM64, x86_64, universal DMGs via `create-dmg` | ✅ Done |
-| **Homebrew Formula Updates** | Update tap for better Intel/homebrew paths | 🔄 Planned |
+| **Homebrew Formula Updates** | Homebrew tap with arch-conditional cask, auto-updated on release | ✅ Done |
 
 ---
 
@@ -112,7 +119,7 @@ A living list of planned features, known bugs, and future improvements for the p
 
 | Bug | Description | Status |
 |-----|-------------|--------|
-| **Config Corruption** | Corrupt config overrides all settings with defaults | 🔄 Open |
+| **Config Corruption** | Corrupt config overrides all settings with defaults | ✅ Fixed (backups to .bak before overwrite) |
 
 ---
 

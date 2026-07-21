@@ -43,7 +43,7 @@ struct CellView: View {
     }
     
     private var cellSize: CGSize {
-        CGSize(width: baseCellWidth * uiScale * 10, height: baseCellHeight * uiScale * 10)
+        CGSize(width: baseCellWidth * uiScale, height: baseCellHeight * uiScale)
     }
     
 init(spaceIndex: Int,
@@ -108,7 +108,7 @@ var body: some View {
             // Show space number at top-left when showNames is enabled
             if showSpaceNumbers {
                 Text("\(spaceIndex)")
-                    .font(.system(size: 12 * uiScale * 10, weight: .bold))
+                    .font(.system(size: 12 * uiScale, weight: .bold))
                     .foregroundColor(textColor.opacity(0.7))
                     .position(x: 8, y: 12)
             }
@@ -116,7 +116,7 @@ var body: some View {
             // Show space name (if exists) in center
             if showSpaceNames, let name = spaceName, !name.isEmpty {
                 Text(name)
-                    .font(.system(size: 14 * uiScale * 10, weight: .medium))
+                    .font(.system(size: 14 * uiScale, weight: .medium))
                     .foregroundColor(textColor)
                     .position(x: cellSize.width / 2, y: cellSize.height / 2)
                     .multilineTextAlignment(.center)
@@ -205,20 +205,20 @@ var body: some View {
     private func iconStrip() -> some View {
         let icons = showMultiAppIcons ? windows : uniqueIconWindows()
         let ic = iconScale
-        HStack(spacing: 2 * uiScale * 10 * ic * 2) {
+        HStack(spacing: 2 * uiScale * ic * 2) {
             ForEach(icons, id: \.id) { window in
                 if let icon = appIcon(for: window.app) {
                     Image(nsImage: icon)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(width: 12 * uiScale * 10 * ic * 2, height: 12 * uiScale * 10 * ic * 2)
+                        .frame(width: 12 * uiScale * ic * 2, height: 12 * uiScale * ic * 2)
                 }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 3 * uiScale * 10 * ic * 2)
+        .padding(.horizontal, 3 * uiScale * ic * 2)
         .frame(maxHeight: .infinity, alignment: .bottom)
-        .padding(.bottom, 3 * uiScale * 10 * ic * 2)
+        .padding(.bottom, 3 * uiScale * ic * 2)
     }
     
     private func uniqueIconWindows() -> [YabaiWindow] {

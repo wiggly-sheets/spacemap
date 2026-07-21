@@ -22,14 +22,14 @@ struct GridConfig {
     var cellStyle: CellStyle
     var hotkey: HotkeyConfig
     var socketHealthInterval: Int
-    var uiScale: Double // 0.1 to 1.0
+    var uiScale: Double // 0.0 to 1.0, maps to effective scale
     var autoHideTimeout: Int // seconds
     var theme: String // "default", "tokyonight", etc.
     var showMode: ShowMode // "all" or "active"
     var maxSpaces: Int // 1-16, default 16
     var backgroundAlpha: Double // 0.0 to 1.0, 0=transparent 1=opaque
     var mode: ThemeMode // light, dark, or auto (follow system)
-    var iconScale: Double // 0.5 to 2.0, app icon size multiplier
+    var iconScale: Double // 0.0 to 1.0, maps to effective icon multiplier
     var showSpaceNumbers: Bool // show space index numbers in cells
     var showSpaceNames: Bool // show configured space name text in cells
     var showIconStrip: Bool // show icon strip at the bottom of each cell
@@ -39,7 +39,7 @@ struct GridConfig {
     var useVimKeys: Bool // navigate spaces with hjkl when HUD is visible
     var useArrowKeys: Bool // navigate spaces with arrow keys when HUD is visible
 
-    static let `default` = GridConfig(cols: 8, rows: 2, cellStyle: .rects, hotkey: .default, socketHealthInterval: 60, uiScale: 1.0, autoHideTimeout: 5, theme: "default", showMode: .all, maxSpaces: 16, backgroundAlpha: 0.3, mode: .auto, iconScale: 1.0, showSpaceNumbers: true, showSpaceNames: true, showIconStrip: true, showMultiAppIcons: false, hideMenuBarIcon: false, spaceNames: [:], useVimKeys: false, useArrowKeys: false)
+    static let `default` = GridConfig(cols: 8, rows: 2, cellStyle: .rects, hotkey: .default, socketHealthInterval: 60, uiScale: 0.5, autoHideTimeout: 5, theme: "default", showMode: .all, maxSpaces: 16, backgroundAlpha: 0.3, mode: .auto, iconScale: 0.5, showSpaceNumbers: true, showSpaceNames: true, showIconStrip: true, showMultiAppIcons: false, hideMenuBarIcon: false, spaceNames: [:], useVimKeys: false, useArrowKeys: false)
 }
 
 struct AppTheme: Equatable {

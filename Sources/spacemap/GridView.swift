@@ -74,10 +74,10 @@ struct GridView: View {
             displayBounds: cellDisplayBounds,
             cellStyle: cellStyle,
             onSelect: onSelect,
-            uiScale: uiScale,
+            uiScale: effectiveScale,
             resolvedTheme: resolvedTheme,
             mode: state.config.mode,
-            iconScale: state.config.iconScale,
+            iconScale: 0.2 + CGFloat(state.config.iconScale) * 0.8,
             showSpaceNumbers: state.config.showSpaceNumbers,
             showSpaceNames: state.config.showSpaceNames,
             showIconStrip: state.config.showIconStrip,
@@ -85,10 +85,11 @@ struct GridView: View {
         )
     }
     
-    var effectiveCellWidth: CGFloat { baseCellWidth * uiScale * 10 }
-    var effectiveCellHeight: CGFloat { baseCellHeight * uiScale * 10 }
-    var effectiveGap: CGFloat { baseGap * uiScale * 10 }
-    var effectivePadding: CGFloat { basePadding * uiScale * 10 }
+    private var effectiveScale: CGFloat { 0.5 + CGFloat(uiScale) * 3.5 }
+    var effectiveCellWidth: CGFloat { baseCellWidth * effectiveScale }
+    var effectiveCellHeight: CGFloat { baseCellHeight * effectiveScale }
+    var effectiveGap: CGFloat { baseGap * effectiveScale }
+    var effectivePadding: CGFloat { basePadding * effectiveScale }
     
     var idealSize: CGSize {
         Self.computeIdealSize(

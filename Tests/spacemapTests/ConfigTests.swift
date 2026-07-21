@@ -142,8 +142,13 @@ final class ConfigTests: XCTestCase {
     }
 
     func testIconScale() {
-        let c = ConfigReader.parseConfig("ICON_SCALE=1.5")
-        XCTAssertEqual(c.iconScale, 1.5, accuracy: 0.001)
+        let c = ConfigReader.parseConfig("ICON_SCALE=0.7")
+        XCTAssertEqual(c.iconScale, 0.7, accuracy: 0.001)
+    }
+
+    func testIconScaleOutOfRangeDefaults() {
+        let c = ConfigReader.parseConfig("ICON_SCALE=2.0")
+        XCTAssertEqual(c.iconScale, GridConfig.default.iconScale)
     }
 
     // MARK: - parseConfig: String values

@@ -88,7 +88,7 @@ enum ConfigReader {
                     print("spacemap: invalid SOCKET_HEALTH_INTERVAL '\(value)', using default")
                 }
             case "UI_SCALE":
-                if let v = Double(value), v >= 0.1 && v <= 1.0 {
+                if let v = Double(value), v >= 0.0 && v <= 1.0 {
                     uiScale = v
                 } else {
                     print("spacemap: invalid UI_SCALE '\(value)', using default")
@@ -126,7 +126,7 @@ enum ConfigReader {
                 default:     mode = .auto
                 }
             case "ICON_SCALE":
-                if let v = Double(value), v >= 0.5 && v <= 2.0 {
+                if let v = Double(value), v >= 0.0 && v <= 1.0 {
                     iconScale = v
                 } else {
                     print("spacemap: invalid ICON_SCALE '\(value)', using default")
@@ -231,10 +231,19 @@ enum ConfigReader {
         return (modString == "none" ? "" : modString + "+") + keyString
     }
 
+    private static func backupConfig(_ path: String) {
+        guard FileManager.default.fileExists(atPath: path) else { return }
+        let backupPath = path + ".bak"
+        try? FileManager.default.removeItem(atPath: backupPath)
+        try? FileManager.default.copyItem(atPath: path, toPath: backupPath)
+        if !silentMode { NSLog("spacemap/ConfigReader: backed up config to \(backupPath)") }
+    }
+
     private static func createDefaultConfigFile() {
         let path = NSString(string: "~/.config/spacemap/config").expandingTildeInPath
         let dir = (path as NSString).deletingLastPathComponent
         try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
+        backupConfig(path)
         let d = GridConfig.default
         let hotkeyStr = hotkeyToString(d.hotkey)
         let modeStr = d.mode == .auto ? "auto" : d.mode.rawValue
@@ -244,14 +253,14 @@ enum ConfigReader {
         CELL_STYLE=\(cellStyleName(d.cellStyle))              # rects | icons | thumbnails | simple
         HOTKEY=\(hotkeyStr)
         SOCKET_HEALTH_INTERVAL=\(d.socketHealthInterval)
-        UI_SCALE=\(d.uiScale)                  # 0.1–1.0
+        UI_SCALE=\(d.uiScale)                  # 0.0–1.0
         AUTO_HIDE_TIMEOUT=\(d.autoHideTimeout)           # 0 = disabled, seconds
         THEME=\(d.theme)
         SHOW_MODE=\(d.showMode.rawValue)                 # all | active
         MAX_SPACES=\(d.maxSpaces)
         BACKGROUND_ALPHA=\(d.backgroundAlpha)          # 0.0–1.0
         MODE=\(modeStr)                     # light | dark | auto
-        ICON_SCALE=\(d.iconScale)                # 0.5–2.0
+        ICON_SCALE=\(d.iconScale)                # 0.0–1.0
         SHOW_SPACE_NUMBERS=\(d.showSpaceNumbers ? "true" : "false")              # true | false
         SHOW_SPACE_NAMES=\(d.showSpaceNames ? "true" : "false")              # true | false
         SHOW_ICON_STRIP=\(d.showIconStrip ? "true" : "false")              # true | false
@@ -271,6 +280,7 @@ enum ConfigReader {
         let path = NSString(string: "~/.config/spacemap/config").expandingTildeInPath
         let dir = (path as NSString).deletingLastPathComponent
         try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
+        backupConfig(path)
 
         let hotkeyString = hotkeyToString(config.hotkey)
 
@@ -280,14 +290,14 @@ enum ConfigReader {
         CELL_STYLE=\(cellStyleName(config.cellStyle))              # rects | icons | thumbnails | simple
         HOTKEY=\(hotkeyString)
         SOCKET_HEALTH_INTERVAL=\(config.socketHealthInterval)
-        UI_SCALE=\(config.uiScale)                  # 0.1–1.0
+        UI_SCALE=\(config.uiScale)                  # 0.0–1.0
         AUTO_HIDE_TIMEOUT=\(config.autoHideTimeout)           # 0 = disabled, seconds
         THEME=\(config.theme)
         SHOW_MODE=\(config.showMode.rawValue)                 # all | active
         MAX_SPACES=\(config.maxSpaces)
         BACKGROUND_ALPHA=\(config.backgroundAlpha)          # 0.0–1.0
         MODE=\(config.mode.rawValue)                     # light | dark | auto
-        ICON_SCALE=\(config.iconScale)                # 0.5–2.0
+        ICON_SCALE=\(config.iconScale)                # 0.0–1.0
         SHOW_SPACE_NUMBERS=\(config.showSpaceNumbers ? "true" : "false")              # true | false
         SHOW_SPACE_NAMES=\(config.showSpaceNames ? "true" : "false")              # true | false
         SHOW_ICON_STRIP=\(config.showIconStrip ? "true" : "false")              # true | false
