@@ -364,38 +364,9 @@ Picker("Cell Style", selection: $cellStyle) {
                 }
                 .onChange(of: hudPosition) { _ in saveConfig() }
                 if case .custom = hudPosition {
-                    HStack {
-                        Text("X:")
-                        TextField("0.5", text: Binding(
-                            get: {
-                                if case .custom(let x, _) = hudPosition { return String(format: "%.2f", x) }
-                                return "0.50"
-                            },
-                            set: { newVal in
-                                if let x = Double(newVal), let y = customY() {
-                                    hudPosition = .custom(x: min(1, max(0, x)), y: y)
-                                    saveConfig()
-                                }
-                            }
-                        ))
-                        .textFieldStyle(.roundedBorder)
-                        .frame(width: 60)
-                        Text("Y:")
-                        TextField("0.5", text: Binding(
-                            get: {
-                                if case .custom(_, let y) = hudPosition { return String(format: "%.2f", y) }
-                                return "0.50"
-                            },
-                            set: { newVal in
-                                if let y = Double(newVal), let x = customX() {
-                                    hudPosition = .custom(x: x, y: min(1, max(0, y)))
-                                    saveConfig()
-                                }
-                            }
-                        ))
-                        .textFieldStyle(.roundedBorder)
-                        .frame(width: 60)
-                    }
+                    Text("Drag the HUD to reposition. Position is saved automatically.")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
                 }
             }
             
@@ -478,16 +449,6 @@ Picker("Cell Style", selection: $cellStyle) {
         )
     }
     
-    private func customX() -> Double? {
-        if case .custom(let x, _) = hudPosition { return x }
-        return nil
-    }
-
-    private func customY() -> Double? {
-        if case .custom(_, let y) = hudPosition { return y }
-        return nil
-    }
-
     static func hotkeyStringFrom(_ hotkey: HotkeyConfig) -> String {
         var parts: [String] = []
         if hotkey.modifiers.contains(.maskControl) { parts.append("ctrl") }

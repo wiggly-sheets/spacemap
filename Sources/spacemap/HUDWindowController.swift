@@ -30,6 +30,11 @@ class HUDWindowController {
     private var hostingView: NSHostingView<GridView>?
     var onShowSettings: (() -> Void)?
     private var settingsKeyMonitor: Any?
+    // Panel drag state for custom position mode
+    private var panelDragMonitor: Any?
+    private var panelDragStart: CGPoint?
+    private var panelDragDidMove = false
+    var panelDragOffset: CGPoint?
     
     init() {
         dragHandler.onHoverCell = { [weak self] cell in
@@ -95,6 +100,7 @@ class HUDWindowController {
         resetAutoHideTimer()
         startPollTimer()
         startSettingsKeyMonitor()
+        if case .custom = config.hudPosition { startPanelDragMonitor() }
     }
     
     private func startPollTimer() {
@@ -134,6 +140,7 @@ class HUDWindowController {
         dragHandler.cachedWindows = []
         dragHandler.focusedWindowIDAtOpen = nil
         stopSettingsKeyMonitor()
+        stopPanelDragMonitor()
     }
     
     // Called by SocketListener — also handles full content refresh (windows moved etc.)
@@ -249,6 +256,78 @@ class HUDWindowController {
         guard config.cellStyle == .thumbnails else { return }
         guard let focusedIndex = state.focusedIndex else { return }
         ThumbnailCache.shared.captureActiveSpace(spaceIndex: focusedIndex)
+    }
+
+    private func startPanelDragMonitor() {
+        guard panelDragMonitor == nil else { return }
+        panelDragMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .leftMouseDragged, .leftMouseUp]) { [weak self] event in
+            guard let self, let panel = self.panel, self.isVisible else { return event }
+            guard let window = panel.contentView?.window else { return event }
+            let loc = window.convertPoint(fromScreen: NSEvent.mouseLocation)
+            guard panel.contentView?.bounds.contains(loc) == true else { return event }
+
+            switch event.type {
+            case .leftMouseDown:
+                self.panelDragStart = NSEvent.mouseLocation
+                self.panelDragDidMove = false
+            case .leftMouseDragged:
+                guard let start = self.panelDragStart else { break }
+                let current = NSEvent.mouseLocation
+                guard hypot(current.x - start.x, current.y - start.y) > 5 else { break }
+                // Check if over a cell — if so, don't move panel
+                let cgPoint = CGPoint(x: current.x, y: NSScreen.main!.frame.height - current.y)
+                let overCell = self.dragHandler.cellFrames.contains { $0.frame.contains(cgPoint) }
+                if !overCell {
+                    let dx = current.x - start.x
+                    let dy = current.y - start.y
+                    var origin = panel.frame.origin
+                    origin.x += dx
+                    origin.y += dy
+                    panel.setFrameOrigin(origin)
+                    self.panelDragStart = current
+                    self.panelDragDidMove = true
+                    self.panelDragOffset = origin
+                }
+            case .leftMouseUp:
+                if self.panelDragDidMove {
+                    self.savePanelPosition()
+                }
+                self.panelDragStart = nil
+                self.panelDragDidMove = false
+            default: break
+            }
+            return event
+        }
+    }
+
+    private func stopPanelDragMonitor() {
+        if let monitor = panelDragMonitor {
+            NSEvent.removeMonitor(monitor)
+            panelDragMonitor = nil
+        }
+        panelDragStart = nil
+        panelDragDidMove = false
+    }
+
+    private func savePanelPosition() {
+        guard let panel = panel, let screen = NSScreen.main else { return }
+        let screenFrame = screen.frame
+        let panelFrame = panel.frame
+        let x = Double((panelFrame.midX - screenFrame.minX) / screenFrame.width)
+        let y = Double((panelFrame.midY - screenFrame.minY) / screenFrame.height)
+        let configPath = NSString(string: "~/.config/spacemap/config").expandingTildeInPath
+        guard var text = try? String(contentsOfFile: configPath, encoding: .utf8) else { return }
+        let posString = ConfigReader.hudPositionString(.custom(x: x, y: y))
+        if let range = text.range(of: "HUD_POSITION=") {
+            let lineStart = range.lowerBound
+            var lineEnd = text[lineStart...].firstIndex(of: "\n") ?? text.endIndex
+            if lineEnd < text.endIndex { lineEnd = text.index(after: lineEnd) }
+            text.replaceSubrange(lineStart..<lineEnd, with: "HUD_POSITION=\(posString)\n")
+        } else {
+            text += "\nHUD_POSITION=\(posString)\n"
+        }
+        try? text.write(toFile: configPath, atomically: true, encoding: .utf8)
+        NSLog("spacemap/HUD: saved custom position x=%.2f y=%.2f", x, y)
     }
 
     private func startSettingsKeyMonitor() {
