@@ -140,6 +140,7 @@ struct YabaiWindow: Decodable {
     let frame: WindowFrame
     let isHidden: Bool
     let isMinimized: Bool
+    let subLayer: String
 
     struct WindowFrame: Decodable {
         let x: CGFloat
@@ -152,6 +153,11 @@ struct YabaiWindow: Decodable {
         case id, app, space, frame
         case isHidden = "is-hidden"
         case isMinimized = "is-minimized"
+        case subLayer = "sub-layer"
+    }
+
+    var isRealWindow: Bool {
+        !isHidden && !isMinimized && subLayer == "below"
     }
 
     var cgFrame: CGRect {

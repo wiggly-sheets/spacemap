@@ -69,4 +69,6 @@ fastlane/screenshots/**/*.png
 fastlane/test_output
 
 .claude
+.opencode
+graphify-out/
 .DS_Store

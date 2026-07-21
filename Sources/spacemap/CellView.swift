@@ -91,7 +91,8 @@ var body: some View {
                 .fill(backgroundColor)
 
             if cellStyle != .simple {
-                ForEach(windows, id: \.id) { window in
+                let visibleWindows = windows.filter { $0.isRealWindow }
+                ForEach(visibleWindows, id: \.id) { window in
                     switch cellStyle {
                     case .rects:      windowRect(window)
                     case .icons:      windowIcon(window)
@@ -182,28 +183,27 @@ var body: some View {
     
     @ViewBuilder
     private func windowIcon(_ window: YabaiWindow) -> some View {
-        if !window.isHidden && !window.isMinimized {
-            let scaleX = cellSize.width / displayBounds.width
-            let scaleY = cellSize.height / displayBounds.height
-            let x = (window.cgFrame.minX - displayBounds.minX) * scaleX
-            let y = (window.cgFrame.minY - displayBounds.minY) * scaleY
-            let w = max(window.cgFrame.width * scaleX, 14)
-            let h = max(window.cgFrame.height * scaleY, 14)
-            let iconSize = min(w, h)
-            
-            if let icon = appIcon(for: window.app) {
-                Image(nsImage: icon)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: iconSize, height: iconSize)
-                    .offset(x: x, y: y)
-            }
+        let scaleX = cellSize.width / displayBounds.width
+        let scaleY = cellSize.height / displayBounds.height
+        let x = (window.cgFrame.minX - displayBounds.minX) * scaleX
+        let y = (window.cgFrame.minY - displayBounds.minY) * scaleY
+        let w = max(window.cgFrame.width * scaleX, 14)
+        let h = max(window.cgFrame.height * scaleY, 14)
+        let iconSize = min(w, h)
+
+        if let icon = appIcon(for: window.app) {
+            Image(nsImage: icon)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: iconSize, height: iconSize)
+                .offset(x: x, y: y)
         }
     }
     
     @ViewBuilder
     private func iconStrip() -> some View {
-        let icons = showMultiAppIcons ? windows : uniqueIconWindows()
+        let visible = windows.filter { $0.isRealWindow }
+        let icons = showMultiAppIcons ? visible : Self.uniqueIconWindows(visible)
         let ic = iconScale
         HStack(spacing: 2 * uiScale * ic * 2) {
             ForEach(icons, id: \.id) { window in
@@ -227,7 +227,7 @@ var body: some View {
 
     static func uniqueIconWindows(_ windows: [YabaiWindow]) -> [YabaiWindow] {
         var seen = Set<String>()
-        return windows.filter { seen.insert($0.app).inserted }
+        return windows.filter { $0.isRealWindow && seen.insert($0.app).inserted }
     }
     
     private func appIcon(for appName: String) -> NSImage? {

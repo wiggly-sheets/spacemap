@@ -30,7 +30,7 @@ final class ModelTests: XCTestCase {
 
     func testDecodeYabaiWindow() throws {
         let json = """
-        {"id":10,"app":"Firefox","space":1,"frame":{"x":0,"y":0,"w":800,"h":600},"is-hidden":false,"is-minimized":false}
+        {"id":10,"app":"Firefox","space":1,"frame":{"x":0,"y":0,"w":800,"h":600},"is-hidden":false,"is-minimized":false,"sub-layer":"below"}
         """.data(using: .utf8)!
         let window = try JSONDecoder().decode(YabaiWindow.self, from: json)
         XCTAssertEqual(window.id, 10)
@@ -38,25 +38,27 @@ final class ModelTests: XCTestCase {
         XCTAssertEqual(window.space, 1)
         XCTAssertFalse(window.isHidden)
         XCTAssertFalse(window.isMinimized)
+        XCTAssertEqual(window.subLayer, "below")
         XCTAssertEqual(window.cgFrame, CGRect(x: 0, y: 0, width: 800, height: 600))
     }
 
     func testDecodeYabaiWindowHidden() throws {
         let json = """
-        {"id":11,"app":"Safari","space":2,"frame":{"x":100,"y":50,"w":400,"h":300},"is-hidden":true,"is-minimized":true}
+        {"id":11,"app":"Safari","space":2,"frame":{"x":100,"y":50,"w":400,"h":300},"is-hidden":true,"is-minimized":true,"sub-layer":"normal"}
         """.data(using: .utf8)!
         let window = try JSONDecoder().decode(YabaiWindow.self, from: json)
         XCTAssertTrue(window.isHidden)
         XCTAssertTrue(window.isMinimized)
+        XCTAssertEqual(window.subLayer, "normal")
     }
 
     // MARK: - GridState
 
     func testGridStateWindowGrouping() {
         let windows = [
-            YabaiWindow(id: 1, app: "A", space: 1, frame: .init(x: 0, y: 0, w: 100, h: 100), isHidden: false, isMinimized: false),
-            YabaiWindow(id: 2, app: "B", space: 1, frame: .init(x: 0, y: 0, w: 100, h: 100), isHidden: false, isMinimized: false),
-            YabaiWindow(id: 3, app: "C", space: 2, frame: .init(x: 0, y: 0, w: 100, h: 100), isHidden: false, isMinimized: false),
+            YabaiWindow(id: 1, app: "A", space: 1, frame: .init(x: 0, y: 0, w: 100, h: 100), isHidden: false, isMinimized: false, subLayer: "below"),
+            YabaiWindow(id: 2, app: "B", space: 1, frame: .init(x: 0, y: 0, w: 100, h: 100), isHidden: false, isMinimized: false, subLayer: "below"),
+            YabaiWindow(id: 3, app: "C", space: 2, frame: .init(x: 0, y: 0, w: 100, h: 100), isHidden: false, isMinimized: false, subLayer: "below"),
         ]
         let state = GridState(config: .default, spaces: [], windows: windows, displayBounds: .zero, focusedIndex: nil)
         XCTAssertEqual(state.windows(forSpace: 1).count, 2)

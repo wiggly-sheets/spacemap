@@ -42,6 +42,17 @@ final class CellViewGridViewTests: XCTestCase {
         XCTAssertEqual(result.count, 1)
     }
 
+    func testUniqueIconWindowsFiltersBackgroundApps() {
+        let windows = [
+            makeWindow(id: 1, app: "Firefox"),
+            makeWindow(id: 2, app: "Hammerspoon", subLayer: "normal"),
+            makeWindow(id: 3, app: "Wallpaper Selector", subLayer: "normal"),
+        ]
+        let result = CellView.uniqueIconWindows(windows)
+        XCTAssertEqual(result.count, 1)
+        XCTAssertEqual(result.first?.app, "Firefox")
+    }
+
     // MARK: - CellView.appColor
 
     func testAppColorFewWindowsReturnsBaseRectColor() {
@@ -213,10 +224,10 @@ final class CellViewGridViewTests: XCTestCase {
 
     // MARK: - Helpers
 
-    private func makeWindow(id: Int, app: String, space: Int = 1) -> YabaiWindow {
+    private func makeWindow(id: Int, app: String, space: Int = 1, subLayer: String = "below") -> YabaiWindow {
         YabaiWindow(id: id, app: app, space: space,
                     frame: .init(x: 0, y: 0, w: 100, h: 100),
-                    isHidden: false, isMinimized: false)
+                    isHidden: false, isMinimized: false, subLayer: subLayer)
     }
 
     // MARK: - Scale mapping
