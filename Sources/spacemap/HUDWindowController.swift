@@ -32,9 +32,11 @@ class HUDWindowController {
     private var settingsKeyMonitor: Any?
     // Panel drag state for custom position mode
     private var panelDragMonitor: Any?
-    private var panelDragStart: CGPoint?
+    private var panelDragStart: CGPoint?   // initial mouse location on drag start
     private var panelDragDidMove = false
-    var panelDragOffset: CGPoint?
+    private var panelDragOffset: CGPoint?  // not used maybe
+    private var panelDragOrigin: CGPoint?  // initial panel origin on drag start
+    private var isPanelDragging = false
     
     init() {
         dragHandler.onHoverCell = { [weak self] cell in
@@ -239,6 +241,7 @@ class HUDWindowController {
     }
     
     private func resetAutoHideTimer() {
+        if isPanelDragging { return }
         autoHideTimer?.invalidate()
         if config.autoHideTimeout > 0 {
             autoHideTimer = Timer.scheduledTimer(withTimeInterval: TimeInterval(config.autoHideTimeout), repeats: false) { [weak self] _ in
@@ -269,30 +272,31 @@ class HUDWindowController {
             switch event.type {
             case .leftMouseDown:
                 self.panelDragStart = NSEvent.mouseLocation
+                self.panelDragOrigin = panel.frame.origin
                 self.panelDragDidMove = false
+                self.isPanelDragging = true
             case .leftMouseDragged:
-                guard let start = self.panelDragStart else { break }
+                guard let start = self.panelDragStart,
+                      let origin = self.panelDragOrigin else { break }
                 let current = NSEvent.mouseLocation
-                guard hypot(current.x - start.x, current.y - start.y) > 5 else { break }
+                let dx = current.x - start.x
+                let dy = current.y - start.y
                 // Check if over a cell — if so, don't move panel
                 let cgPoint = CGPoint(x: current.x, y: NSScreen.main!.frame.height - current.y)
                 let overCell = self.dragHandler.cellFrames.contains { $0.frame.contains(cgPoint) }
                 if !overCell {
-                    let dx = current.x - start.x
-                    let dy = current.y - start.y
-                    var origin = panel.frame.origin
-                    origin.x += dx
-                    origin.y += dy
-                    panel.setFrameOrigin(origin)
-                    self.panelDragStart = current
+                    var newOrigin = origin
+                    newOrigin.x += dx
+                    newOrigin.y += dy
+                    panel.setFrameOrigin(newOrigin)
                     self.panelDragDidMove = true
-                    self.panelDragOffset = origin
                 }
             case .leftMouseUp:
                 if self.panelDragDidMove {
                     self.savePanelPosition()
                 }
                 self.panelDragStart = nil
+                self.panelDragOrigin = nil
                 self.panelDragDidMove = false
             default: break
             }
@@ -306,7 +310,9 @@ class HUDWindowController {
             panelDragMonitor = nil
         }
         panelDragStart = nil
+        panelDragOrigin = nil
         panelDragDidMove = false
+        isPanelDragging = false
     }
 
     private func savePanelPosition() {
