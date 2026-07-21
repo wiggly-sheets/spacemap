@@ -18,6 +18,7 @@ struct LiquidGlassBackground: View {
     }
     
     var body: some View {
+        #if compiler(>=6.0)
         if #available(macOS 26.0, *) {
             ZStack {
                 Rectangle()
@@ -32,18 +33,25 @@ struct LiquidGlassBackground: View {
             )
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
         } else {
-            ZStack {
-                Rectangle()
-                    .fill(tint.opacity(alpha * 0.4))
-                Rectangle()
-                    .fill(.ultraThinMaterial)
-                    .cornerRadius(cornerRadius)
-            }
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .strokeBorder(Color.primary.opacity(0.15), lineWidth: 0.5)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+            fallbackBody
         }
+        #else
+        fallbackBody
+        #endif
+    }
+    
+    private var fallbackBody: some View {
+        ZStack {
+            Rectangle()
+                .fill(tint.opacity(alpha * 0.4))
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .cornerRadius(cornerRadius)
+        }
+        .overlay(
+            RoundedRectangle(cornerRadius: cornerRadius)
+                .strokeBorder(Color.primary.opacity(0.15), lineWidth: 0.5)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
     }
 }
