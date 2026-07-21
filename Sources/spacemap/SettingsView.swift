@@ -261,6 +261,7 @@ Picker("Cell Style", selection: $cellStyle) {
                     Text("Rectangles").tag(CellStyle.rects)
                     Text("Icons").tag(CellStyle.icons)
                     Text("Thumbnails").tag(CellStyle.thumbnails)
+                    Text("Simple").tag(CellStyle.simple)
                 }
                 .onChange(of: cellStyle) { _ in saveConfig() }
                 Toggle("Show Space Numbers", isOn: $showSpaceNumbers)
@@ -401,6 +402,7 @@ Picker("Cell Style", selection: $cellStyle) {
         case .rects: return "rects"
         case .icons: return "icons"
         case .thumbnails: return "thumbnails"
+        case .simple: return "simple"
         }
     }
     

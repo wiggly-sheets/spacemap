@@ -2,7 +2,7 @@ import Foundation
 import CoreGraphics
 
 enum CellStyle: Int, CaseIterable, Identifiable {
-    case rects, icons, thumbnails
+    case rects, icons, thumbnails, simple
     var id: Int { rawValue }
 }
 enum ShowMode: String, CaseIterable, Identifiable { case all, active; var id: String { rawValue } }

@@ -7,6 +7,7 @@ import AppKit
 /// - .rects:      Colored rectangles representing window positions/sizes
 /// - .icons:      Window icons positioned at their actual locations
 /// - .thumbnails: Live window content thumbnails (requires screen recording permission)
+/// - .simple:     Empty cells with no window content
 ///
 /// Icon strip at the bottom is controlled separately by `showIconStrip`.
 struct CellView: View {
@@ -89,16 +90,19 @@ var body: some View {
             RoundedRectangle(cornerRadius: 4)
                 .fill(backgroundColor)
 
-            ForEach(windows, id: \.id) { window in
-                switch cellStyle {
-                case .rects:    windowRect(window)
-                case .icons:    windowIcon(window)
-                case .thumbnails: thumbnailImage(spaceIndex)
+            if cellStyle != .simple {
+                ForEach(windows, id: \.id) { window in
+                    switch cellStyle {
+                    case .rects:      windowRect(window)
+                    case .icons:      windowIcon(window)
+                    case .thumbnails: thumbnailImage(spaceIndex)
+                    case .simple:     EmptyView()
+                    }
                 }
-            }
 
-            if showIconStrip {
-                iconStrip()
+                if showIconStrip {
+                    iconStrip()
+                }
             }
 
             // Show space number at top-left when showNames is enabled

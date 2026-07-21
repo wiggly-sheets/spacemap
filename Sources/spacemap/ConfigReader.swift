@@ -72,7 +72,8 @@ enum ConfigReader {
                     if value == "icons" { showIconStrip = true }
                     else if value == "icons-only" { showIconStrip = false }
                 case "thumbnails": cellStyle = .thumbnails
-                default:       cellStyle = .rects
+                case "simple":    cellStyle = .simple
+                default:          cellStyle = .rects
                 }
             case "HOTKEY":
                 if let parsed = parseHotkey(value) {
@@ -240,7 +241,7 @@ enum ConfigReader {
         let content = """
         GRID_COLS=\(d.cols)
         GRID_ROWS=\(d.rows)
-        CELL_STYLE=\(cellStyleName(d.cellStyle))              # rects | icons | thumbnails
+        CELL_STYLE=\(cellStyleName(d.cellStyle))              # rects | icons | thumbnails | simple
         HOTKEY=\(hotkeyStr)
         SOCKET_HEALTH_INTERVAL=\(d.socketHealthInterval)
         UI_SCALE=\(d.uiScale)                  # 0.1–1.0
@@ -276,7 +277,7 @@ enum ConfigReader {
         let content = """
         GRID_COLS=\(config.cols)
         GRID_ROWS=\(config.rows)
-        CELL_STYLE=\(cellStyleName(config.cellStyle))              # rects | icons | thumbnails
+        CELL_STYLE=\(cellStyleName(config.cellStyle))              # rects | icons | thumbnails | simple
         HOTKEY=\(hotkeyString)
         SOCKET_HEALTH_INTERVAL=\(config.socketHealthInterval)
         UI_SCALE=\(config.uiScale)                  # 0.1–1.0
@@ -369,6 +370,7 @@ enum ConfigReader {
         case .rects: return "rects"
         case .icons: return "icons"
         case .thumbnails: return "thumbnails"
+        case .simple: return "simple"
         }
     }
 }
