@@ -343,8 +343,33 @@ class HUDWindowController {
         } else {
             text += "\nHUD_POSITION=\(posString)\n"
         }
-        try? text.write(toFile: configPath, atomically: true, encoding: .utf8)
-        NSLog("spacemap/HUD: saved custom position x=%.2f y=%.2f", x, y)
+        // Also update CUSTOM_HUD_X and CUSTOM_HUD_Y for SettingsView persistence
+        let xString = String(x)
+        let yString = String(y)
+        if let range = text.range(of: "CUSTOM_HUD_X=") {
+            let lineStart = range.lowerBound
+            var lineEnd = text[lineStart...].firstIndex(of: "\n") ?? text.endIndex
+            if lineEnd < text.endIndex { lineEnd = text.index(after: lineEnd) }
+            text.replaceSubrange(lineStart..<lineEnd, with: "CUSTOM_HUD_X=\(xString)\n")
+        } else {
+            text += "\nCUSTOM_HUD_X=\(xString)\n"
+        }
+        if let range = text.range(of: "CUSTOM_HUD_Y=") {
+            let lineStart = range.lowerBound
+            var lineEnd = text[lineStart...].firstIndex(of: "\n") ?? text.endIndex
+            if lineEnd < text.endIndex { lineEnd = text.index(after: lineEnd) }
+            text.replaceSubrange(lineStart..<lineEnd, with: "CUSTOM_HUD_Y=\(yString)\n")
+        } else {
+            text += "\nCUSTOM_HUD_Y=\(yString)\n"
+        }
+        do {
+            try text.write(toFile: configPath, atomically: true, encoding: .utf8)
+            NSLog("spacemap/HUD: saved custom position x=%.2f y=%.2f", x, y)
+            // Notify any observers (e.g., SettingsView) that the config has changed
+            NotificationCenter.default.post(name: Notification.Name("settingsChanged"), object: nil)
+        } catch {
+            NSLog("spacemap/HUD: failed to write config: \(error)")
+        }
     }
 
     private func startSettingsKeyMonitor() {

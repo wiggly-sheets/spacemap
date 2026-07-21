@@ -81,30 +81,22 @@ struct SettingsView: View {
     @State private var useVimKeys: Bool = false
     @State private var useArrowKeys: Bool = false
     @State private var hudPositionKind: HUDPositionKind = .center
-    @State private var lastCustomHUDPosition: (x: Double, y: Double) = (0.5, 0.5)
     @State private var spaceNameInputs: [Int: String] = [:]
+    // Store last known custom HUD position to preserve it when switching between presets and custom
+    @State private var lastCustomHUDX: Double = 0.5
+    @State private var lastCustomHUDY: Double = 0.5
     
     private var hudPosition: HUDPosition {
         switch hudPositionKind {
         case .center: return .center
         case .top: return .top
         case .bottom: return .bottom
-        case .custom: 
-            return .custom(x: lastCustomHUDPosition.x, y: lastCustomHUDPosition.y)
+        case .custom: return .custom(x: lastCustomHUDX, y: lastCustomHUDY)
         }
     }
+    
     @State private var isRecording = false
     @State private var monitor: Any?
-    
-    private var actualHUDPosition: HUDPosition {
-        switch hudPositionKind {
-        case .center: return .center
-        case .top: return .top
-        case .bottom: return .bottom
-        case .custom: 
-            return .custom(x: lastCustomHUDPosition.x, y: lastCustomHUDPosition.y)
-        }
-    }
     
     private let socketHealthOptions = [15, 30, 45, 60]
     
@@ -117,7 +109,7 @@ struct SettingsView: View {
         for c in 1...maxSpaces {
             if maxSpaces % c == 0 {
                 let r = maxSpaces / c
-                layouts.append((c, r, "\(c)×\(r)"))
+                layouts.append((c, r, "\(c)×(r))"))
             }
         }
         return layouts
@@ -159,7 +151,7 @@ struct SettingsView: View {
         return closest
     }
     
-    init() {
+init() {
         let config = ConfigReader.load()
         _cols = State(initialValue: config.cols)
         _rows = State(initialValue: config.rows)
@@ -181,13 +173,10 @@ struct SettingsView: View {
         _hideMenuBarIcon = State(initialValue: config.hideMenuBarIcon)
         _useVimKeys = State(initialValue: config.useVimKeys)
         _useArrowKeys = State(initialValue: config.useArrowKeys)
-        // Initialize HUD position state
+        // Initialize HUD position state: kind from config.hudPosition, custom position from config.customHUDX/Y
         _hudPositionKind = State(initialValue: HUDPositionKind(from: config.hudPosition))
-        if case .custom(let x, let y) = config.hudPosition {
-            _lastCustomHUDPosition = State(initialValue: (x: x, y: y))
-        } else {
-            _lastCustomHUDPosition = State(initialValue: (x: config.customHUDX, y: config.customHUDY))
-        }
+        _lastCustomHUDX = State(initialValue: config.customHUDX)
+        _lastCustomHUDY = State(initialValue: config.customHUDY)
         _spaceNameInputs = State(initialValue: config.spaceNames)
         _gridLayoutIndex = State(initialValue: findBestGridLayoutIndexFor(cols: config.cols, rows: config.rows, maxSpaces: config.maxSpaces))
     }
@@ -232,6 +221,8 @@ struct SettingsView: View {
             "HIDE_MENUBAR_ICON=\(hideMenuBarIconStr)",
             "VIM_KEYS=\(useVimKeys ? "true" : "false")",
             "ARROW_KEYS=\(useArrowKeys ? "true" : "false")",
+            "CUSTOM_HUD_X=\(lastCustomHUDX)",
+            "CUSTOM_HUD_Y=\(lastCustomHUDY)",
             "HUD_POSITION=\(ConfigReader.hudPositionString(hudPosition))",
             "SPACE_NAMES=\(formatSpaceNames())",
             "LAUNCH_AT_LOGIN=\(launchAtLogin ? "true" : "false")"
@@ -421,34 +412,18 @@ Picker("Cell Style", selection: $cellStyle) {
                                 .padding(.vertical, 4)
                             }
                         }
-                    }
+}
                 }
             }
         }
+    }
+        .onReceive(NotificationCenter.default.publisher(for: .settingsChanged)) { _ in
+            let config = ConfigReader.load()
+            lastCustomHUDX = config.customHUDX
+            lastCustomHUDY = config.customHUDY
         }
         .formStyle(.grouped)
         .frame(minWidth: 500)
-        .onAppear {
-            let config = ConfigReader.load()
-            if iconScale != nearest(to: config.iconScale, from: iconScaleSteps) { iconScale = nearest(to: config.iconScale, from: iconScaleSteps) }
-            if showSpaceNumbers != config.showSpaceNumbers { showSpaceNumbers = config.showSpaceNumbers }
-            if showSpaceNames != config.showSpaceNames { showSpaceNames = config.showSpaceNames }
-            if showIconStrip != config.showIconStrip { showIconStrip = config.showIconStrip }
-            if showMultiAppIcons != config.showMultiAppIcons { showMultiAppIcons = config.showMultiAppIcons }
-            if hideMenuBarIcon != config.hideMenuBarIcon { hideMenuBarIcon = config.hideMenuBarIcon }
-            if useVimKeys != config.useVimKeys { useVimKeys = config.useVimKeys }
-            if useArrowKeys != config.useArrowKeys { useArrowKeys = config.useArrowKeys }
-            // Set HUD position based on config
-            hudPositionKind = HUDPositionKind(from: config.hudPosition)
-            if case .custom(let x, let y) = config.hudPosition {
-                lastCustomHUDPosition = (x: x, y: y)
-            } else {
-                lastCustomHUDPosition = (x: config.customHUDX, y: config.customHUDY)
-            }
-            if autoHideTimeout != config.autoHideTimeout { autoHideTimeout = config.autoHideTimeout }
-            let computedSpaceNames = config.spaceNames
-            if spaceNameInputs != computedSpaceNames { spaceNameInputs = computedSpaceNames }
-        }
     }
         
     private var cellStyleString: String {
