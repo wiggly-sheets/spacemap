@@ -63,13 +63,17 @@ final class CellViewGridViewTests: XCTestCase {
         XCTAssertEqual(String(describing: c1), String(describing: c2))
     }
 
-    func testAppColorDifferentNamesProduceDifferentColors() {
-        let theme = AppTheme.default
-        let c1 = CellView.appColor("Firefox", theme: theme, windowCount: 2)
-        let c2 = CellView.appColor("Safari", theme: theme, windowCount: 2)
-        // Different names → different hashValue → different rect selection (most likely)
-        // We can't guarantee different colors for all pairs, but these should differ
-        XCTAssertNotEqual(String(describing: c1), String(describing: c2))
+    func testAppColorReturnsValidThemeColor() {
+        let theme = AppTheme(background: 0, focused: 0, text: 0, dropTarget: 0, cellBg: 0, cellBgFocused: 0,
+                             rect1: 0xff0000, rect2: 0x00ff00, rect3: 0x0000ff)
+        // For windowCount <= 3, appColor must return one of the three theme rect colors
+        let names = ["Firefox", "Safari", "Terminal", "VSCode", "Slack", "Notes"]
+        let validColors: Set<String> = ["#FF0000FF", "#00FF00FF", "#0000FFFF"]
+        for name in names {
+            let c = CellView.appColor(name, theme: theme, windowCount: 2)
+            XCTAssertTrue(validColors.contains(String(describing: c)),
+                          "\(name) returned unexpected color \(c)")
+        }
     }
 
     // MARK: - GridView.computeVisibleSpaceIndices
