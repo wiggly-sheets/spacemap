@@ -9,7 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_Nothing yet._
+
+---
+
+## [1.0.0] - 2026-01-19
+
 ### Added
+- Space naming system with dynamic configuration in settings window
+- Settings window with scrollable, resizable UI
+- Hotkey recorder with global keyboard capture
+- Launch at login toggle with state indicator
+- Config file self-healing (auto-generates missing keys)
+- CLI options: `--version`, `--help`, `--config`, `--trigger`, `--show-menu`, `--settings`
+- Live auto-hide timeout with configurable delay
+- Hotkey rapid-press protection (`isToggling` guard)
+- Symlink creation (`/usr/local/bin/spacemap`) at launch
+- Active space live highlighting via polling
 - **File-based theme system**: `.smthemes` files in `~/.config/spacemap/themes/`, editable text files with rect1/rect2/rect3 colors, auto-seeded on first launch
 - **Grid-aware keyboard navigation**: Arrow keys and vim keys (hjkl) with row/column wrapping, configurable via `VIM_KEYS` and `ARROW_KEYS`
 - **Dynamic yabai path**: Auto-detects ARM (`/opt/homebrew/bin/yabai`) or Intel (`/usr/local/bin/yabai`) via FileManager, fixes blank HUD when launched from Finder
@@ -30,32 +46,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Menubar restart shortcut**: Cmd+R to restart spacemap from menubar
 - **Settings window hotkey recorder**: Global keyboard capture for setting hotkey in settings UI
 - **Settings window space name editor**: Per-space text inputs in settings UI
-
-### Changed
-- Refactored `CellStyle` from 5 cases to 3: `rects`, `icons`, `thumbnails` (removed `hybrid`; use `icons` + `SHOW_ICON_STRIP=true` instead)
-- CellStyle `"icons"` in config now sets `showIconStrip=true` by default
-- Improved yabai mandatory check with alert dialog
-- Improved Accessibility permission flow with polling
-
-### Fixed
-- Settings window not receiving keyboard focus (activation policy now set to `.regular` temporarily)
-- Space name input field focus preservation
-
----
-
-## [1.0.0] - 2026-01-19
-
-### Added
-- Space naming system with dynamic configuration in settings window
-- Settings window with scrollable, resizable UI
-- Hotkey recorder with global keyboard capture
-- Launch at login toggle with state indicator
-- Config file self-healing (auto-generates missing keys)
-- CLI options: `--version`, `--help`, `--config`, `--trigger`, `--show-menu`, `--settings`
-- Live auto-hide timeout with configurable delay
-- Hotkey rapid-press protection (`isToggling` guard)
-- Symlink creation (`/usr/local/bin/spacemap`) at launch
-- Active space live highlighting via polling
+- **Xcode project**: Generated from SPM via `scripts/generate-xcodeproj.py`, 4 targets (default, arm64, x86_64, universal)
+- **Unit test suite**: 103 tests across 5 files — hotkey parsing, config parsing, theme loading, model encoding, grid computation, cell view logic
+- **GitHub Actions CI**: `ci.yml` runs `swift test` + `swift build` on push/PR (macOS-14)
+- **GitHub Actions Release**: `release.yml` builds 3 DMG variants + `checksums.txt` on tag push
+- **Dependabot**: Weekly GitHub Actions dependency updates
+- **Architecture-specific builds**: `make build-arm64`, `make build-x86_64`, `make build-universal`, DMG variants
 
 ### Changed
 - Settings window now scrollable with proper dimensions
@@ -64,6 +60,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cell styles (rects, icons, hybrid) now properly serialized
 - Auto-hide timer now resets unconditionally on HUD show
 - Config parser now handles BOM, CR/LF, and inline comments
+- Refactored `CellStyle` from 5 cases to 3: `rects`, `icons`, `thumbnails` (removed `hybrid`; use `icons` + `SHOW_ICON_STRIP=true` instead)
+- CellStyle `"icons"` in config now sets `showIconStrip=true` by default
+- Improved yabai mandatory check with alert dialog
+- Improved Accessibility permission flow with polling
+- Extracted testable pure functions: `parseConfig()`, `parseThemeContent()`, `CellView.appColor()`, `CellView.uniqueIconWindows()`, `GridView.computeVisibleSpaceIndices()`, `GridView.computeIdealSize()`
+- `AppTheme` now conforms to `Equatable`
 
 ### Fixed
 - HUD staying visible during space changes
@@ -74,6 +76,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Yabai not running alert not appearing frontmost
 - Spaces MRU warning not appearing on startup
 - Window drag-and-drop coordinate system mismatch
+- Settings window not receiving keyboard focus (activation policy now set to `.regular` temporarily)
+- Space name input field focus preservation
+- Theme file parsing: `dropTarget` key case-insensitive matching (custom `.smthemes` files were silently failing, always falling back to hardcoded themes)
 
 ---
 

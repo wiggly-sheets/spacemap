@@ -117,11 +117,22 @@ make install     # Install to /Applications
 make run         # Install and launch
 make dev1        # Uninstall (then remove Accessibility in System Settings)
 make dev2        # Reinstall, relaunch, re-grant permissions
+make test        # Run unit tests via swift test
 make config      # Create default config
 make permissions # Show permission fix instructions
 make clean       # Remove build artifacts
 make archive     # Build signed archive for release
+make dmg         # Build universal DMG
+make dmg-arm64   # Build ARM64 DMG
+make dmg-x86_64  # Build Intel DMG
 ```
+
+### Xcode Project
+```bash
+python3 scripts/generate-xcodeproj.py   # Generate from SPM
+open spacemap.xcodeproj                 # Open in Xcode
+```
+Targets: default, arm64, x86_64, universal. Project is regenerated from `Package.swift` — edit SPM, not the `.xcodeproj`.
 
 ### Testing Changes
 1. `make dev1` (uninstalls app)
@@ -137,7 +148,7 @@ make archive     # Build signed archive for release
 3. **SwiftUI performance:** Each HUD open creates a new NSHostingView. The state is cached during a drag, but the view is recreated.
 4. **Icon strip flicker:** On space change, `CellView` rerenders and re-fetches icons via `NSWorkspace.shared.icon(forFile:)` which is potentially expensive
 5. **Drag resolution:** Window drag detection uses frontmost app name matching, which can be ambiguous for multi-window apps. Falls back to click proximity.
-6. **No tests:** There are zero unit tests
+6. **Test suite:** 103 unit tests across 5 files (`Tests/spacemapTests/`). Run with `make test` or `swift test`.
 7. **Socket health check:** Periodic `fcntl(fd, F_GETFD)` check + file existence check. Restarts on failure.
 
 ## Potential Extension Points
@@ -167,9 +178,7 @@ make archive     # Build signed archive for release
 - Better multi-monitor support
 
 ### Build / Dev
-- Add unit tests (XCTest)
 - Linting / formatting (SwiftFormat)
-- CI/CD for automated builds/releases
 - Homebrew formula improvements
 
 ## Tasks & Roadmap
@@ -191,6 +200,13 @@ make archive     # Build signed archive for release
 - File-based theme system (.smthemes files in ~/.config/spacemap/themes/)
 - Grid-aware keyboard navigation (arrow keys + vim keys with wrapping)
 - Dynamic yabai path detection (ARM + Intel)
+- Xcode project generation (`scripts/generate-xcodeproj.py`, 4 targets)
+- Unit test suite: 103 tests across 5 files (`Tests/spacemapTests/`)
+- GitHub Actions CI: swift test + build on push/PR
+- GitHub Actions Release: 3 DMG variants + checksums on tag push
+- Dependabot for GitHub Actions
+- Architecture-specific builds (ARM64, x86_64, universal)
+- Theme bug fix: `dropTarget` case sensitivity in `.smthemes` parsing
 
 See [TASKS.md](./TASKS.md) for planned features, bug fixes, and known issues.
 

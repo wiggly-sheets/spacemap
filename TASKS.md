@@ -31,6 +31,12 @@ A living list of planned features, known bugs, and future improvements for the p
 - **File-based Theme System**: `.smthemes` files in `~/.config/spacemap/themes/`, editable text files, auto-seeded on first launch
 - **Grid-aware Keyboard Navigation**: Arrow keys + vim keys (hjkl) with row/column wrapping
 - **Dynamic yabai Path**: Auto-detects ARM (`/opt/homebrew/bin/yabai`) or Intel (`/usr/local/bin/yabai`) via FileManager
+- **Xcode Project Generation**: `scripts/generate-xcodeproj.py` with 4 architecture targets
+- **Unit Test Suite**: 103 tests across 5 files
+- **GitHub Actions CI/CD**: CI (swift test + build), Release (3 DMGs + checksums), Dependabot
+- **Architecture-specific Builds**: ARM64, x86_64, universal DMGs via `create-dmg`
+- **Theme Bug Fix**: `dropTarget` case-insensitive matching in `.smthemes` parsing
+- **Extracted Pure Functions**: `parseConfig()`, `parseThemeContent()`, `CellView.appColor()`, etc.
 
 ## 🚀 High Priority
 
@@ -93,8 +99,10 @@ A living list of planned features, known bugs, and future improvements for the p
 
 | Task | Description | Status |
 |------|-------------|--------|
-| **Unit Tests** | Add XCTest for ConfigReader, YabaiClient, scaling logic | 🔄 Planned |
-| **GitHub Actions / CI** | Automated build, test, and release pipeline | 🔄 Planned |
+| **Unit Tests** | 103 tests across 5 files (HotkeyTests, ConfigTests, ThemeTests, ModelTests, CellViewGridViewTests) | ✅ Done |
+| **GitHub Actions / CI** | `ci.yml` (swift test + build on push/PR), `release.yml` (3 DMGs + checksums on tag), Dependabot | ✅ Done |
+| **Xcode Project** | Generated from SPM, 4 targets (default, arm64, x86_64, universal) via `scripts/generate-xcodeproj.py` | ✅ Done |
+| **Architecture Builds** | ARM64, x86_64, universal DMGs via `create-dmg` | ✅ Done |
 | **Homebrew Formula Updates** | Update tap for better Intel/homebrew paths | 🔄 Planned |
 
 ---

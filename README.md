@@ -227,15 +227,63 @@ Press `Ctrl+PgDn` to open spacemap.
 ## Build Requirements
 - Xcode Command Line Tools (`xcode-select --install`)
 
+## Building
+
+**Quick build and run:**
+```bash
+make run
+```
+
+**Xcode project** (for IDE workflow):
+```bash
+python3 scripts/generate-xcodeproj.py
+open spacemap.xcodeproj
+```
+The Xcode project is generated from SPM — 4 targets: default, arm64, x86_64, universal.
+
+**Architecture-specific builds:**
+```bash
+make build-arm64      # Apple Silicon only
+make build-x86_64     # Intel only
+make build-universal  # Both architectures
+make app-arm64        # .app bundle (ARM)
+make app-x86_64       # .app bundle (Intel)
+make app-universal    # .app bundle (universal)
+```
+
+## Testing
+
+```bash
+make test             # Run all unit tests via swift test
+swift test            # Direct SPM test runner
+swift test --filter ConfigTests   # Run a specific test class
+```
+
+103 tests across 5 files covering hotkey parsing, config parsing, theme loading, model encoding, grid computation, and cell view logic.
+
+## CI/CD
+
+**On push/PR:** `ci.yml` runs `swift test` + `swift build` on macOS-14.
+
+**On tag push:** `release.yml` builds 3 DMG variants (ARM64, x86_64, universal) + `checksums.txt`, uploaded as GitHub release assets.
+
+Dependabot watches `.github/workflows/` weekly for action updates.
 
 ## Makefile targets
 
 | Target | Description |
 |--------|-------------|
 | `make dmg` | Build and package app into `spacemap-<version>.dmg` with /Applications symlink |
+| `make dmg-arm64` | Build ARM64 DMG |
+| `make dmg-x86_64` | Build Intel DMG |
+| `make dmg-universal` | Build universal DMG |
 | `make run` | Build, install, and launch |
 | `make dev1` | Uninstall; pause to remove Accessibility permission in System Settings |
 | `make dev2` | Reinstall and relaunch; grant Accessibility permission when prompted |
+| `make test` | Run unit tests via swift test |
+| `make build-arm64` | Build for Apple Silicon only |
+| `make build-x86_64` | Build for Intel only |
+| `make build-universal` | Build universal binary |
 | `make config` | Create default config file if missing |
 | `make distconfig` | Overwrite config with defaults (`CELL_STYLE=icons`) |
 | `make permissions` | Print instructions for fixing a broken hotkey |
