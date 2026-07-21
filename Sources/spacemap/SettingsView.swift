@@ -194,11 +194,11 @@ init() {
     }
     
     private func saveConfig() {
-        let spaceNumbersStr = showSpaceNumbers ? "true" : "false"
-        let spaceNamesStr = showSpaceNames ? "true" : "false"
-        let iconStripStr = showIconStrip ? "true" : "false"
-        let multiAppIconsStr = showMultiAppIcons ? "true" : "false"
-        let hideMenuBarIconStr = hideMenuBarIcon ? "true" : "false"
+        let spaceNumbersStr = showSpaceNumbers ? "on" : "off"
+        let spaceNamesStr = showSpaceNames ? "on" : "off"
+        let iconStripStr = showIconStrip ? "on" : "off"
+        let multiAppIconsStr = showMultiAppIcons ? "on" : "off"
+        let hideMenuBarIconStr = hideMenuBarIcon ? "on" : "off"
         let launchAtLogin = SMAppService.mainApp.status == .enabled
         let lines = [
             "GRID_COLS=\(cols)",
@@ -219,13 +219,13 @@ init() {
             "SHOW_ICON_STRIP=\(iconStripStr)",
             "SHOW_MULTI_APP_ICONS=\(multiAppIconsStr)",
             "HIDE_MENUBAR_ICON=\(hideMenuBarIconStr)",
-            "VIM_KEYS=\(useVimKeys ? "true" : "false")",
-            "ARROW_KEYS=\(useArrowKeys ? "true" : "false")",
+            "VIM_KEYS=\(useVimKeys ? "on" : "off")",
+            "ARROW_KEYS=\(useArrowKeys ? "on" : "off")",
             "CUSTOM_HUD_X=\(lastCustomHUDX)",
             "CUSTOM_HUD_Y=\(lastCustomHUDY)",
             "HUD_POSITION=\(ConfigReader.hudPositionString(hudPosition))",
             "SPACE_NAMES=\(formatSpaceNames())",
-            "LAUNCH_AT_LOGIN=\(launchAtLogin ? "true" : "false")"
+            "LAUNCH_AT_LOGIN=\(launchAtLogin ? "on" : "off")"
         ]
         let content = lines.joined(separator: "\n")
         do {
