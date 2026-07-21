@@ -39,7 +39,7 @@ final class HotkeyTests: XCTestCase {
     }
 
     func testParseHotkeyUnknownKeyReturnsNil() {
-        XCTAssertNil(ConfigReader.parseHotkey("ctrl+f20"))
+        XCTAssertNil(ConfigReader.parseHotkey("ctrl+f21"))
     }
 
     func testParseHotkeyUnknownModifierReturnsNil() {
@@ -79,6 +79,9 @@ final class HotkeyTests: XCTestCase {
         XCTAssertEqual(ConfigReader.keyCodeFor("f1"), 122)
         XCTAssertEqual(ConfigReader.keyCodeFor("f5"), 96)
         XCTAssertEqual(ConfigReader.keyCodeFor("f12"), 111)
+        XCTAssertEqual(ConfigReader.keyCodeFor("f13"), 105)
+        XCTAssertEqual(ConfigReader.keyCodeFor("f16"), 106)
+        XCTAssertEqual(ConfigReader.keyCodeFor("f20"), 90)
     }
 
     func testKeyCodeForAlphanumeric() {
@@ -91,7 +94,7 @@ final class HotkeyTests: XCTestCase {
     }
 
     func testKeyCodeForUnknownReturnsNil() {
-        XCTAssertNil(ConfigReader.keyCodeFor("f20"))
+        XCTAssertNil(ConfigReader.keyCodeFor("f21"))
         XCTAssertNil(ConfigReader.keyCodeFor("capslock"))
     }
 

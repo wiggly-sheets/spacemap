@@ -208,6 +208,14 @@ enum ConfigReader {
         case 109: keyString = "f10"
         case 103: keyString = "f11"
         case 111: keyString = "f12"
+        case 105: keyString = "f13"
+        case 107: keyString = "f14"
+        case 113: keyString = "f15"
+        case 106: keyString = "f16"
+        case 64: keyString = "f17"
+        case 79: keyString = "f18"
+        case 80: keyString = "f19"
+        case 90: keyString = "f20"
         default:
             let alphanum: [CGKeyCode: String] = [
                 0: "a", 1: "s", 2: "d", 3: "f", 4: "h", 5: "g",
@@ -312,6 +320,9 @@ enum ConfigReader {
             case "cmd":   modifiers.insert(.maskCommand)
             case "alt":   modifiers.insert(.maskAlternate)
             case "shift": modifiers.insert(.maskShift)
+            case "hyper": modifiers.insert([.maskControl, .maskCommand, .maskAlternate, .maskShift])
+            case "capslock": modifiers.insert(.maskAlphaShift)
+            case "fn": modifiers.insert(.maskSecondaryFn)
             default:
                 print("spacemap: unknown modifier '\(token)' in HOTKEY")
                 return nil
@@ -336,6 +347,8 @@ enum ConfigReader {
             "f1": 122, "f2": 120, "f3": 99,  "f4": 118,
             "f5": 96,  "f6": 97,  "f7": 98,  "f8": 100,
             "f9": 101, "f10": 109, "f11": 103, "f12": 111,
+            "f13": 105, "f14": 107, "f15": 113, "f16": 106,
+            "f17": 64, "f18": 79, "f19": 80, "f20": 90,
         ]
         if let code = named[token] { return code }
 
