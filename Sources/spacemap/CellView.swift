@@ -213,20 +213,28 @@ var body: some View {
         let visible = windowFilter(windows)
         let icons = showMultiAppIcons ? visible : Self.uniqueIconWindows(visible)
         let ic = iconScale
-        HStack(spacing: 2 * uiScale * ic * 2) {
+        let baseIconSize = 12 * uiScale * ic * 2
+        let spacing = 2 * uiScale * ic * 2
+        let padding = 3 * uiScale * ic * 2
+        let availableWidth = cellSize.width - padding * 2
+        let neededWidth = CGFloat(icons.count) * baseIconSize + CGFloat(max(0, icons.count - 1)) * spacing
+        let fitScale: CGFloat = neededWidth > availableWidth ? availableWidth / neededWidth : 1.0
+        let finalIconSize = baseIconSize * fitScale
+        let finalSpacing = spacing * fitScale
+        HStack(spacing: finalSpacing) {
             ForEach(icons, id: \.id) { window in
                 if let icon = appIcon(for: window.app) {
                     Image(nsImage: icon)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(width: 12 * uiScale * ic * 2, height: 12 * uiScale * ic * 2)
+                        .frame(width: finalIconSize, height: finalIconSize)
                 }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 3 * uiScale * ic * 2)
+        .padding(.horizontal, padding)
         .frame(maxHeight: .infinity, alignment: .bottom)
-        .padding(.bottom, 3 * uiScale * ic * 2)
+        .padding(.bottom, padding)
     }
     
     private func uniqueIconWindows() -> [YabaiWindow] {
