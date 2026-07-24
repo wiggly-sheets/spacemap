@@ -152,21 +152,27 @@ class HUDWindowController {
         refreshState()
     }
     
-    private func refreshState() {
-        guard isVisible, let panel else { return }
-        let state = YabaiClient.buildGridState(config: config)
-        currentState = state
-        dragHandler.cachedWindows = state.windows
-        refreshThumbnailCache(state: state)
-        renderState(state, panel: panel)
-        updateCellFrames(state: state, panel: panel)
-        lastFocusedSpaceIndex = state.focusedIndex
-    }
+private func refreshState() {
+     guard isVisible else { return }
+     YabaiClient.run { [weak self] in
+         guard let self else { return }
+         let state = YabaiClient.buildGridState(config: self.config)
+         DispatchQueue.main.async {
+             guard self.isVisible, let panel = self.panel else { return }
+             self.currentState = state
+             self.dragHandler.cachedWindows = state.windows
+             self.refreshThumbnailCache(state: state)
+             self.renderState(state, panel: panel)
+             self.updateCellFrames(state: state, panel: panel)
+             self.lastFocusedSpaceIndex = state.focusedIndex
+         }
+     }
+ }
     
     private func renderState(_ state: GridState, panel: NSPanel) {
         let hovered = hoveredCell
         let gridView = GridView(state: state, hoveredCell: hovered, onSelect: { [weak self] index in
-            YabaiClient.focusSpace(index)
+            YabaiClient.focusSpaceAsync(index)
             self?.hide()
         }, uiScale: config.uiScale, theme: config.theme)
         let size = gridView.idealSize
@@ -418,54 +424,71 @@ class HUDWindowController {
 
     private enum Direction { case left, right, up, down }
 
-    private func navigateSpace(_ direction: Direction) {
-        guard let idx = lastFocusedSpaceIndex else { return }
+private func navigateSpace(_ direction: Direction) {
+        guard let idx = lastFocusedSpaceIndex, let state = currentState else { return }
+
+        let maxN = min(config.maxSpaces, 16)
+        let all = (1...maxN).map { $0 }
+        let cells: [Int]
+        if config.showMode == .active {
+            let activeSet = Set(state.spaces.map { $0.index })
+            cells = all.filter { activeSet.contains($0) }
+        } else {
+            cells = all
+        }
+
+        guard !cells.isEmpty, let currentPos = cells.firstIndex(of: idx) else { return }
+
+        let totalItems = cells.count
         let cols = config.cols
-        let maxN = config.maxSpaces
-        let zero = idx - 1
-        let row = zero / cols
-        let col = zero % cols
-        let rowStart = row * cols + 1
         var target: Int?
 
         switch direction {
         case .left:
-            if col == 0 {
-                var rowEnd = rowStart + cols - 1
-                if rowEnd > maxN { rowEnd = maxN }
-                target = rowEnd
+            let row = currentPos / cols
+            let rowStart = row * cols
+            let rowEnd = min(rowStart + cols, totalItems) // exclusive upper bound, handles incomplete last row
+            if currentPos == rowStart {
+                // Start of row — wrap to last item in this row (capped for incomplete rows)
+                target = cells[rowEnd - 1]
             } else {
-                target = idx - 1
+                target = cells[currentPos - 1]
             }
         case .right:
-            if col == cols - 1 {
-                target = rowStart
+            let row = currentPos / cols
+            let rowStart = row * cols
+            let rowEnd = min(rowStart + cols, totalItems) // exclusive upper bound
+            if currentPos == rowEnd - 1 {
+                // End of row (or last item in an incomplete row) — wrap to row's first item
+                target = cells[rowStart]
             } else {
-                let next = idx + 1
-                target = next > maxN ? rowStart : next
+                target = cells[currentPos + 1]
             }
         case .up, .down:
-            var columnSpaces: [Int] = []
-            var i = col + 1
-            while i <= maxN {
-                columnSpaces.append(i)
-                i += cols
+            let col = currentPos % cols
+            var columnCells: [Int] = []
+            for (i, space) in cells.enumerated() {
+                if i % cols == col {
+                    columnCells.append(space)
+                }
             }
-            guard let pos = columnSpaces.firstIndex(of: idx) else { return }
-            let n = columnSpaces.count
-            let newPos: Int
+            guard let currentColPos = columnCells.firstIndex(of: idx) else { return }
+            let n = columnCells.count
+            let newColPos: Int
             if direction == .up {
-                newPos = (pos - 1 + n) % n
+                newColPos = (currentColPos - 1 + n) % n
             } else {
-                newPos = (pos + 1) % n
+                newColPos = (currentColPos + 1) % n
             }
-            target = columnSpaces[newPos]
+            target = columnCells[newColPos]
         }
 
         guard let t = target else { return }
-        YabaiClient.focusSpace(t)
+        YabaiClient.focusSpaceAsync(t)
+        lastFocusedSpaceIndex = t   
+        resetAutoHideTimer()
     }
-    
+
     private var screenHeight: CGFloat {
         NSScreen.main?.frame.height ?? 0
     }

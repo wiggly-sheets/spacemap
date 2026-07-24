@@ -2,6 +2,11 @@ import Foundation
 import AppKit
 
 enum YabaiClient {
+    private static let yabaiQueue = DispatchQueue(label: "com.spacemap.yabai", qos: .userInitiated)
+
+    static func run(_ block: @escaping () -> Void) {
+    yabaiQueue.async(execute: block)
+}
     private static let yabaiPath: String = {
         let arm = "/opt/homebrew/bin/yabai"
         let intel = "/usr/local/bin/yabai"
@@ -75,11 +80,16 @@ enum YabaiClient {
         guard isYabaiRunning() else { return }
         _ = try? shell(yabaiPath, "-m", "signal", "--remove", "spacemap_space_changed")
     }
-    
+
     static func focusSpace(_ index: Int) {
+    _ = try? shell(yabaiPath, "-m", "space", "--focus", "\(index)")
+}
+
+static func focusSpaceAsync(_ index: Int) {
+    run {
         _ = try? shell(yabaiPath, "-m", "space", "--focus", "\(index)")
     }
-    
+}
     static func showSpacemap() {
         let path = "/tmp/spacemap_\(NSUserName()).socket"
         let fd = socket(AF_UNIX, SOCK_STREAM, 0)
